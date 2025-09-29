@@ -14,9 +14,9 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import edu.fatec.petwise.presentation.colors.AzulProfundo
-import edu.fatec.petwise.presentation.colors.Branco
-import edu.fatec.petwise.presentation.colors.VerdeMenta
+import edu.fatec.petwise.presentation.theme.AzulProfundo
+import edu.fatec.petwise.presentation.theme.Branco
+import edu.fatec.petwise.presentation.theme.VerdeMenta
 
 /**
  * Barra de navegação responsiva com identidade visual PetWise.

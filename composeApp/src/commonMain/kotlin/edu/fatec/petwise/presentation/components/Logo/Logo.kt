@@ -7,14 +7,14 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
-import edu.fatec.petwise.presentation.colors.Branco
-import edu.fatec.petwise.presentation.colors.VerdeMenta
+import edu.fatec.petwise.presentation.theme.AzulProfundo
+import edu.fatec.petwise.presentation.theme.VerdeMenta
 
 /**
  * Logo estilizada "PetWise".
  */
 @Composable
-private fun PetWiseLogo() {
+public fun PetWiseLogo() {
     Text(
         text = buildAnnotatedString {
             append("Pet")
@@ -23,6 +23,6 @@ private fun PetWiseLogo() {
             }
         },
         style = MaterialTheme.typography.titleLarge,
-        color = Branco
+        color = AzulProfundo
     )
 }
