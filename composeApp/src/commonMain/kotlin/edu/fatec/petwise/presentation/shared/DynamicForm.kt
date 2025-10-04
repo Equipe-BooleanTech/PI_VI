@@ -30,7 +30,8 @@ import kotlinx.serialization.json.jsonPrimitive
 @Composable
 fun DynamicAuthFormScreen(
     formStore: FormStore,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onLoginSuccess: (() -> Unit)? = null
 ) {
     val uiState by formStore.state.collectAsState()
     val coroutineScope = rememberCoroutineScope()
@@ -324,6 +325,18 @@ fun DynamicAuthFormScreen(
             }
 
             Spacer(Modifier.height(8.dp))
+            
+            // Display form-level error messages
+            val errorMessage = uiState.errorMessage
+            if (errorMessage != null) {
+                Text(
+                    text = errorMessage,
+                    color = Color.fromHex("#d32f2f"),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.align(Alignment.Start)
+                )
+                Spacer(Modifier.height(8.dp))
+            }
 
             val submitField = formStore.schema.fields.find { it.type == "submit" }
             
@@ -331,7 +344,10 @@ fun DynamicAuthFormScreen(
                 onClick = {
                     coroutineScope.launch {
                         formStore.submit { success, errors ->
-                            // Pendente integração
+                            if (success && formStore.schema.id == "login_form") {
+                                // Navigate to Home screen on successful login
+                                onLoginSuccess?.invoke()
+                            }
                         }
                     }
                 },
@@ -343,14 +359,23 @@ fun DynamicAuthFormScreen(
                     contentColor = Color.White
                 ),
                 shape = RoundedCornerShape(8.dp),
-                enabled = uiState.fields.any { it.touched } && uiState.fields.all { it.errors.isEmpty() || !it.visible }
+                enabled = (!uiState.isSubmitting && uiState.fields.any { it.touched }) && 
+                          uiState.fields.all { it.errors.isEmpty() || !it.visible }
             ) {
-                Text(
-                    text = submitField?.label ?: "Enviar",
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontWeight = FontWeight.SemiBold
+                if (uiState.isSubmitting) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
                     )
-                )
+                } else {
+                    Text(
+                        text = submitField?.label ?: "Enviar",
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    )
+                }
             }
         }
     }

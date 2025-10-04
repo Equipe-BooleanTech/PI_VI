@@ -6,12 +6,18 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.jsonPrimitive
+import edu.fatec.petwise.features.auth.domain.usecases.LoginUseCase
 
-data class FormUiState(val fields: List<FieldState>, val isSubmitting: Boolean = false)
+data class FormUiState(
+    val fields: List<FieldState>, 
+    val isSubmitting: Boolean = false,
+    val errorMessage: String? = null
+)
 
 class FormStore(
     initialSchema: FormSchema,
-    private val scope: CoroutineScope = CoroutineScope(Dispatchers.Default)
+    private val scope: CoroutineScope = CoroutineScope(Dispatchers.Default),
+    private val loginUseCase: LoginUseCase = LoginUseCase()
 ) {
     private var _schema = initialSchema
     val schema: FormSchema get() = _schema
@@ -112,21 +118,60 @@ class FormStore(
         scope.launch {
 
             Validators.setFormSubmitted(true)
-            
+            _state.value = _state.value.copy(isSubmitting = true, errorMessage = null)
 
             fieldStateMap.forEach { (id, state) ->
                 fieldStateMap[id] = state.copy(submitted = true, touched = true)
             }
             
+
             recomputeVisibilityAndValidation()
             val errs = fieldStateMap.filter {
                 it.value.visible && it.value.errors.isNotEmpty()
             }.mapValues { it.value.errors }
 
             if (errs.isNotEmpty()) {
+                _state.value = _state.value.copy(isSubmitting = false)
                 onResult(false, errs)
             } else {
-                onResult(true, emptyMap())
+                // If form is valid, handle specific form types
+                when (_schema.id) {
+                    "login_form" -> {
+                        try {
+                            // Get email and password values
+                            val email = fieldStateMap["email"]?.value ?: ""
+                            val password = fieldStateMap["password"]?.value ?: ""
+                            
+                            // Call login use case
+                            val result = loginUseCase.execute(email, password)
+                            
+                            result.fold(
+                                onSuccess = { 
+                                    _state.value = _state.value.copy(isSubmitting = false)
+                                    onResult(true, emptyMap()) 
+                                },
+                                onFailure = { error ->
+                                    _state.value = _state.value.copy(
+                                        isSubmitting = false, 
+                                        errorMessage = error.message ?: "Login failed"
+                                    )
+                                    onResult(false, mapOf("loginError" to listOf(error.message ?: "Invalid credentials")))
+                                }
+                            )
+                        } catch (e: Exception) {
+                            _state.value = _state.value.copy(
+                                isSubmitting = false, 
+                                errorMessage = e.message ?: "An unknown error occurred"
+                            )
+                            onResult(false, mapOf("error" to listOf(e.message ?: "An unknown error occurred")))
+                        }
+                    }
+                    else -> {
+                        // Other form types would have their own handling
+                        _state.value = _state.value.copy(isSubmitting = false)
+                        onResult(true, emptyMap())
+                    }
+                }
             }
         }
     }

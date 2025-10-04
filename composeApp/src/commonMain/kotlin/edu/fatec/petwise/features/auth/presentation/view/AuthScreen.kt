@@ -13,6 +13,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.graphics.Color
 import edu.fatec.petwise.features.auth.shared.DynamicAuthFormScreen
 import edu.fatec.petwise.features.auth.shared.FormStore
+import edu.fatec.petwise.navigation.NavigationManager
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.PetWiseThemeWrapper
 import edu.fatec.petwise.presentation.theme.fromHex
@@ -21,10 +22,9 @@ import edu.fatec.petwise.features.auth.presentation.forms.registerSchema
 import edu.fatec.petwise.features.auth.presentation.forms.loginSchema
 
 
-@Preview
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AuthScreen() {
+fun AuthScreen(navigationManager: NavigationManager) {
     var selectedTab by rememberSaveable { mutableStateOf(0) }
     val titles = listOf("Login", "Registrar")
 
@@ -115,7 +115,12 @@ fun AuthScreen() {
 
                     Spacer(Modifier.height(24.dp))
 
-                    DynamicAuthFormScreen(formStore)
+                    DynamicAuthFormScreen(
+                        formStore = formStore,
+                        onLoginSuccess = { 
+                            navigationManager.navigateTo(NavigationManager.Screen.Home)
+                        }
+                    )
                 }
             }
         }
