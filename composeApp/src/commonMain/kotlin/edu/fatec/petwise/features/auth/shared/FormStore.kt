@@ -22,6 +22,7 @@ class FormStore(
     val state: StateFlow<FormUiState> = _state
 
     init {
+        Validators.setSchema(_schema)
         initializeFields()
         recomputeVisibilityAndValidation()
     }
@@ -29,31 +30,48 @@ class FormStore(
     private fun initializeFields() {
         fieldStateMap.clear()
         for (field in _schema.fields) {
+
+            if (field.type == "submit") continue
+            
             val defaultValue = field.default?.jsonPrimitive?.content ?: ""
             fieldStateMap[field.id] = FieldState(
                 id = field.id,
                 value = defaultValue,
                 visible = true,
-                errors = emptyList()
+                errors = emptyList(),
+                touched = false,
+                submitted = false
             )
         }
+        
+        _state.value = FormUiState(fieldStateMap.values.toList())
     }
 
     fun updateSchema(newSchema: FormSchema) {
         _schema = newSchema
+        Validators.setSchema(newSchema)
+        Validators.setFormSubmitted(false)
         initializeFields()
         recomputeVisibilityAndValidation()
+    }
+    
+    fun validateField(fieldId: String): List<String> {
+        val field = _schema.fields.find { it.id == fieldId } ?: return emptyList()
+        val values = getCurrentValues()
+        return Validators.validate(field, values)
     }
 
     fun updateValue(fieldId: String, newValue: String) {
         fieldStateMap[fieldId]?.let { fieldState ->
-            fieldStateMap[fieldId] = fieldState.copy(value = newValue)
+            val firstTouch = !fieldState.touched
+            
+            fieldStateMap[fieldId] = fieldState.copy(value = newValue, touched = true)
+            
             recomputeVisibilityAndValidation()
         }
     }
 
     private fun recomputeVisibilityAndValidation() {
-        // Update visibility based on current field values
         for (field in _schema.fields) {
             fieldStateMap[field.id]?.let { fieldState ->
                 val isVisible = evaluateVisibility(field)
@@ -61,7 +79,6 @@ class FormStore(
             }
         }
 
-        // Validate visible fields
         val currentValues = fieldStateMap.mapValues { it.value.value }
         for (field in _schema.fields) {
             fieldStateMap[field.id]?.let { fieldState ->
@@ -93,6 +110,14 @@ class FormStore(
 
     fun submit(onResult: (success: Boolean, errors: Map<String, List<String>>) -> Unit) {
         scope.launch {
+
+            Validators.setFormSubmitted(true)
+            
+
+            fieldStateMap.forEach { (id, state) ->
+                fieldStateMap[id] = state.copy(submitted = true, touched = true)
+            }
+            
             recomputeVisibilityAndValidation()
             val errs = fieldStateMap.filter {
                 it.value.visible && it.value.errors.isNotEmpty()

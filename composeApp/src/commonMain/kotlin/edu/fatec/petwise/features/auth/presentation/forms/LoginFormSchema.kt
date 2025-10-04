@@ -13,13 +13,18 @@ val loginSchema = FormSchema(
             id = "email",
             label = "Email",
             type = "email",
-            validators = listOf(Validator(type = "required"))
+            validators = listOf(
+                Validator(type = "required", message = "Informe seu email para entrar"),
+                Validator(type = "email")
+            )
         ),
         Field(
             id = "password",
             label = "Senha",
             type = "password",
-            validators = listOf(Validator(type = "required"))
+            validators = listOf(
+                Validator(type = "required", message = "Informe sua senha para entrar")
+            )
         ),
         Field(
             id = "submitLogin",

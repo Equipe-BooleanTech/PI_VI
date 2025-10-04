@@ -11,14 +11,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.graphics.Color
-import edu.fatec.petwise.features.auth.presentation.forms.loginSchema
 import edu.fatec.petwise.features.auth.shared.DynamicAuthFormScreen
 import edu.fatec.petwise.features.auth.shared.FormStore
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.PetWiseThemeWrapper
 import edu.fatec.petwise.presentation.theme.fromHex
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import registerSchema
+import edu.fatec.petwise.features.auth.presentation.forms.registerSchema
+import edu.fatec.petwise.features.auth.presentation.forms.loginSchema
+
 
 @Preview
 @OptIn(ExperimentalMaterial3Api::class)
@@ -28,29 +29,52 @@ fun AuthScreen() {
     val titles = listOf("Login", "Registrar")
 
     val schema = if (selectedTab == 0) loginSchema else registerSchema
-    val formStore = remember(schema.id) { FormStore(schema) }
+
+    val formStore = remember(selectedTab) { FormStore(schema) }
 
     val theme = if (isSystemInDarkTheme()) PetWiseTheme.Dark else PetWiseTheme.Light
 
     PetWiseThemeWrapper(theme) {
-        Box(
+        BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.fromHex(theme.palette.background)),
             contentAlignment = Alignment.Center
         ) {
+            val screenWidth = maxWidth
+            val screenHeight = maxHeight
+            
+            val cardWidth = when {
+                screenWidth < 600.dp -> screenWidth * 0.9f
+                screenWidth < 840.dp -> screenWidth * 0.7f
+                else -> 500.dp
+            }
+            
+            val cardPadding = when {
+                screenWidth < 400.dp -> 16.dp
+                screenWidth < 600.dp -> 20.dp
+                else -> 24.dp
+            }
+            
             Card(
                 modifier = Modifier
-                    .padding(24.dp)
-                    .widthIn(max = 400.dp),
+                    .padding(cardPadding)
+                    .widthIn(max = cardWidth)
+                    .heightIn(max = screenHeight * 0.9f),
                 shape = MaterialTheme.shapes.extraLarge,
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = Color.fromHex(theme.palette.cardBackground)
                 )
             ) {
+                val innerPadding = when {
+                    screenWidth < 400.dp -> 16.dp
+                    screenWidth < 600.dp -> 24.dp
+                    else -> 32.dp
+                }
+                
                 Column(
-                    modifier = Modifier.padding(32.dp),
+                    modifier = Modifier.padding(innerPadding),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(

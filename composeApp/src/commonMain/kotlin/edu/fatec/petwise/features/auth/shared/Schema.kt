@@ -24,7 +24,8 @@ data class Field(
     val options: List<String>? = null,
     val default: JsonElement? = null,
     val validators: List<Validator>? = null,
-    val visibleIf: Map<String, JsonElement>? = null
+    val visibleIf: Map<String, JsonElement>? = null,
+    val mask: String? = null
 )
 
 @Serializable
