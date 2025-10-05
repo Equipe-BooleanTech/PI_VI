@@ -50,20 +50,21 @@ object PetWiseTheme {
         spacing = Spacing()
     )
 
+    // Por enquanto sem tema dark
     val Dark = ThemeDefinition(
         palette = Palette(
             primary = "#00b942",
             primaryVariant = "#00d94e",
             secondary = "#f2f2f4",
-            background = "#1a1d21",
-            textPrimary = "#ffffff",
-            textSecondary = "#b0b0b0",
+            background = "#2d3339",
+            textPrimary = "#333333",
+            textSecondary = "#666666",
             success = "#00b942",
-            successDark = "#005c1d",
+            successDark = "#009e36",
             accent = "#00b942",
             border = "#00b942",
-            inputBackground = "#3a3f45",
-            cardBackground = "#2d3339"
+            inputBackground = "#ffffff",
+            cardBackground = "#e8e8ea"
         ),
         typography = Typography(),
         spacing = Spacing()

@@ -109,6 +109,40 @@ class DefaultDashboardDataProvider : DashboardDataProvider {
                     route = "settings"
                 )
             )
+            UserType.PHARMACY -> listOf(
+                StatusCardData(
+                    id = "orders",
+                    title = "Pedidos",
+                    count = 20,
+                    icon = Icons.Default.ShoppingCart,
+                    iconBackground = "#00b942",
+                    route = "orders"
+                ),
+                StatusCardData(
+                    id = "inventory",
+                    title = "Inventário",
+                    count = 150,
+                    icon = Icons.Default.Inventory,
+                    iconBackground = "#2196F3",
+                    route = "inventory"
+                ),
+                StatusCardData(
+                    id = "suppliers",
+                    title = "Fornecedores",
+                    count = 5,
+                    icon = Icons.Default.LocalShipping,
+                    iconBackground = "#FFC107",
+                    route = "suppliers"
+                ),
+                StatusCardData(
+                    id = "sales",
+                    title = "Vendas",
+                    count = 30,
+                    icon = Icons.Default.PointOfSale,
+                    iconBackground = "#9C27B0",
+                    route = "sales"
+                )
+            )
         }
     }
 
@@ -204,6 +238,36 @@ class DefaultDashboardDataProvider : DashboardDataProvider {
                     background = "#FFC107"
                 )
             )
+            UserType.PHARMACY -> listOf(
+                QuickActionData(
+                    id = "orders",
+                    title = "Pedidos",
+                    icon = Icons.Default.ShoppingCart,
+                    route = "orders",
+                    background = "#00b942"
+                ),
+                QuickActionData(
+                    id = "inventory",
+                    title = "Inventário",
+                    icon = Icons.Default.Inventory,
+                    route = "inventory",
+                    background = "#2196F3"
+                ),
+                QuickActionData(
+                    id = "suppliers",
+                    title = "Fornecedores",
+                    icon = Icons.Default.LocalShipping,
+                    route = "suppliers",
+                    background = "#9C27B0"
+                ),
+                QuickActionData(
+                    id = "sales",
+                    title = "Vendas",
+                    icon = Icons.Default.PointOfSale,
+                    route = "sales",
+                    background = "#FFC107"
+                )
+            )
         }
     }
 
@@ -294,6 +358,35 @@ class DefaultDashboardDataProvider : DashboardDataProvider {
                     icon = Icons.Default.Description,
                     iconBackground = "#FFC107",
                     route = "reports/detail/1"
+                )
+            )
+            UserType.PHARMACY -> listOf(
+                RecentActivityData(
+                    id = "order1",
+                    title = "Novo Pedido",
+                    description = "Pedido #1234 foi realizado",
+                    date = "03/10/2025",
+                    icon = Icons.Default.ShoppingCart,
+                    iconBackground = "#00b942",
+                    route = "orders/detail/1234"
+                ),
+                RecentActivityData(
+                    id = "inventory1",
+                    title = "Inventário Atualizado",
+                    description = "Medicamentos reabastecidos",
+                    date = "02/10/2025",
+                    icon = Icons.Default.Inventory,
+                    iconBackground = "#2196F3",
+                    route = "inventory"
+                ),
+                RecentActivityData(
+                    id = "sale1",
+                    title = "Venda Realizada",
+                    description = "Venda #5678 concluída",
+                    date = "01/10/2025",
+                    icon = Icons.Default.PointOfSale,
+                    iconBackground = "#FFC107",
+                    route = "sales/detail/5678"
                 )
             )
         }
@@ -407,6 +500,38 @@ class DefaultDashboardDataProvider : DashboardDataProvider {
                     route = "licenses"
                 )
             )
+            UserType.PHARMACY -> listOf(
+                ReminderData(
+                    id = "order1",
+                    title = "Pedido #1234",
+                    description = "Verificar status do pedido com fornecedor",
+                    date = "05/10/2025",
+                    priority = PriorityLevel.HIGH,
+                    icon = Icons.Default.ShoppingCart,
+                    iconBackground = "#FF9800",
+                    route = "orders/detail/1234"
+                ),
+                ReminderData(
+                    id = "inventory1",
+                    title = "Revisão de Inventário",
+                    description = "Contagem física do estoque mensal",
+                    date = "15/10/2025",
+                    priority = PriorityLevel.MEDIUM,
+                    icon = Icons.Default.Inventory,
+                    iconBackground = "#2196F3",
+                    route = "inventory"
+                ),
+                ReminderData(
+                    id = "sale1",
+                    title = "Promoção de Vendas",
+                    description = "Iniciar campanha de desconto para vacinas",
+                    date = "20/10/2025",
+                    priority = PriorityLevel.LOW,
+                    icon = Icons.Default.PointOfSale,
+                    iconBackground = "#4CAF50",
+                    route = "promotions"
+                )
+            )
         }
     }
 
@@ -419,6 +544,7 @@ class DefaultDashboardDataProvider : DashboardDataProvider {
             UserType.OWNER -> "Cuidando de 3 pets com carinho"
             UserType.VET -> "5 consultas agendadas hoje"
             UserType.ADMIN -> "Gerenciando 3 clínicas ativas"
+            UserType.PHARMACY -> "20 pedidos para processar"
         }
     }
 }

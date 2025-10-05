@@ -326,7 +326,6 @@ fun DynamicAuthFormScreen(
 
             Spacer(Modifier.height(8.dp))
             
-            // Display form-level error messages
             val errorMessage = uiState.errorMessage
             if (errorMessage != null) {
                 Text(
@@ -345,7 +344,6 @@ fun DynamicAuthFormScreen(
                     coroutineScope.launch {
                         formStore.submit { success, errors ->
                             if (success && formStore.schema.id == "login_form") {
-                                // Navigate to Home screen on successful login
                                 onLoginSuccess?.invoke()
                             }
                         }

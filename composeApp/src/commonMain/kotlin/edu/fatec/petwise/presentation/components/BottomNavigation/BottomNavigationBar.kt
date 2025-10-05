@@ -20,10 +20,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,24 +30,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import edu.fatec.petwise.navigation.NavigationManager
+import edu.fatec.petwise.presentation.theme.fromHex
 
 data class BottomNavItem(
     val label: String,
     val icon: ImageVector,
-    val route: String
+    val tabScreen: NavigationManager.TabScreen
 )
 
 @Composable
 fun BottomNavigationBar(
-    onItemSelected: (String) -> Unit,
-    selectedRoute: String = "home"
+    navigationManager: NavigationManager
 ) {
+    val currentTabScreen by navigationManager.currentTabScreen.collectAsState()
+    
     val navItems = listOf(
-        BottomNavItem("Início", Icons.Default.Home, "home"),
-        BottomNavItem("Pets", Icons.Default.Pets, "pets"),
-        BottomNavItem("Consultas", Icons.Default.MedicalServices, "appointments"),
-        BottomNavItem("Medicação", Icons.Default.Medication, "medication"),
-        BottomNavItem("Mais", Icons.Default.Menu, "more")
+        BottomNavItem("Início", Icons.Default.Home, NavigationManager.TabScreen.Home),
+        BottomNavItem("Pets", Icons.Default.Pets, NavigationManager.TabScreen.Pets),
+        BottomNavItem("Consultas", Icons.Default.MedicalServices, NavigationManager.TabScreen.Appointments),
+        BottomNavItem("Medicação", Icons.Default.Medication, NavigationManager.TabScreen.Medication),
+        BottomNavItem("Mais", Icons.Default.Menu, NavigationManager.TabScreen.More)
     )
     
     Surface(
@@ -66,13 +67,18 @@ fun BottomNavigationBar(
             verticalAlignment = Alignment.CenterVertically
         ) {
             navItems.forEach { item ->
-                val isSelected = selectedRoute == item.route
+                val isSelected = currentTabScreen == item.tabScreen
                 val itemColor = if (isSelected) Color.fromHex("#00b942") else Color.Gray
                 
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .clickable { onItemSelected(item.route) },
+                        .clickable { 
+                            navigationManager.navigateToTab(item.tabScreen)
+                            if (item.tabScreen == NavigationManager.TabScreen.More) {
+                                navigationManager.toggleMoreMenu()
+                            }
+                        },
                     contentAlignment = Alignment.Center
                 ) {
                     Column(
@@ -96,12 +102,4 @@ fun BottomNavigationBar(
             }
         }
     }
-}
-
-private fun Color.Companion.fromHex(colorString: String): Color {
-    val hex = colorString.removePrefix("#")
-    val red = hex.substring(0, 2).toInt(16)
-    val green = hex.substring(2, 4).toInt(16)
-    val blue = hex.substring(4, 6).toInt(16)
-    return Color(red, green, blue)
 }

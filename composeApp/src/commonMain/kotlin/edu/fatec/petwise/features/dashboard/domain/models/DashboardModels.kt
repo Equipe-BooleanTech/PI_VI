@@ -7,14 +7,27 @@ import androidx.compose.ui.graphics.vector.ImageVector
 enum class UserType {
     OWNER,
     VET,
-    ADMIN
+    ADMIN,
+    PHARMACY
 }
 
-enum class PriorityLevel {
-    CRITICAL,
-    HIGH,
-    MEDIUM,
-    LOW
+enum class PriorityLevel(val displayName: String, val color: String) {
+    CRITICAL("Crítica", "#FF0000"),
+    HIGH("Alta", "#FF9800"),
+    MEDIUM("Média", "#FFEB3B"),
+    LOW("Baixa", "#4CAF50");
+    
+    companion object {
+        fun fromString(value: String): PriorityLevel {
+            return when (value.lowercase()) {
+                "critical", "crítica" -> CRITICAL
+                "high", "alta" -> HIGH
+                "medium", "média" -> MEDIUM
+                "low", "baixa" -> LOW
+                else -> LOW
+            }
+        }
+    }
 }
 
 data class StatusCardData(

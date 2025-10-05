@@ -3,6 +3,7 @@ package edu.fatec.petwise.features.dashboard.presentation
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -30,10 +31,9 @@ fun RemindersSection(
     onReminderClick: (String?) -> Unit
 ) {
     val theme = if (isSystemInDarkTheme()) PetWiseTheme.Dark else PetWiseTheme.Light
-    // Sort by priority (critical first) and take only 2 as shown in design
     val reminders = dataProvider.getReminders(userType)
         .sortedWith(compareBy<edu.fatec.petwise.features.dashboard.domain.models.ReminderData> { 
-            when (it.priority) {
+             when (it.priority) {
                 PriorityLevel.CRITICAL -> 0
                 PriorityLevel.HIGH -> 1
                 PriorityLevel.MEDIUM -> 2
@@ -45,33 +45,28 @@ fun RemindersSection(
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
-        // Header with bell icon
-        Column(
+
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 8.dp)
+                .padding(bottom = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.Start
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Notifications,
-                    contentDescription = "Lembretes",
-                    tint = Color.Black,
-                    modifier = Modifier.padding(bottom = 4.dp)
+            Icon(
+                imageVector = Icons.Default.Notifications,
+                contentDescription = "Lembretes",
+                tint = Color.Black,
+                modifier = Modifier.padding(end = 8.dp)
+            )
+            Text(
+                text = "Próximos Lembretes",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Medium,
+                    color = Color.fromHex(theme.palette.textPrimary)
                 )
-                Text(
-                    text = "Próximos Lembretes",
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Medium,
-                        color = Color.fromHex(theme.palette.textPrimary)
-                    )
-                )
-            }
+            )
         }
         
-        // Reminders list
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(8.dp)

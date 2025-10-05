@@ -7,8 +7,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FlashOn
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.ui.Alignment
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,21 +31,32 @@ fun QuickActionsSection(
     onActionClick: (String) -> Unit
 ) {
     val theme = if (isSystemInDarkTheme()) PetWiseTheme.Dark else PetWiseTheme.Light
-    val quickActions = dataProvider.getQuickActions(userType).take(4) // Only take 4 actions as shown in the design
+    val quickActions = dataProvider.getQuickActions(userType).take(4)
     
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
-        Text(
-            text = "Ações Rápidas",
-            style = MaterialTheme.typography.titleLarge.copy(
-                fontWeight = FontWeight.Medium,
-                color = Color.fromHex(theme.palette.textPrimary)
-            ),
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.FlashOn,
+                contentDescription = "Ações Rápidas",
+                tint = Color.Black,
+                modifier = Modifier.padding(end = 8.dp)
+            )
+            Text(
+                text = "Ações Rápidas",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Medium,
+                    color = Color.fromHex(theme.palette.textPrimary)
+                )
+            )
+        }
         
-        // First row with 2 actions
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -55,10 +70,8 @@ fun QuickActionsSection(
             }
         }
         
-        // Add some spacing between rows
         Column(modifier = Modifier.height(12.dp)) {}
         
-        // Second row with the next 2 actions
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)

@@ -11,10 +11,9 @@ import edu.fatec.petwise.navigation.NavigationManager
 fun HomeScreen(
     navigationManager: NavigationManager
 ) {
-    // Simply display our dashboard screen
     DashboardScreen(
         navigationManager = navigationManager,
-        userName = "João",  // This would come from a user state in a real app
-        userType = UserType.OWNER  // This would come from user authentication in a real app
+        userName = "João",
+        userType = UserType.OWNER
     )
 }

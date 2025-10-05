@@ -2,18 +2,20 @@ package edu.fatec.petwise.features.dashboard.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -21,8 +23,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -42,23 +47,29 @@ fun ReminderItem(
     val theme = if (isSystemInDarkTheme()) PetWiseTheme.Dark else PetWiseTheme.Light
     
     val priorityColor = when (reminderData.priority) {
-        PriorityLevel.CRITICAL -> Color.Red
+        PriorityLevel.CRITICAL -> Color.fromHex("#F44336")
         PriorityLevel.HIGH -> Color.fromHex("#FF9800")
         PriorityLevel.MEDIUM -> Color.fromHex("#2196F3")
         PriorityLevel.LOW -> Color.fromHex("#4CAF50")
     }
     
+    val interactionSource = remember { MutableInteractionSource() }
+    val isHovered by interactionSource.collectIsHoveredAsState()
+    
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clickable { onClick(reminderData.route) }
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null
+            ) { onClick(reminderData.route) }
             .padding(vertical = 4.dp),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = if (isHovered) Color.White.copy(alpha = 0.9f) else Color.White
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 0.dp
+            defaultElevation = if (isHovered) 3.dp else 1.dp
         )
     ) {
         Row(
@@ -67,19 +78,24 @@ fun ReminderItem(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Left indicator strip with priority color
+
             Box(
                 modifier = Modifier
-                    .padding(end = 12.dp)
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(priorityColor.copy(alpha = 0.1f)),
+                contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Default.Warning,
+                    imageVector = reminderData.icon,
                     contentDescription = null,
-                    tint = priorityColor
+                    tint = priorityColor,
+                    modifier = Modifier.size(20.dp)
                 )
             }
             
-            // Main content
+            Spacer(modifier = Modifier.width(12.dp))
+            
             Column(
                 modifier = Modifier.weight(1f)
             ) {
@@ -94,7 +110,7 @@ fun ReminderItem(
                 )
                 
                 Text(
-                    text = reminderData.description.split(" ").first(), // Just show pet name as in design
+                    text = reminderData.description,
                     style = MaterialTheme.typography.bodySmall.copy(
                         color = Color.fromHex(theme.palette.textSecondary)
                     ),
@@ -103,18 +119,41 @@ fun ReminderItem(
                 )
             }
             
-            // Date chip
-            Surface(
-                color = Color.LightGray.copy(alpha = 0.2f),
-                shape = RoundedCornerShape(8.dp)
+            Spacer(modifier = Modifier.width(8.dp))
+            
+            Column(
+                horizontalAlignment = Alignment.End
             ) {
+                Surface(
+                    color = priorityColor,
+                    shape = RoundedCornerShape(4.dp),
+                    modifier = Modifier.padding(bottom = 4.dp)
+                ) {
+                    Text(
+                        text = reminderData.priority.name.lowercase().capitalize(),
+                        color = Color.White,
+                        fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
+                
                 Text(
-                    text = reminderData.date.split(" - ").first(), // Just show day as in design
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                    textAlign = TextAlign.Center
+                    text = reminderData.date.split(" - ").first(),
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = Color.fromHex(theme.palette.textSecondary)
+                    ),
+                    textAlign = TextAlign.End
                 )
             }
         }
+    }
+}
+
+private fun String.capitalize(): String {
+    return if (this.isNotEmpty()) {
+        this[0].uppercaseChar() + this.substring(1)
+    } else {
+        this
     }
 }

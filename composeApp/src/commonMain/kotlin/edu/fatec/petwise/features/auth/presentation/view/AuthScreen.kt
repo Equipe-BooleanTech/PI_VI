@@ -118,7 +118,7 @@ fun AuthScreen(navigationManager: NavigationManager) {
                     DynamicAuthFormScreen(
                         formStore = formStore,
                         onLoginSuccess = { 
-                            navigationManager.navigateTo(NavigationManager.Screen.Home)
+                            navigationManager.navigateTo(NavigationManager.Screen.Dashboard)
                         }
                     )
                 }

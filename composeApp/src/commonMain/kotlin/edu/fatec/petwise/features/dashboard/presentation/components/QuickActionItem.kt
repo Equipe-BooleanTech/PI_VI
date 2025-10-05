@@ -2,6 +2,8 @@ package edu.fatec.petwise.features.dashboard.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,6 +20,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,21 +43,28 @@ fun QuickActionItem(
 ) {
     val theme = if (isSystemInDarkTheme()) PetWiseTheme.Dark else PetWiseTheme.Light
     
+    val interactionSource = remember { MutableInteractionSource() }
+    val isHovered by interactionSource.collectIsHoveredAsState()
+    
     Card(
         modifier = modifier
-            .clickable { onClick(quickActionData.route) },
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null
+            ) { onClick(quickActionData.route) }
+            .padding(vertical = 4.dp),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.fromHex(theme.palette.cardBackground)
+            containerColor = if (isHovered) Color.White.copy(alpha = 0.9f) else Color.White
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 0.dp
+            defaultElevation = if (isHovered) 3.dp else 1.dp
         )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {

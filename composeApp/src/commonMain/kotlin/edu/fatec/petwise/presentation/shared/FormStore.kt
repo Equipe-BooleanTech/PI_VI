@@ -134,15 +134,12 @@ class FormStore(
                 _state.value = _state.value.copy(isSubmitting = false)
                 onResult(false, errs)
             } else {
-                // If form is valid, handle specific form types
                 when (_schema.id) {
                     "login_form" -> {
                         try {
-                            // Get email and password values
                             val email = fieldStateMap["email"]?.value ?: ""
                             val password = fieldStateMap["password"]?.value ?: ""
                             
-                            // Call login use case
                             val result = loginUseCase.execute(email, password)
                             
                             result.fold(
@@ -167,7 +164,6 @@ class FormStore(
                         }
                     }
                     else -> {
-                        // Other form types would have their own handling
                         _state.value = _state.value.copy(isSubmitting = false)
                         onResult(true, emptyMap())
                     }

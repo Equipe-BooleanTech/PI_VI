@@ -22,11 +22,12 @@ fun App() {
             is NavigationManager.Screen.Auth -> {
                 AuthScreen(navigationManager)
             }
-            is NavigationManager.Screen.Home -> {
+            is NavigationManager.Screen.Dashboard -> {
                 HomeScreen(navigationManager)
             }
-            is NavigationManager.Screen.Profile -> {
-                HomeScreen(navigationManager)
+            is NavigationManager.Screen.Splash -> {
+
+                AuthScreen(navigationManager)
             }
         }
     }

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -32,7 +33,7 @@ fun RecentActivitiesSection(
     onViewAllClick: () -> Unit
 ) {
     val theme = if (isSystemInDarkTheme()) PetWiseTheme.Dark else PetWiseTheme.Light
-    val activities = dataProvider.getRecentActivities(userType).take(3) // Take only 3 as shown in design
+    val activities = dataProvider.getRecentActivities(userType).take(3)
     
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -40,17 +41,25 @@ fun RecentActivitiesSection(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 8.dp),
+                .padding(bottom = 12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "Atividades Recentes",
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Medium,
-                    color = Color.fromHex(theme.palette.textPrimary)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.History,
+                    contentDescription = "Atividades Recentes",
+                    tint = Color.Black,
+                    modifier = Modifier.padding(end = 8.dp)
                 )
-            )
+                Text(
+                    text = "Atividades Recentes",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Medium,
+                        color = Color.fromHex(theme.palette.textPrimary)
+                    )
+                )
+            }
             
             TextButton(
                 onClick = onViewAllClick,
@@ -72,7 +81,7 @@ fun RecentActivitiesSection(
         
         Column(
             modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(0.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             activities.forEach { activityData ->
                 ActivityItem(
