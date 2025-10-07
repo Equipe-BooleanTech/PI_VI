@@ -30,7 +30,7 @@ fun QuickActionsSection(
     dataProvider: DashboardDataProvider,
     onActionClick: (String) -> Unit
 ) {
-    val theme = if (isSystemInDarkTheme()) PetWiseTheme.Dark else PetWiseTheme.Light
+    val theme = PetWiseTheme.Light
     val quickActions = dataProvider.getQuickActions(userType).take(4)
     
     Column(

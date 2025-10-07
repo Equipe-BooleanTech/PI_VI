@@ -42,7 +42,7 @@ fun DashboardScreen(
     userType: UserType = UserType.OWNER,
     dataProvider: DashboardDataProvider = DefaultDashboardDataProvider()
 ) {
-    val theme = if (isSystemInDarkTheme()) PetWiseTheme.Dark else PetWiseTheme.Light
+    val theme = PetWiseTheme.Light
     val scrollState = rememberScrollState()
     
     val currentTabScreen by navigationManager.currentTabScreen.collectAsState()

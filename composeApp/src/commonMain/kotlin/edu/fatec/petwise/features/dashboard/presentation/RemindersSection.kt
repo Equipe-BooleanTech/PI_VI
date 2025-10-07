@@ -30,7 +30,7 @@ fun RemindersSection(
     dataProvider: DashboardDataProvider,
     onReminderClick: (String?) -> Unit
 ) {
-    val theme = if (isSystemInDarkTheme()) PetWiseTheme.Dark else PetWiseTheme.Light
+    val theme =PetWiseTheme.Light
     val reminders = dataProvider.getReminders(userType)
         .sortedWith(compareBy<edu.fatec.petwise.features.dashboard.domain.models.ReminderData> { 
              when (it.priority) {

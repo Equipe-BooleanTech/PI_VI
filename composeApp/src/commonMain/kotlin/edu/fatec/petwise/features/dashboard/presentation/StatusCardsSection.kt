@@ -32,7 +32,7 @@ fun StatusCardsSection(
 ) {
     val statusCards = dataProvider.getStatusCards(userType).take(4)
     
-    val theme = if (isSystemInDarkTheme()) PetWiseTheme.Dark else PetWiseTheme.Light
+    val theme =PetWiseTheme.Light
     
     Column(
         modifier = Modifier.fillMaxWidth()

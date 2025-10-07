@@ -43,7 +43,7 @@ fun ActivityItem(
     onClick: (String?) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val theme = if (isSystemInDarkTheme()) PetWiseTheme.Dark else PetWiseTheme.Light
+    val theme =PetWiseTheme.Light
     
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()

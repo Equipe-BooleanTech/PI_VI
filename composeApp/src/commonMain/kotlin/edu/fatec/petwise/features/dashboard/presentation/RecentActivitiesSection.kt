@@ -32,7 +32,7 @@ fun RecentActivitiesSection(
     onActivityClick: (String?) -> Unit,
     onViewAllClick: () -> Unit
 ) {
-    val theme = if (isSystemInDarkTheme()) PetWiseTheme.Dark else PetWiseTheme.Light
+    val theme =PetWiseTheme.Light
     val activities = dataProvider.getRecentActivities(userType).take(3)
     
     Column(

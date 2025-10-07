@@ -44,7 +44,7 @@ fun ReminderItem(
     onClick: (String?) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val theme = if (isSystemInDarkTheme()) PetWiseTheme.Dark else PetWiseTheme.Light
+    val theme =PetWiseTheme.Light
     
     val priorityColor = when (reminderData.priority) {
         PriorityLevel.CRITICAL -> Color.fromHex("#F44336")

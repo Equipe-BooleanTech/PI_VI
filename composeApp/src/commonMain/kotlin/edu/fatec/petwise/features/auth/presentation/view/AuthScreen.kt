@@ -1,6 +1,7 @@
 package edu.fatec.petwise.features.auth.presentation
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -11,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextDecoration
 import edu.fatec.petwise.features.auth.shared.DynamicAuthFormScreen
 import edu.fatec.petwise.features.auth.shared.FormStore
 import edu.fatec.petwise.navigation.NavigationManager
@@ -32,7 +34,7 @@ fun AuthScreen(navigationManager: NavigationManager) {
 
     val formStore = remember(selectedTab) { FormStore(schema) }
 
-    val theme = if (isSystemInDarkTheme()) PetWiseTheme.Dark else PetWiseTheme.Light
+    val theme = PetWiseTheme.Light
 
     PetWiseThemeWrapper(theme) {
         BoxWithConstraints(
@@ -121,6 +123,24 @@ fun AuthScreen(navigationManager: NavigationManager) {
                             navigationManager.navigateTo(NavigationManager.Screen.Dashboard)
                         }
                     )
+                    
+                    if (selectedTab == 0) {
+                        Spacer(Modifier.height(16.dp))
+                        
+                        Text(
+                            text = "Esqueceu sua senha?",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                color = Color.fromHex(theme.palette.primary),
+                                fontWeight = FontWeight.Medium,
+                                textDecoration = TextDecoration.Underline
+                            ),
+                            modifier = Modifier
+                                .clickable {
+                                    navigationManager.navigateTo(NavigationManager.Screen.ForgotPassword)
+                                }
+                                .padding(vertical = 8.dp)
+                        )
+                    }
                 }
             }
         }

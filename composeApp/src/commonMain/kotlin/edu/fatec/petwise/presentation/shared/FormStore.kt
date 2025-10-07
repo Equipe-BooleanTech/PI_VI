@@ -163,6 +163,11 @@ class FormStore(
                             onResult(false, mapOf("error" to listOf(e.message ?: "An unknown error occurred")))
                         }
                     }
+                    "forgot_password_form", "reset_password_form" -> {
+
+                        _state.value = _state.value.copy(isSubmitting = false)
+                        onResult(true, emptyMap())
+                    }
                     else -> {
                         _state.value = _state.value.copy(isSubmitting = false)
                         onResult(true, emptyMap())

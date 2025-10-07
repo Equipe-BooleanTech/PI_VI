@@ -35,7 +35,7 @@ fun DynamicAuthFormScreen(
 ) {
     val uiState by formStore.state.collectAsState()
     val coroutineScope = rememberCoroutineScope()
-    val theme = if (isSystemInDarkTheme()) PetWiseTheme.Dark else PetWiseTheme.Light
+    val theme =PetWiseTheme.Light
     
     BoxWithConstraints {
         val screenWidth = maxWidth
