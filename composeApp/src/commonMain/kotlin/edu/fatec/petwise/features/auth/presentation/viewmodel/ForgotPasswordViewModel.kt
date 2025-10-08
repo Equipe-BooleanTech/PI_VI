@@ -44,24 +44,15 @@ class ForgotPasswordViewModel(
         }
     }
     
-    /**
-     * Clears error messages
-     */
     fun clearError() {
         _uiState.value = _uiState.value.copy(errorMessage = null)
     }
     
-    /**
-     * Resets the UI state
-     */
     fun reset() {
         _uiState.value = ForgotPasswordUiState()
     }
 }
 
-/**
- * UI state for Forgot Password screen
- */
 data class ForgotPasswordUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,

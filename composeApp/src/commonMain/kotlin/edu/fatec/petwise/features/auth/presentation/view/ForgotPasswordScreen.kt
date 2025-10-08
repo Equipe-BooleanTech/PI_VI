@@ -18,6 +18,10 @@ import edu.fatec.petwise.features.auth.presentation.viewmodel.ForgotPasswordView
 import edu.fatec.petwise.features.auth.shared.DynamicAuthFormScreen
 import edu.fatec.petwise.features.auth.shared.FormStore
 import edu.fatec.petwise.navigation.NavigationManager
+import edu.fatec.petwise.presentation.theme.PetWiseTheme
+import edu.fatec.petwise.presentation.theme.fromHex
+import androidx.compose.ui.graphics.Color
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,11 +31,12 @@ fun ForgotPasswordScreen(
 ) {
     val formStore = remember { FormStore(forgotPasswordSchema) }
     val uiState by viewModel.uiState.collectAsState()
-
+    val theme = PetWiseTheme.Light
+    
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
+            .background(Color.fromHex(theme.palette.background)),
         contentAlignment = Alignment.Center
     ) {
         val screenWidth = maxWidth
@@ -50,7 +55,7 @@ fun ForgotPasswordScreen(
                 .padding(24.dp),
             shape = MaterialTheme.shapes.extraLarge,
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            colors = CardDefaults.cardColors(containerColor = Color.fromHex(theme.palette.cardBackground))
         ) {
             Column(
                 modifier = Modifier

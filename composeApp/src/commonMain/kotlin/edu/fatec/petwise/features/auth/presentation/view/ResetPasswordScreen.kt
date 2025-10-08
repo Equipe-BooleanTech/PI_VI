@@ -33,6 +33,7 @@ fun ResetPasswordScreen(
 ) {
     val formStore = remember { FormStore(resetPasswordSchema) }
     val uiState by viewModel.uiState.collectAsState()
+    val theme = PetWiseTheme.Light
     
     LaunchedEffect(resetToken) {
         viewModel.setResetToken(resetToken)
@@ -41,7 +42,7 @@ fun ResetPasswordScreen(
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
+            .background(Color.fromHex(theme.palette.background)),
         contentAlignment = Alignment.Center
     ) {
         val screenWidth = maxWidth
@@ -60,7 +61,7 @@ fun ResetPasswordScreen(
                 .padding(24.dp),
             shape = MaterialTheme.shapes.extraLarge,
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            colors = CardDefaults.cardColors(containerColor = Color.fromHex(theme.palette.cardBackground))
         ) {
             Column(
                 modifier = Modifier
