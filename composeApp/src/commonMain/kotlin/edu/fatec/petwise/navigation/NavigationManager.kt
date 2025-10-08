@@ -7,10 +7,10 @@ import kotlinx.coroutines.flow.asStateFlow
 class NavigationManager {
     private val _currentScreen = MutableStateFlow<Screen>(Screen.Splash)
     val currentScreen: StateFlow<Screen> = _currentScreen.asStateFlow()
-    
+
     private val _currentTabScreen = MutableStateFlow<TabScreen>(TabScreen.Home)
     val currentTabScreen: StateFlow<TabScreen> = _currentTabScreen.asStateFlow()
-    
+
     private val _showMoreMenu = MutableStateFlow(false)
     val showMoreMenu = _showMoreMenu.asStateFlow()
 

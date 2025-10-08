@@ -42,10 +42,10 @@ fun QuickActionItem(
     modifier: Modifier = Modifier
 ) {
     val theme =PetWiseTheme.Light
-    
+
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
-    
+
     Card(
         modifier = modifier
             .clickable(
@@ -83,7 +83,7 @@ fun QuickActionItem(
                     modifier = Modifier.size(24.dp)
                 )
             }
-            
+
             Text(
                 text = quickActionData.title,
                 style = MaterialTheme.typography.bodyMedium.copy(

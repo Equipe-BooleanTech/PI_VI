@@ -81,9 +81,9 @@ class DynamicFormViewModel(
     private val operationCallbacks: FormOperationCallbacks? = null,
     private val fieldCallbacks: FieldCallbacks? = null
 ) : ViewModel() {
-    
+
     private val formScope = CoroutineScope(viewModelScope.coroutineContext + SupervisorJob())
-    
+
     private val _state = MutableStateFlow(
         FormState(
             id = generateFormId(),
@@ -91,37 +91,37 @@ class DynamicFormViewModel(
         )
     )
     val state: StateFlow<FormState> = _state.asStateFlow()
-    
+
     private val _events = MutableSharedFlow<FormEvent>(extraBufferCapacity = 64)
     val events: Flow<FormEvent> = _events.asSharedFlow()
-    
+
     init {
         initializeForm()
         setupEventHandling()
         setupAsyncValidation()
     }
-    
+
     private fun initializeForm() {
         formScope.launch {
             val fieldStates = initializeFieldStates()
             _state.value = _state.value.copy(fieldStates = fieldStates)
-            
+
             lifecycleCallbacks?.onFormInitialized(
                 _state.value.id,
                 _state.value.configuration
             )
-            
+
             emitEvent(
                 FormEvent.FormConfigurationChanged(
                     formId = _state.value.id,
                     newConfiguration = initialConfiguration
                 )
             )
-            
+
             recomputeVisibilityAndValidation()
         }
     }
-    
+
     private fun initializeFieldStates(): Map<String, FieldState> {
         return initialConfiguration.fields
             .filter { it.type != FormFieldType.SUBMIT }
@@ -136,21 +136,21 @@ class DynamicFormViewModel(
                 )
             }
     }
-    
+
     private fun setupEventHandling() {
 
         eventDispatcher.registerHandler(ValidationEventHandler())
         eventDispatcher.registerHandler(
             SubmissionEventHandler(operationCallbacks ?: object : FormOperationCallbacks {})
         )
-        
+
         formScope.launch {
             eventDispatcher.events.collect { event ->
                 _events.emit(event)
             }
         }
     }
-    
+
     @OptIn(FlowPreview::class)
     private fun setupAsyncValidation() {
         if (initialConfiguration.validationBehavior == ValidationBehavior.DEBOUNCED) {
@@ -164,30 +164,30 @@ class DynamicFormViewModel(
             }
         }
     }
-    
+
     fun updateFieldValue(fieldId: String, newValue: Any?) {
         formScope.launch {
             val currentState = _state.value
             val fieldState = currentState.fieldStates[fieldId] ?: return@launch
             val oldValue = fieldState.value
-            
+
             val updatedFieldState = fieldState.copy(
                 value = newValue,
                 displayValue = newValue?.toString() ?: "",
                 isTouched = true,
                 isDirty = oldValue != newValue
             )
-            
+
             val updatedStates = currentState.fieldStates.toMutableMap()
             updatedStates[fieldId] = updatedFieldState
-            
+
             _state.value = currentState.copy(
                 fieldStates = updatedStates,
                 metadata = currentState.metadata.copy(
                     lastModified = currentTimeMs()
                 )
             )
-            
+
             emitEvent(
                 FormEvent.FieldValueChanged(
                     formId = currentState.id,
@@ -196,52 +196,52 @@ class DynamicFormViewModel(
                     newValue = newValue
                 )
             )
-            
+
             fieldCallbacks?.onFieldChanged(fieldId, oldValue, newValue)
-            
+
             when (currentState.configuration.validationBehavior) {
                 ValidationBehavior.ON_CHANGE -> validateField(fieldId)
                 ValidationBehavior.DEBOUNCED -> {}
                 else -> {}
             }
-            
+
             recomputeVisibilityAndValidation()
         }
     }
-    
+
     fun focusField(fieldId: String) {
         formScope.launch {
             val currentState = _state.value
             val fieldState = currentState.fieldStates[fieldId] ?: return@launch
-            
+
             val updatedFieldState = fieldState.copy(isFocused = true)
             val updatedStates = currentState.fieldStates.toMutableMap()
             updatedStates[fieldId] = updatedFieldState
-            
+
             _state.value = currentState.copy(fieldStates = updatedStates)
-            
+
             emitEvent(
                 FormEvent.FieldFocused(
                     formId = currentState.id,
                     fieldId = fieldId
                 )
             )
-            
+
             fieldCallbacks?.onFieldFocused(fieldId)
         }
     }
-    
+
     fun blurField(fieldId: String) {
         formScope.launch {
             val currentState = _state.value
             val fieldState = currentState.fieldStates[fieldId] ?: return@launch
-            
+
             val updatedFieldState = fieldState.copy(isFocused = false, isTouched = true)
             val updatedStates = currentState.fieldStates.toMutableMap()
             updatedStates[fieldId] = updatedFieldState
-            
+
             _state.value = currentState.copy(fieldStates = updatedStates)
-            
+
             emitEvent(
                 FormEvent.FieldBlurred(
                     formId = currentState.id,
@@ -249,41 +249,41 @@ class DynamicFormViewModel(
                     value = fieldState.value
                 )
             )
-            
+
             fieldCallbacks?.onFieldBlurred(fieldId)
-            
+
             if (currentState.configuration.validationBehavior == ValidationBehavior.ON_BLUR) {
                 validateField(fieldId)
             }
         }
     }
-    
+
     private suspend fun validateField(fieldId: String) {
         val currentState = _state.value
         val fieldDefinition = currentState.configuration.fields.find { it.id == fieldId }
             ?: return
-        
+
         val fieldState = currentState.fieldStates[fieldId] ?: return
-        
+
         val updatedFieldState = fieldState.copy(
             isValidating = true,
             lastValidated = currentTimeMs()
         )
         val updatedStates = currentState.fieldStates.toMutableMap()
         updatedStates[fieldId] = updatedFieldState
-        
+
         _state.value = currentState.copy(
             fieldStates = updatedStates,
             isValidating = true
         )
-        
+
         try {
             val validationResult = validationEngine.validateField(
                 fieldDefinition,
                 fieldState.value,
                 getAllFieldValues()
             )
-            
+
             val errors = when (validationResult) {
                 is ValidationResult.Valid -> emptyList()
                 is ValidationResult.Invalid -> validationResult.errors
@@ -291,23 +291,23 @@ class DynamicFormViewModel(
                     return
                 }
             }
-            
+
             val finalFieldState = updatedFieldState.copy(
                 isValidating = false,
                 isValid = errors.isEmpty(),
                 errors = errors
             )
-            
+
             val finalStates = currentState.fieldStates.toMutableMap()
             finalStates[fieldId] = finalFieldState
-            
+
             val finalState = currentState.copy(
                 fieldStates = finalStates,
                 isValidating = false
             )
-            
+
             _state.value = finalState
-            
+
             emitEvent(
                 FormEvent.FieldValidated(
                     formId = currentState.id,
@@ -316,50 +316,50 @@ class DynamicFormViewModel(
                     errors = errors
                 )
             )
-            
+
             fieldCallbacks?.onFieldValidated(fieldId, errors.isEmpty(), errors)
-            
+
         } catch (e: Exception) {
             val error = FormError.SystemError(
                 id = "validation_error_$fieldId",
                 message = "Validation failed: ${e.message}",
                 exception = e
             )
-            
+
             handleError(error)
         }
     }
-    
+
     fun submitForm() {
         formScope.launch {
             val currentState = _state.value
-            
+
             lifecycleCallbacks?.onFormSubmitting(currentState.id, getAllFieldValues())
-            
+
             _state.value = currentState.copy(
                 isSubmitting = true,
                 metadata = currentState.metadata.copy(
                     submitCount = currentState.metadata.submitCount + 1
                 )
             )
-            
+
             try {
                 val validationResult = validateEntireForm()
-                
+
                 if (validationResult is ValidationResult.Invalid) {
                     _state.value = _state.value.copy(isSubmitting = false)
-                    
+
                     val businessError = FormError.BusinessLogicError(
                         id = "form_validation_failed",
                         message = "Form validation failed"
                     )
-                    
+
                     lifecycleCallbacks?.onFormSubmitError(currentState.id, businessError)
                     operationCallbacks?.onFailure("submit", businessError)
-                    
+
                     return@launch
                 }
-                
+
                 emitEvent(
                     FormEvent.FormSubmitted(
                         formId = currentState.id,
@@ -367,52 +367,52 @@ class DynamicFormViewModel(
                         isValid = true
                     )
                 )
-                
+
                 when (currentState.configuration.submitBehavior) {
                     SubmitBehavior.API_CALL -> handleApiSubmission()
                     SubmitBehavior.CUSTOM_HANDLER -> handleCustomSubmission()
                     SubmitBehavior.MULTI_STEP -> handleMultiStepSubmission()
                     SubmitBehavior.DEFAULT -> handleDefaultSubmission()
                 }
-                
+
             } catch (e: Exception) {
                 val error = FormError.SystemError(
                     id = "submit_error",
                     message = "Submit failed: ${e.message}",
                     exception = e
                 )
-                
+
                 _state.value = _state.value.copy(isSubmitting = false)
                 handleError(error)
                 lifecycleCallbacks?.onFormSubmitError(currentState.id, error)
             }
         }
     }
-    
+
     private suspend fun validateEntireForm(): ValidationResult {
         val currentState = _state.value
         val allErrors = mutableListOf<FormError.ValidationError>()
-        
+
         for (field in currentState.configuration.fields) {
             if (field.type == FormFieldType.SUBMIT) continue
-            
+
             val fieldState = currentState.fieldStates[field.id] ?: continue
             if (!fieldState.isVisible) continue
-            
+
             val fieldValidationResult = validationEngine.validateField(
                 field,
                 fieldState.value,
                 getAllFieldValues()
             )
-            
+
             if (fieldValidationResult is ValidationResult.Invalid) {
                 allErrors.addAll(fieldValidationResult.errors)
             }
         }
-        
+
         val isValid = allErrors.isEmpty()
         _state.value = _state.value.copy(isValid = isValid)
-        
+
         emitEvent(
             FormEvent.FormValidated(
                 formId = currentState.id,
@@ -420,74 +420,74 @@ class DynamicFormViewModel(
                 errors = allErrors
             )
         )
-        
+
         lifecycleCallbacks?.onFormValidationChanged(currentState.id, isValid, allErrors)
-        
+
         return if (isValid) {
             ValidationResult.Valid
         } else {
             ValidationResult.Invalid(allErrors)
         }
     }
-    
+
     private suspend fun handleApiSubmission() {
         val apiConfig = _state.value.configuration.apiConfiguration
         if (apiConfig?.submitUrl != null) {
-            // TODO: Implementar chamada real à API
+
         }
-        
+
         _state.value = _state.value.copy(isSubmitting = false)
-        
+
         val successResult = ApiResult.Success(getAllFieldValues())
         lifecycleCallbacks?.onFormSubmitSuccess(_state.value.id, successResult)
         operationCallbacks?.onSuccess("submit", getAllFieldValues())
     }
-    
+
     private suspend fun handleCustomSubmission() {
 
         _state.value = _state.value.copy(isSubmitting = false)
         operationCallbacks?.onSuccess("submit", getAllFieldValues())
     }
-    
+
     private suspend fun handleMultiStepSubmission() {
         _state.value = _state.value.copy(isSubmitting = false)
         operationCallbacks?.onSuccess("submit", getAllFieldValues())
     }
-    
+
     private suspend fun handleDefaultSubmission() {
-        delay(1000) 
+        delay(1000)
         _state.value = _state.value.copy(isSubmitting = false)
-        
+
         val successResult = ApiResult.Success(getAllFieldValues())
         lifecycleCallbacks?.onFormSubmitSuccess(_state.value.id, successResult)
         operationCallbacks?.onSuccess("submit", getAllFieldValues())
     }
-    
+
     private suspend fun recomputeVisibilityAndValidation() {
         val currentState = _state.value
         val allValues = getAllFieldValues()
         val updatedStates = currentState.fieldStates.toMutableMap()
-        
+
         for (field in currentState.configuration.fields) {
             if (field.type == FormFieldType.SUBMIT) continue
-            
+
             val fieldState = updatedStates[field.id] ?: continue
             val isVisible = evaluateVisibility(field, allValues)
-            
+
             if (fieldState.isVisible != isVisible) {
                 updatedStates[field.id] = fieldState.copy(isVisible = isVisible)
             }
         }
-        
+
         _state.value = currentState.copy(fieldStates = updatedStates)
     }
-    
+
     private fun evaluateVisibility(
         field: FormFieldDefinition,
         allValues: Map<String, Any>
     ): Boolean {
         val visibilityRule = field.visibility ?: return true
-        
+
         return when (visibilityRule.operator) {
             LogicalOperator.AND -> {
                 visibilityRule.conditions.all { condition ->
@@ -501,14 +501,14 @@ class DynamicFormViewModel(
             }
         }
     }
-    
+
     private fun evaluateCondition(
         condition: VisibilityCondition,
         allValues: Map<String, Any>
     ): Boolean {
         val actualValue = allValues[condition.fieldId]?.toString() ?: ""
         val expectedValue = condition.value.jsonPrimitive.content
-        
+
         return when (condition.operator) {
             ComparisonOperator.EQUALS -> actualValue == expectedValue
             ComparisonOperator.NOT_EQUALS -> actualValue != expectedValue
@@ -536,16 +536,16 @@ class DynamicFormViewModel(
             }
         }
     }
-    
+
     private fun getAllFieldValues(): Map<String, Any> {
         return _state.value.fieldStates.mapValues { (_, fieldState) ->
             fieldState.value ?: ""
         }
     }
-    
+
     private suspend fun handleError(error: FormError) {
         val handlingResult = errorHandler.handleError(error)
-        
+
         when (handlingResult) {
             is ErrorHandlingResult.Retry -> {
                 delay(handlingResult.delayMs)
@@ -558,8 +558,6 @@ class DynamicFormViewModel(
                 _state.value = _state.value.copy(errors = updatedErrorState)
             }
             is ErrorHandlingResult.Navigate -> {
-                // TODO: Handle navigation - emit navigation event or delegate to navigation handler
-                // For now, we'll emit a FormEvent to indicate navigation is needed
                 emitEvent(
                     FormEvent.NavigationRequested(
                         formId = _state.value.id,
@@ -568,13 +566,13 @@ class DynamicFormViewModel(
                 )
             }
             is ErrorHandlingResult.Handled -> {
-                // Error has been handled, no further action needed
+
             }
             is ErrorHandlingResult.Ignore -> {
-                // Explicitly ignore this error - no action taken
+
             }
         }
-        
+
         emitEvent(
             FormEvent.ErrorOccurred(
                 formId = _state.value.id,
@@ -582,17 +580,17 @@ class DynamicFormViewModel(
             )
         )
     }
-    
+
     private suspend fun emitEvent(event: FormEvent) {
         _events.emit(event)
         eventDispatcher.dispatch(event)
     }
-    
+
     fun resetForm() {
         formScope.launch {
             val currentState = _state.value
             val resetStates = initializeFieldStates()
-            
+
             _state.value = currentState.copy(
                 fieldStates = resetStates,
                 isSubmitting = false,
@@ -602,19 +600,19 @@ class DynamicFormViewModel(
                 metadata = FormMetadata(),
                 asyncOperations = emptyMap()
             )
-            
+
             emitEvent(FormEvent.FormReset(formId = currentState.id))
             lifecycleCallbacks?.onFormReset(currentState.id)
         }
     }
-    
+
     fun updateConfiguration(newConfiguration: FormConfiguration) {
         formScope.launch {
             _state.value = _state.value.copy(configuration = newConfiguration)
             initializeForm()
         }
     }
-    
+
     override fun onCleared() {
         super.onCleared()
         formScope.launch {

@@ -9,8 +9,8 @@ data class Pet(
     val breed: String,
     val species: PetSpecies,
     val gender: PetGender,
-    val age: Int, // in months
-    val weight: Float, // in kg
+    val age: Int,
+    val weight: Float,
     val healthStatus: HealthStatus,
     val ownerName: String,
     val ownerPhone: String,

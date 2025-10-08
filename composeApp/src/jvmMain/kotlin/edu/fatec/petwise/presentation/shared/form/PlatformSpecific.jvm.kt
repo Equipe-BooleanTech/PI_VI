@@ -69,7 +69,7 @@ actual class PlatformInputHandling {
             else -> digits
         }
     }
-    
+
     actual fun formatCurrency(amount: Double, currency: String): String {
         return when (currency) {
             "BRL" -> "R$ %.2f".format(amount)
@@ -77,12 +77,12 @@ actual class PlatformInputHandling {
             else -> "%.2f %s".format(amount, currency)
         }
     }
-    
+
     actual fun formatDate(timestamp: Long, format: String): String {
         return java.text.SimpleDateFormat(format, java.util.Locale.getDefault())
             .format(java.util.Date(timestamp))
     }
-    
+
     actual fun validatePlatformSpecific(fieldType: FormFieldType, value: String): Boolean {
         return when (fieldType) {
             FormFieldType.EMAIL -> {
@@ -98,15 +98,15 @@ actual class PlatformInputHandling {
 
 actual class PlatformFileHandling {
     actual suspend fun pickFile(mimeTypes: List<String>): PlatformFile? {
-        // JVM file picker would need to be implemented with Swing or JavaFX
+
         return null
     }
-    
+
     actual suspend fun pickImage(): PlatformFile? {
-        // JVM image picker would need to be implemented with Swing or JavaFX
+
         return null
     }
-    
+
     actual suspend fun uploadFile(file: PlatformFile, endpoint: String): Result<String> {
         return Result.failure(Exception("File upload not implemented for JVM"))
     }
@@ -146,7 +146,7 @@ actual fun PlatformFilePicker(
     modifier: androidx.compose.ui.Modifier
 ) {
     androidx.compose.material3.Button(
-        onClick = { /* Launch JVM file picker */ },
+        onClick = {  },
         modifier = modifier
     ) {
         androidx.compose.material3.Text("Pick File")
@@ -161,7 +161,7 @@ actual fun PlatformCameraCapturer(
     modifier: androidx.compose.ui.Modifier
 ) {
     androidx.compose.material3.Button(
-        onClick = { /* Launch JVM camera */ },
+        onClick = {  },
         modifier = modifier
     ) {
         androidx.compose.material3.Text("Take Photo")
@@ -170,21 +170,21 @@ actual fun PlatformCameraCapturer(
 
 actual object PlatformAccessibility {
     actual fun announceForAccessibility(message: String) {
-        // JVM accessibility announcements would need platform-specific implementation
+
     }
-    
+
     actual fun setContentDescription(elementId: String, description: String) {
-        // JVM content descriptions would need platform-specific implementation
+
     }
-    
+
     actual fun shouldUseHighContrast(): Boolean {
         return false
     }
-    
+
     actual fun shouldUseLargeText(): Boolean {
         return false
     }
-    
+
     actual fun shouldReduceMotion(): Boolean {
         return false
     }
@@ -192,40 +192,40 @@ actual object PlatformAccessibility {
 
 actual object PlatformHaptics {
     actual fun performLightImpact() {
-        // JVM doesn't support haptic feedback
+
     }
-    
+
     actual fun performMediumImpact() {
-        // JVM doesn't support haptic feedback
+
     }
-    
+
     actual fun performHeavyImpact() {
-        // JVM doesn't support haptic feedback
+
     }
-    
+
     actual fun performSelectionChanged() {
-        // JVM doesn't support haptic feedback
+
     }
-    
+
     actual fun performNotificationSuccess() {
-        // JVM doesn't support haptic feedback
+
     }
-    
+
     actual fun performNotificationWarning() {
-        // JVM doesn't support haptic feedback
+
     }
-    
+
     actual fun performNotificationError() {
-        // JVM doesn't support haptic feedback
+
     }
 }
 
 actual object PlatformValidation {
     actual fun validateBankAccount(accountNumber: String, bankCode: String): Boolean {
-        // Basic validation - could be enhanced with proper algorithms
+
         return accountNumber.isNotBlank() && bankCode.isNotBlank()
     }
-    
+
     actual fun validateGovernmentId(id: String, type: String): Boolean {
         return when (type.uppercase()) {
             "CPF" -> validateCPF(id)
@@ -233,20 +233,20 @@ actual object PlatformValidation {
             else -> true
         }
     }
-    
+
     actual fun validatePostalCode(code: String): Boolean {
-        // Brazilian CEP format: XXXXX-XXX
+
         return code.matches(Regex("^\\d{5}-?\\d{3}$"))
     }
-    
+
     actual fun validateCreditCard(number: String): Boolean {
         val cleanNumber = number.replace(Regex("[^0-9]"), "")
         if (cleanNumber.length < 13 || cleanNumber.length > 19) return false
-        
-        // Luhn algorithm
+
+
         var sum = 0
         var alternate = false
-        
+
         for (i in cleanNumber.length - 1 downTo 0) {
             var n = cleanNumber[i].toString().toInt()
             if (alternate) {
@@ -258,55 +258,55 @@ actual object PlatformValidation {
             sum += n
             alternate = !alternate
         }
-        
+
         return sum % 10 == 0
     }
-    
+
     private fun validateCPF(cpf: String): Boolean {
         val cleanCpf = cpf.replace(Regex("[^0-9]"), "")
         if (cleanCpf.length != 11) return false
-        
-        // Check for known invalid sequences
+
+
         if (cleanCpf.all { it == cleanCpf[0] }) return false
-        
-        // Validate check digits
+
+
         val digits = cleanCpf.map { it.toString().toInt() }
-        
+
         val sum1 = (0..8).sumOf { digits[it] * (10 - it) }
         val checkDigit1 = 11 - (sum1 % 11)
         val validDigit1 = if (checkDigit1 >= 10) 0 else checkDigit1
-        
+
         if (digits[9] != validDigit1) return false
-        
+
         val sum2 = (0..9).sumOf { digits[it] * (11 - it) }
         val checkDigit2 = 11 - (sum2 % 11)
         val validDigit2 = if (checkDigit2 >= 10) 0 else checkDigit2
-        
+
         return digits[10] == validDigit2
     }
-    
+
     private fun validateCNPJ(cnpj: String): Boolean {
         val cleanCnpj = cnpj.replace(Regex("[^0-9]"), "")
         if (cleanCnpj.length != 14) return false
-        
-        // Check for known invalid sequences
+
+
         if (cleanCnpj.all { it == cleanCnpj[0] }) return false
-        
-        // Validate check digits
+
+
         val digits = cleanCnpj.map { it.toString().toInt() }
-        
+
         val weights1 = listOf(5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2)
         val sum1 = (0..11).sumOf { digits[it] * weights1[it] }
         val checkDigit1 = 11 - (sum1 % 11)
         val validDigit1 = if (checkDigit1 >= 10) 0 else checkDigit1
-        
+
         if (digits[12] != validDigit1) return false
-        
+
         val weights2 = listOf(6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2)
         val sum2 = (0..12).sumOf { digits[it] * weights2[it] }
         val checkDigit2 = 11 - (sum2 % 11)
         val validDigit2 = if (checkDigit2 >= 10) 0 else checkDigit2
-        
+
         return digits[13] == validDigit2
     }
 }

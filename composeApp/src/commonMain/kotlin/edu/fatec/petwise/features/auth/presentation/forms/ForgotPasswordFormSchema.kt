@@ -16,11 +16,11 @@ val forgotPasswordSchema = FormSchema(
             placeholder = "seu@email.com",
             validators = listOf(
                 Validator(
-                    type = "required", 
+                    type = "required",
                     message = "Informe seu email cadastrado"
                 ),
                 Validator(
-                    type = "email", 
+                    type = "email",
                     message = "Por favor, informe um email válido"
                 )
             )

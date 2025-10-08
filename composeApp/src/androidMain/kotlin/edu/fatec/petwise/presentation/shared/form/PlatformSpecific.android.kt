@@ -13,29 +13,29 @@ import androidx.compose.ui.unit.sp
 
 actual class PlatformFormBehavior {
     actual fun shouldShowKeyboardSpacer(): Boolean = true
-    
+
     actual fun shouldUseNativePickerFor(fieldType: FormFieldType): Boolean {
         return when (fieldType) {
             FormFieldType.DATE, FormFieldType.TIME, FormFieldType.DATETIME -> true
             else -> false
         }
     }
-    
+
     actual fun getSafeAreaInsets(): PaddingValues {
 
         return PaddingValues(0.dp)
     }
-    
+
     actual fun getOptimalFieldHeight(): androidx.compose.ui.unit.Dp = 56.dp
-    
+
     actual fun supportsHapticFeedback(): Boolean = true
-    
+
     actual fun supportsSystemDarkMode(): Boolean = true
 }
 
 actual object PlatformFormStyling {
     actual fun getFieldShape(): Shape = RoundedCornerShape(8.dp)
-    
+
     actual fun getFieldColors(colorScheme: ColorScheme): FieldColors {
         return FieldColors(
             background = colorScheme.surface,
@@ -47,7 +47,7 @@ actual object PlatformFormStyling {
             placeholder = colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
         )
     }
-    
+
     actual fun getTypography(): PlatformTypography {
         return PlatformTypography(
             fieldLabel = TextStyle(
@@ -68,7 +68,7 @@ actual object PlatformFormStyling {
             )
         )
     }
-    
+
     actual fun getSpacing(): PlatformSpacing {
         return PlatformSpacing(
             fieldPadding = PaddingValues(16.dp),
@@ -92,7 +92,7 @@ actual class PlatformInputHandling {
             else -> digits
         }
     }
-    
+
     actual fun formatCurrency(amount: Double, currency: String): String {
         return when (currency) {
             "BRL" -> "R$ %.2f".format(amount)
@@ -100,12 +100,12 @@ actual class PlatformInputHandling {
             else -> "%.2f %s".format(amount, currency)
         }
     }
-    
+
     actual fun formatDate(timestamp: Long, format: String): String {
         return java.text.SimpleDateFormat(format, java.util.Locale.getDefault())
             .format(java.util.Date(timestamp))
     }
-    
+
     actual fun validatePlatformSpecific(fieldType: FormFieldType, value: String): Boolean {
         return when (fieldType) {
             FormFieldType.PHONE -> {
@@ -123,11 +123,11 @@ actual class PlatformFileHandling {
     actual suspend fun pickFile(mimeTypes: List<String>): PlatformFile? {
         return null
     }
-    
+
     actual suspend fun pickImage(): PlatformFile? {
         return null
     }
-    
+
     actual suspend fun uploadFile(file: PlatformFile, endpoint: String): Result<String> {
         return Result.failure(Exception("Not implemented"))
     }
@@ -168,7 +168,7 @@ actual fun PlatformFilePicker(
     modifier: Modifier
 ) {
     androidx.compose.material3.Button(
-        onClick = { /* Launch file picker */ },
+        onClick = {  },
         modifier = modifier
     ) {
         androidx.compose.material3.Text("Pick File")
@@ -183,7 +183,7 @@ actual fun PlatformCameraCapturer(
     modifier: Modifier
 ) {
     androidx.compose.material3.Button(
-        onClick = { /* Launch camera */ },
+        onClick = {  },
         modifier = modifier
     ) {
         androidx.compose.material3.Text("Take Photo")
@@ -193,18 +193,18 @@ actual fun PlatformCameraCapturer(
 actual object PlatformAccessibility {
     actual fun announceForAccessibility(message: String) {
     }
-    
+
     actual fun setContentDescription(elementId: String, description: String) {
     }
-    
+
     actual fun shouldUseHighContrast(): Boolean {
         return false
     }
-    
+
     actual fun shouldUseLargeText(): Boolean {
         return false
     }
-    
+
     actual fun shouldReduceMotion(): Boolean {
         return false
     }
@@ -213,22 +213,22 @@ actual object PlatformAccessibility {
 actual object PlatformHaptics {
     actual fun performLightImpact() {
     }
-    
+
     actual fun performMediumImpact() {
     }
-    
+
     actual fun performHeavyImpact() {
     }
-    
+
     actual fun performSelectionChanged() {
     }
-    
+
     actual fun performNotificationSuccess() {
     }
-    
+
     actual fun performNotificationWarning() {
     }
-    
+
     actual fun performNotificationError() {
     }
 }
@@ -237,22 +237,22 @@ actual object PlatformValidation {
     actual fun validateBankAccount(accountNumber: String, bankCode: String): Boolean {
         return true
     }
-    
+
     actual fun validateGovernmentId(id: String, type: String): Boolean {
         return true
     }
-    
+
     actual fun validatePostalCode(code: String): Boolean {
         return code.matches(Regex("^\\d{5}-?\\d{3}$"))
     }
-    
+
     actual fun validateCreditCard(number: String): Boolean {
         val cleanNumber = number.replace(Regex("[^0-9]"), "")
         if (cleanNumber.length < 13 || cleanNumber.length > 19) return false
-        
+
         var sum = 0
         var alternate = false
-        
+
         for (i in cleanNumber.length - 1 downTo 0) {
             var n = cleanNumber[i].toString().toInt()
             if (alternate) {
@@ -264,7 +264,7 @@ actual object PlatformValidation {
             sum += n
             alternate = !alternate
         }
-        
+
         return sum % 10 == 0
     }
 }

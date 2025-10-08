@@ -50,7 +50,7 @@ object PetWiseTheme {
         spacing = Spacing()
     )
 
-    // Por enquanto sem tema dark
+
     val Dark = ThemeDefinition(
         palette = Palette(
             primary = "#00b942",

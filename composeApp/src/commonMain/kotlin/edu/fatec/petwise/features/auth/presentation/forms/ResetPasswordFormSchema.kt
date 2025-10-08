@@ -21,7 +21,7 @@ val resetPasswordSchema = FormSchema(
                     message = "Informe sua nova senha"
                 ),
                 Validator(
-                    type = "minLength", 
+                    type = "minLength",
                     value = JsonPrimitive(8),
                     message = "A senha deve ter pelo menos 8 caracteres"
                 ),
@@ -42,7 +42,7 @@ val resetPasswordSchema = FormSchema(
                     message = "Confirme sua nova senha"
                 ),
                 Validator(
-                    type = "matchesField", 
+                    type = "matchesField",
                     field = "newPassword",
                     message = "As senhas não conferem"
                 )

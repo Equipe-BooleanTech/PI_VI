@@ -91,7 +91,7 @@ data class PlatformFile(
 }
 
 class PlatformFormConfigurationBuilder {
-    
+
     companion object {
         fun createOptimizedConfiguration(
             baseConfiguration: FormConfiguration,
@@ -101,18 +101,18 @@ class PlatformFormConfigurationBuilder {
                 when {
                     platform.shouldUseNativePickerFor(field.type) -> {
                         field.copy(
-                            customProperties = field.customProperties + 
+                            customProperties = field.customProperties +
                             mapOf("useNativePicker" to kotlinx.serialization.json.JsonPrimitive(true))
                         )
                     }
                     else -> field
                 }
             }
-            
+
             val optimizedStyling = baseConfiguration.styling.copy(
                 fieldHeight = platform.getOptimalFieldHeight().value.toInt()
             )
-            
+
             return baseConfiguration.copy(
                 fields = optimizedFields,
                 styling = optimizedStyling
@@ -225,7 +225,7 @@ fun PlatformOptimizedDynamicForm(
             else -> false
         }
     }
-    
+
     DynamicForm(
         viewModel = viewModel,
         modifier = modifier,

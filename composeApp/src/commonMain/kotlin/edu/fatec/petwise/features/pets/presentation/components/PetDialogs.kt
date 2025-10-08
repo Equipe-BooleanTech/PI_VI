@@ -34,7 +34,7 @@ fun AddPetDialog(
 ) {
     val theme = PetWiseTheme.Light
     val scrollState = rememberScrollState()
-    
+
     val formConfiguration = remember {
         FormConfiguration(
             id = addPetFormSchema.id,
@@ -70,13 +70,13 @@ fun AddPetDialog(
                 )
             },
             styling = FormStyling(
-                primaryColor = "#00b942", 
+                primaryColor = "#00b942",
                 errorColor = "#d32f2f",
                 successColor = "#00b942"
             )
         )
     }
-    
+
     val formViewModel = viewModel<DynamicFormViewModel> {
         DynamicFormViewModel(initialConfiguration = formConfiguration)
     }
@@ -137,7 +137,7 @@ fun AddPetDialog(
                                 )
                             )
                         }
-                        
+
                         IconButton(onClick = onDismiss) {
                             Icon(
                                 imageVector = Icons.Default.Close,
@@ -192,13 +192,13 @@ fun AddPetDialog(
                                     "Coelho" -> PetSpecies.RABBIT
                                     else -> PetSpecies.OTHER
                                 }
-                                
+
                                 val gender = when (values["gender"]) {
                                     "Macho" -> PetGender.MALE
                                     "Fêmea" -> PetGender.FEMALE
                                     else -> PetGender.MALE
                                 }
-                                
+
                                 val healthStatus = when (values["healthStatus"]) {
                                     "Excelente" -> HealthStatus.EXCELLENT
                                     "Bom" -> HealthStatus.GOOD
@@ -313,14 +313,14 @@ fun FilterBottomSheet(
                         ),
                         modifier = Modifier.padding(bottom = 12.dp)
                     )
-                    
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         PetSpecies.values().forEach { species ->
                             FilterChip(
-                                onClick = { 
+                                onClick = {
                                     selectedSpecies = if (selectedSpecies == species) null else species
                                 },
                                 label = { Text(species.displayName) },
@@ -366,7 +366,7 @@ fun FilterBottomSheet(
                         ) {
                             RadioButton(
                                 selected = selectedHealthStatus == status,
-                                onClick = { 
+                                onClick = {
                                     selectedHealthStatus = if (selectedHealthStatus == status) null else status
                                 },
                                 colors = RadioButtonDefaults.colors(
@@ -443,7 +443,7 @@ fun FilterBottomSheet(
                 ) {
                     Text("Limpar")
                 }
-                
+
                 Button(
                     onClick = {
                         onFilterApply(

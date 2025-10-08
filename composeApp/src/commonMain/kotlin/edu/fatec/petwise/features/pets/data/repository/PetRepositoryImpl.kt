@@ -87,7 +87,7 @@ class PetRepositoryImpl(
     override suspend fun toggleFavorite(id: String): Result<Pet> {
         return try {
             val currentPet = localDataSource.getPetById(id).map { it }.first()
-            
+
             currentPet?.let { pet ->
                 val updatedPet = pet.copy(
                     isFavorite = !pet.isFavorite,
@@ -104,7 +104,7 @@ class PetRepositoryImpl(
     override suspend fun updateHealthStatus(id: String, status: HealthStatus): Result<Pet> {
         return try {
             val currentPet = localDataSource.getPetById(id).map { it }.first()
-            
+
             currentPet?.let { pet ->
                 val updatedPet = pet.copy(
                     healthStatus = status,

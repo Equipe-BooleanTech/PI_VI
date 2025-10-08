@@ -41,7 +41,7 @@ val registerSchema: FormSchema = FormSchema(
         Validator(type = "required", message = "Selecione o tipo de usuário")
       )
     ),
-    
+
     Field(
       id = "cpf",
       label = "CPF",
@@ -54,7 +54,7 @@ val registerSchema: FormSchema = FormSchema(
       ),
       mask = "cpf"
     ),
-    
+
     Field(
       id = "crmv",
       label = "CRMV",
@@ -78,7 +78,7 @@ val registerSchema: FormSchema = FormSchema(
         Validator(type = "required", message = "Especialização é obrigatória")
       )
     ),
-    
+
     Field(
       id = "cnpj",
       label = "CNPJ",
@@ -100,7 +100,7 @@ val registerSchema: FormSchema = FormSchema(
         Validator(type = "required", message = "Nome da empresa é obrigatório")
       )
     ),
-    
+
     Field(
       id = "adminCode",
       label = "Código de Administrador",
@@ -110,7 +110,7 @@ val registerSchema: FormSchema = FormSchema(
         Validator(type = "required", message = "Código de administrador é obrigatório")
       )
     ),
-    
+
     Field(
       id = "phone",
       label = "Telefone",
@@ -122,7 +122,7 @@ val registerSchema: FormSchema = FormSchema(
       ),
       mask = "phone"
     ),
-    
+
     Field(
       id = "password",
       label = "Senha",
@@ -130,7 +130,7 @@ val registerSchema: FormSchema = FormSchema(
       validators = listOf(
         Validator(type = "required"),
         Validator(
-          type = "minLength", 
+          type = "minLength",
           value = JsonPrimitive(8),
           message = "A senha deve ter pelo menos 8 caracteres"
         ),
@@ -147,13 +147,13 @@ val registerSchema: FormSchema = FormSchema(
       validators = listOf(
         Validator(type = "required"),
         Validator(
-          type = "matchesField", 
+          type = "matchesField",
           field = "password",
           message = "As senhas não conferem"
         )
       )
     ),
-    
+
     Field(
       id = "submitRegister",
       type = "submit",

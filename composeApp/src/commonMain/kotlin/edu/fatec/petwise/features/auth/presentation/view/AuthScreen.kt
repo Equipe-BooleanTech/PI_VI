@@ -94,7 +94,7 @@ fun AuthScreen(navigationManager: NavigationManager) {
             )
         )
     }
-    
+
     val viewModel = remember(selectedTab) {
         DynamicFormViewModel(initialConfiguration = formConfiguration)
     }
@@ -110,19 +110,19 @@ fun AuthScreen(navigationManager: NavigationManager) {
         ) {
             val screenWidth = maxWidth
             val screenHeight = maxHeight
-            
+
             val cardWidth = when {
                 screenWidth < 600.dp -> screenWidth * 0.9f
                 screenWidth < 840.dp -> screenWidth * 0.7f
                 else -> 500.dp
             }
-            
+
             val cardPadding = when {
                 screenWidth < 400.dp -> 16.dp
                 screenWidth < 600.dp -> 20.dp
                 else -> 24.dp
             }
-            
+
             Card(
                 modifier = Modifier
                     .padding(cardPadding)
@@ -139,27 +139,11 @@ fun AuthScreen(navigationManager: NavigationManager) {
                     screenWidth < 600.dp -> 24.dp
                     else -> 32.dp
                 }
-                
+
                 Column(
                     modifier = Modifier.padding(innerPadding),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(
-                        text = "PetWise",
-                        style = MaterialTheme.typography.headlineSmall.copy(
-                            color = Color.fromHex(theme.palette.primary),
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        text = "Sistema de Gestão Veterinária",
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            color = Color.fromHex(theme.palette.primary)
-                        )
-                    )
-                    Spacer(Modifier.height(24.dp))
-
                     SingleChoiceSegmentedButtonRow(
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -194,10 +178,10 @@ fun AuthScreen(navigationManager: NavigationManager) {
                             }
                         )
                     }
-                    
+
                     if (selectedTab == 0) {
                         Spacer(Modifier.height(16.dp))
-                        
+
                         Text(
                             text = "Esqueceu sua senha?",
                             style = MaterialTheme.typography.bodyMedium.copy(

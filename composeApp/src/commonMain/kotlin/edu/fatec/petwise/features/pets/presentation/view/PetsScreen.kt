@@ -92,13 +92,13 @@ fun PetsScreen() {
                             petsViewModel.onEvent(PetsUiEvent.ToggleFavorite(petId))
                         },
                         onEditClick = { pet ->
-                            // TODO: Navegar à tela de edição
+
                         }
                     )
                 }
             }
 
-            // Enhanced error handling
+
             petsState.errorMessage?.let { errorMessage ->
                 Box(
                     modifier = Modifier
@@ -122,7 +122,7 @@ fun PetsScreen() {
             addPetViewModel = addPetViewModel,
             isLoading = addPetState.isLoading,
             errorMessage = addPetState.errorMessage,
-            onDismiss = { 
+            onDismiss = {
                 petsViewModel.onEvent(PetsUiEvent.HideAddPetDialog)
                 addPetViewModel.onEvent(AddPetUiEvent.ClearState)
             }
@@ -239,7 +239,7 @@ private fun SearchBar(
     modifier: Modifier = Modifier
 ) {
     val theme = PetWiseTheme.Light
-    
+
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(
@@ -252,7 +252,7 @@ private fun SearchBar(
             value = query,
             onValueChange = onQueryChange,
             modifier = Modifier.fillMaxWidth(),
-            placeholder = { 
+            placeholder = {
                 Text(
                     "Buscar por nome, raça ou tutor...",
                     style = MaterialTheme.typography.bodyMedium.copy(

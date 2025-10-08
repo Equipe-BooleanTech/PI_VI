@@ -41,10 +41,10 @@ fun StatusCard(
     modifier: Modifier = Modifier
 ) {
     val theme =PetWiseTheme.Light
-    
+
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
-    
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -81,9 +81,9 @@ fun StatusCard(
                     modifier = Modifier.size(28.dp)
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             Text(
                 text = statusCardData.title,
                 style = MaterialTheme.typography.bodyMedium.copy(
@@ -93,7 +93,7 @@ fun StatusCard(
                 ),
                 textAlign = TextAlign.Center
             )
-            
+
             Text(
                 text = statusCardData.count.toString(),
                 style = MaterialTheme.typography.headlineSmall.copy(

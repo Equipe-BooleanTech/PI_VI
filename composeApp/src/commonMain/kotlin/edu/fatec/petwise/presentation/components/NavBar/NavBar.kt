@@ -55,9 +55,9 @@ fun NavBar(
                         )
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.width(8.dp))
-                
+
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleMedium.copy(
@@ -66,7 +66,7 @@ fun NavBar(
                     )
                 )
             }
-            
+
             IconButton(
                 onClick = { navigationManager.toggleMoreMenu() }
             ) {

@@ -17,7 +17,7 @@ fun App() {
     val navigationManager = remember { NavigationManager() }
 
     val currentScreen = navigationManager.currentScreen.collectAsState()
-    
+
     PetWiseThemeWrapper(theme = PetWiseTheme.Light) {
 
         when (val screen = currentScreen.value) {

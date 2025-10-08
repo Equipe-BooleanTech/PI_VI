@@ -189,7 +189,7 @@ fun PetCard(
                 color = Color.fromHex(theme.palette.textSecondary).copy(alpha = 0.1f),
                 thickness = 1.dp
             )
-            
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()

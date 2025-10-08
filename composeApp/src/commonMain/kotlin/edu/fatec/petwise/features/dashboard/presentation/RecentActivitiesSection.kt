@@ -34,7 +34,7 @@ fun RecentActivitiesSection(
 ) {
     val theme =PetWiseTheme.Light
     val activities = dataProvider.getRecentActivities(userType).take(3)
-    
+
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -60,7 +60,7 @@ fun RecentActivitiesSection(
                     )
                 )
             }
-            
+
             TextButton(
                 onClick = onViewAllClick,
                 modifier = Modifier.padding(end = 0.dp)
@@ -78,7 +78,7 @@ fun RecentActivitiesSection(
                 )
             }
         }
-        
+
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(8.dp)

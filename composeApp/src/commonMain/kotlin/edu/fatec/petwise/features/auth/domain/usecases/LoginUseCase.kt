@@ -7,7 +7,7 @@ class LoginUseCase {
     suspend fun execute(email: String, password: String): Result<String> {
 
         delay(1000)
-        
+
 
         return if (email.contains("@") && password.length >= 6) {
             Result.success("user_id_123")

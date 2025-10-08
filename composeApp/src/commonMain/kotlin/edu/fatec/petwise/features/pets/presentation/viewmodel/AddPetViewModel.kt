@@ -86,7 +86,7 @@ class AddPetViewModel(
                     healthHistory = event.healthHistory,
                     isFavorite = false,
                     nextAppointment = null,
-                    createdAt = "", 
+                    createdAt = "",
                     updatedAt = ""
                 )
 

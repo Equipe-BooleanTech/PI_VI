@@ -62,20 +62,20 @@ fun ResetPasswordScreen(
                 )
             },
             styling = FormStyling(
-                primaryColor = "#00b942", 
+                primaryColor = "#00b942",
                 errorColor = "#d32f2f",
                 successColor = "#00b942"
             )
         )
     }
-    
+
     val formViewModel = viewModel<DynamicFormViewModel> {
         DynamicFormViewModel(initialConfiguration = formConfiguration)
     }
-    
+
     val uiState by viewModel.uiState.collectAsState()
     val theme = PetWiseTheme.Light
-    
+
     LaunchedEffect(resetToken) {
         viewModel.setResetToken(resetToken)
     }

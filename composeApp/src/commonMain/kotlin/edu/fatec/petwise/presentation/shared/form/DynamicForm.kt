@@ -37,7 +37,7 @@ fun DynamicForm(
 ) {
     val formState by viewModel.state.collectAsStateWithLifecycle()
     val events by viewModel.events.collectAsStateWithLifecycle(initialValue = null)
-    
+
     LaunchedEffect(events) {
         events?.let { event ->
             when (event) {
@@ -56,7 +56,7 @@ fun DynamicForm(
             }
         }
     }
-    
+
     DynamicFormContent(
         state = formState,
         onFieldValueChange = { fieldId, value -> viewModel.updateFieldValue(fieldId, value) },
@@ -84,7 +84,7 @@ private fun DynamicFormContent(
         val screenWidth = maxWidth
         val spacing = calculateSpacing(screenWidth)
         val fieldHeight = calculateFieldHeight(screenWidth)
-        
+
         Column(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
@@ -99,7 +99,7 @@ private fun DynamicFormContent(
                     color = colorScheme.onBackground
                 )
             }
-            
+
             state.configuration.description?.let { description ->
                 Text(
                     text = description,
@@ -108,18 +108,18 @@ private fun DynamicFormContent(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
-            
+
             state.configuration.fields.forEach { fieldDef ->
                 val fieldState = state.fieldStates[fieldDef.id]
-                
+
                 if (fieldState != null && fieldState.isVisible) {
                     val wasHandled = customFieldRenderer?.invoke(
-                        fieldDef, 
+                        fieldDef,
                         fieldState
                     ) { newValue ->
                         onFieldValueChange(fieldDef.id, newValue)
                     } ?: false
-                    
+
                     if (!wasHandled) {
                         RenderFormField(
                             fieldDefinition = fieldDef,
@@ -131,7 +131,7 @@ private fun DynamicFormContent(
                             colorScheme = colorScheme
                         )
                     }
-                    
+
                     if (fieldState.errors.isNotEmpty() && fieldState.isTouched) {
                         fieldState.errors.forEach { error ->
                             Text(
@@ -144,7 +144,7 @@ private fun DynamicFormContent(
                     }
                 }
             }
-            
+
             if (state.errors.globalErrors.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 state.errors.globalErrors.forEach { error ->
@@ -163,11 +163,11 @@ private fun DynamicFormContent(
                     }
                 }
             }
-            
+
             val submitField = state.configuration.fields.find { it.type == FormFieldType.SUBMIT }
             if (submitField != null) {
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 Button(
                     onClick = onSubmit,
                     modifier = Modifier
@@ -222,7 +222,7 @@ private fun RenderFormField(
                 colorScheme = colorScheme
             )
         }
-        
+
         FormFieldType.PASSWORD -> {
             RenderPasswordField(
                 fieldDefinition = fieldDefinition,
@@ -234,7 +234,7 @@ private fun RenderFormField(
                 colorScheme = colorScheme
             )
         }
-        
+
         FormFieldType.SELECT -> {
             RenderSelectField(
                 fieldDefinition = fieldDefinition,
@@ -246,7 +246,7 @@ private fun RenderFormField(
                 colorScheme = colorScheme
             )
         }
-        
+
         FormFieldType.RADIO, FormFieldType.SEGMENTED_CONTROL -> {
             RenderSegmentedControl(
                 fieldDefinition = fieldDefinition,
@@ -255,7 +255,7 @@ private fun RenderFormField(
                 colorScheme = colorScheme
             )
         }
-        
+
         FormFieldType.CHECKBOX -> {
             RenderCheckboxField(
                 fieldDefinition = fieldDefinition,
@@ -264,7 +264,7 @@ private fun RenderFormField(
                 colorScheme = colorScheme
             )
         }
-        
+
         FormFieldType.SWITCH -> {
             RenderSwitchField(
                 fieldDefinition = fieldDefinition,
@@ -273,7 +273,7 @@ private fun RenderFormField(
                 colorScheme = colorScheme
             )
         }
-        
+
         FormFieldType.TEXTAREA -> {
             RenderTextAreaField(
                 fieldDefinition = fieldDefinition,
@@ -284,18 +284,18 @@ private fun RenderFormField(
                 colorScheme = colorScheme
             )
         }
-        
+
         FormFieldType.DIVIDER -> {
             HorizontalDivider(
                 modifier = Modifier.fillMaxWidth(),
                 color = colorScheme.outline
             )
         }
-        
+
         FormFieldType.SPACER -> {
             Spacer(modifier = Modifier.height(16.dp))
         }
-        
+
         else -> {
             Text(
                 text = "Unsupported field type: ${fieldDefinition.type}",
@@ -323,7 +323,7 @@ private fun RenderTextField(
         FormFieldType.PHONE -> KeyboardType.Phone
         else -> KeyboardType.Text
     }
-    
+
     OutlinedTextField(
         value = fieldState.displayValue,
         onValueChange = onValueChange,
@@ -358,26 +358,26 @@ private fun RenderPasswordField(
     colorScheme: ColorScheme
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
-    
+
     OutlinedTextField(
         value = fieldState.displayValue,
         onValueChange = onValueChange,
         label = fieldDefinition.label?.let { { Text(it) } },
         placeholder = fieldDefinition.placeholder?.let { { Text(it) } },
-        visualTransformation = if (passwordVisible) 
-            VisualTransformation.None 
-        else 
+        visualTransformation = if (passwordVisible)
+            VisualTransformation.None
+        else
             PasswordVisualTransformation(),
         trailingIcon = {
             IconButton(onClick = { passwordVisible = !passwordVisible }) {
                 Icon(
-                    imageVector = if (passwordVisible) 
-                        Icons.Filled.Visibility 
-                    else 
+                    imageVector = if (passwordVisible)
+                        Icons.Filled.Visibility
+                    else
                         Icons.Filled.VisibilityOff,
-                    contentDescription = if (passwordVisible) 
-                        "Hide password" 
-                    else 
+                    contentDescription = if (passwordVisible)
+                        "Hide password"
+                    else
                         "Show password",
                     tint = colorScheme.onSurfaceVariant
                 )
@@ -411,7 +411,7 @@ private fun RenderSelectField(
     colorScheme: ColorScheme
 ) {
     var expanded by remember { mutableStateOf(false) }
-    
+
     ExposedDropdownMenuBox(
         expanded = expanded,
         onExpandedChange = { expanded = !expanded }
@@ -439,7 +439,7 @@ private fun RenderSelectField(
             ),
             shape = RoundedCornerShape(8.dp)
         )
-        
+
         ExposedDropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false }
@@ -471,7 +471,7 @@ private fun RenderSegmentedControl(
         ) {
             options.forEach { option ->
                 val isSelected = fieldState.displayValue == option
-                
+
                 FilterChip(
                     onClick = { onValueChange(option) },
                     label = { Text(option) },
@@ -506,7 +506,7 @@ private fun RenderCheckboxField(
                 checkedColor = colorScheme.primary
             )
         )
-        
+
         fieldDefinition.label?.let { label ->
             Spacer(modifier = Modifier.width(8.dp))
             Text(
@@ -538,7 +538,7 @@ private fun RenderSwitchField(
                 modifier = Modifier.weight(1f)
             )
         }
-        
+
         Switch(
             checked = fieldState.value as? Boolean ?: false,
             onCheckedChange = onValueChange,
