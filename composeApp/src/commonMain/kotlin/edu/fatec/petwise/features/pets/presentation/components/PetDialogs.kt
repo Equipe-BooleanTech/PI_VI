@@ -1,9 +1,7 @@
 package edu.fatec.petwise.features.pets.presentation.components
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
@@ -33,7 +31,6 @@ fun AddPetDialog(
     onDismiss: () -> Unit
 ) {
     val theme = PetWiseTheme.Light
-    val scrollState = rememberScrollState()
 
     val formConfiguration = remember {
         FormConfiguration(
@@ -103,7 +100,6 @@ fun AddPetDialog(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(scrollState)
                     .padding(20.dp)
             ) {
                 Card(
@@ -169,6 +165,7 @@ fun AddPetDialog(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .weight(1f)
                         .padding(vertical = 8.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = Color.fromHex("#F8F9FA")
@@ -176,10 +173,13 @@ fun AddPetDialog(
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Column(
-                        modifier = Modifier.padding(16.dp)
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp)
                     ) {
                         DynamicForm(
                             viewModel = formViewModel,
+                            modifier = Modifier.fillMaxSize(),
                             colorScheme = MaterialTheme.colorScheme.copy(
                                 primary = Color.fromHex(theme.palette.primary),
                                 error = Color.fromHex("#d32f2f")
