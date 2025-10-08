@@ -13,8 +13,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextDecoration
-import edu.fatec.petwise.features.auth.shared.DynamicAuthFormScreen
-import edu.fatec.petwise.features.auth.shared.FormStore
+import androidx.lifecycle.viewmodel.compose.viewModel
+import edu.fatec.petwise.presentation.shared.form.*
 import edu.fatec.petwise.navigation.NavigationManager
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.PetWiseThemeWrapper
@@ -22,6 +22,7 @@ import edu.fatec.petwise.presentation.theme.fromHex
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import edu.fatec.petwise.features.auth.presentation.forms.registerSchema
 import edu.fatec.petwise.features.auth.presentation.forms.loginSchema
+import kotlinx.serialization.json.JsonPrimitive
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,7 +33,71 @@ fun AuthScreen(navigationManager: NavigationManager) {
 
     val schema = if (selectedTab == 0) loginSchema else registerSchema
 
-    val formStore = remember(selectedTab) { FormStore(schema) }
+    val formConfiguration = remember(schema) {
+        FormConfiguration(
+            id = schema.id,
+            title = schema.title,
+            description = schema.description,
+            fields = schema.fields.map { field ->
+                FormFieldDefinition(
+                    id = field.id,
+                    label = field.label,
+                    type = when (field.type) {
+                        "email" -> FormFieldType.EMAIL
+                        "password" -> FormFieldType.PASSWORD
+                        "text" -> FormFieldType.TEXT
+                        "submit" -> FormFieldType.SUBMIT
+                        "select" -> FormFieldType.SELECT
+                        "segmented" -> FormFieldType.SEGMENTED_CONTROL
+                        else -> FormFieldType.TEXT
+                    },
+                    placeholder = field.placeholder,
+                    options = field.options,
+                    default = field.default,
+                    validators = field.validators?.map { validator ->
+                        ValidationRule(
+                            type = when (validator.type) {
+                                "required" -> ValidationType.REQUIRED
+                                "email" -> ValidationType.EMAIL
+                                "minLength" -> ValidationType.MIN_LENGTH
+                                "password" -> ValidationType.PASSWORD_STRENGTH
+                                "matchesField" -> ValidationType.MATCHES_FIELD
+                                "cpf" -> ValidationType.CPF
+                                "cnpj" -> ValidationType.CNPJ
+                                "phone" -> ValidationType.PHONE
+                                "pattern" -> ValidationType.PATTERN
+                                else -> ValidationType.CUSTOM
+                            },
+                            message = validator.message,
+                            value = validator.value,
+                            field = validator.field
+                        )
+                    } ?: emptyList(),
+                    visibility = field.visibleIf?.let { visibleIf ->
+                        VisibilityRule(
+                            conditions = visibleIf.map { (fieldId, value) ->
+                                VisibilityCondition(
+                                    fieldId = fieldId,
+                                    operator = ComparisonOperator.EQUALS,
+                                    value = value
+                                )
+                            },
+                            operator = LogicalOperator.AND
+                        )
+                    }
+                )
+            },
+            styling = FormStyling(
+                primaryColor = "#00b942",
+                errorColor = "#d32f2f",
+                successColor = "#00b942"
+            )
+        )
+    }
+    
+    val viewModel = remember(selectedTab) {
+        DynamicFormViewModel(initialConfiguration = formConfiguration)
+    }
 
     val theme = PetWiseTheme.Light
 
@@ -117,12 +182,18 @@ fun AuthScreen(navigationManager: NavigationManager) {
 
                     Spacer(Modifier.height(24.dp))
 
-                    DynamicAuthFormScreen(
-                        formStore = formStore,
-                        onLoginSuccess = { 
-                            navigationManager.navigateTo(NavigationManager.Screen.Dashboard)
-                        }
-                    )
+                    key(formConfiguration.id) {
+                        DynamicForm(
+                            viewModel = viewModel,
+                            colorScheme = MaterialTheme.colorScheme.copy(
+                                primary = Color.fromHex(theme.palette.primary),
+                                error = Color.fromHex("#d32f2f")
+                            ),
+                            onSubmitSuccess = { values ->
+                                navigationManager.navigateTo(NavigationManager.Screen.Dashboard)
+                            }
+                        )
+                    }
                     
                     if (selectedTab == 0) {
                         Spacer(Modifier.height(16.dp))

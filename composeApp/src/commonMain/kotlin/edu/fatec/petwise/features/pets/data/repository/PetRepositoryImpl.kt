@@ -5,7 +5,9 @@ import edu.fatec.petwise.features.pets.domain.models.Pet
 import edu.fatec.petwise.features.pets.domain.models.PetFilterOptions
 import edu.fatec.petwise.features.pets.domain.models.HealthStatus
 import edu.fatec.petwise.features.pets.domain.repository.PetRepository
+import edu.fatec.petwise.presentation.shared.form.currentTimeMs
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 class PetRepositoryImpl(
@@ -84,21 +86,15 @@ class PetRepositoryImpl(
 
     override suspend fun toggleFavorite(id: String): Result<Pet> {
         return try {
-            val currentPet = localDataSource.getPetById(id)
-            var updatedPet: Pet? = null
+            val currentPet = localDataSource.getPetById(id).map { it }.first()
             
-            currentPet.collect { pet ->
-                if (pet != null) {
-                    updatedPet = pet.copy(
-                        isFavorite = !pet.isFavorite,
-                        updatedAt = getCurrentTimestamp()
-                    )
-                }
-            }
-            
-            updatedPet?.let { pet ->
-                localDataSource.updatePet(pet)
-                Result.success(pet)
+            currentPet?.let { pet ->
+                val updatedPet = pet.copy(
+                    isFavorite = !pet.isFavorite,
+                    updatedAt = getCurrentTimestamp()
+                )
+                localDataSource.updatePet(updatedPet)
+                Result.success(updatedPet)
             } ?: Result.failure(IllegalArgumentException("Pet not found"))
         } catch (e: Exception) {
             Result.failure(e)
@@ -107,30 +103,24 @@ class PetRepositoryImpl(
 
     override suspend fun updateHealthStatus(id: String, status: HealthStatus): Result<Pet> {
         return try {
-            val currentPet = localDataSource.getPetById(id)
-            var updatedPet: Pet? = null
+            val currentPet = localDataSource.getPetById(id).map { it }.first()
             
-            currentPet.collect { pet ->
-                if (pet != null) {
-                    updatedPet = pet.copy(
-                        healthStatus = status,
-                        updatedAt = getCurrentTimestamp()
-                    )
-                }
-            }
-            
-            updatedPet?.let { pet ->
-                localDataSource.updatePet(pet)
-                Result.success(pet)
+            currentPet?.let { pet ->
+                val updatedPet = pet.copy(
+                    healthStatus = status,
+                    updatedAt = getCurrentTimestamp()
+                )
+                localDataSource.updatePet(updatedPet)
+                Result.success(updatedPet)
             } ?: Result.failure(IllegalArgumentException("Pet not found"))
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
-    private fun generateId(): String = System.currentTimeMillis().toString()
+    private fun generateId(): String = currentTimeMs().toString()
 
     private fun getCurrentTimestamp(): String {
-        return System.currentTimeMillis().toString()
+        return currentTimeMs().toString()
     }
 }

@@ -15,8 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import edu.fatec.petwise.features.auth.presentation.forms.forgotPasswordSchema
 import edu.fatec.petwise.features.auth.presentation.viewmodel.ForgotPasswordViewModel
-import edu.fatec.petwise.features.auth.shared.DynamicAuthFormScreen
-import edu.fatec.petwise.features.auth.shared.FormStore
+import edu.fatec.petwise.presentation.shared.form.*
 import edu.fatec.petwise.navigation.NavigationManager
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.fromHex
@@ -29,7 +28,47 @@ fun ForgotPasswordScreen(
     navigationManager: NavigationManager,
     viewModel: ForgotPasswordViewModel = viewModel { ForgotPasswordViewModel() }
 ) {
-    val formStore = remember { FormStore(forgotPasswordSchema) }
+    val formConfiguration = remember {
+        FormConfiguration(
+            id = forgotPasswordSchema.id,
+            title = forgotPasswordSchema.title,
+            description = forgotPasswordSchema.description,
+            fields = forgotPasswordSchema.fields.map { field ->
+                FormFieldDefinition(
+                    id = field.id,
+                    label = field.label,
+                    type = when (field.type) {
+                        "email" -> FormFieldType.EMAIL
+                        "submit" -> FormFieldType.SUBMIT
+                        else -> FormFieldType.TEXT
+                    },
+                    placeholder = field.placeholder,
+                    validators = field.validators?.map { validator ->
+                        ValidationRule(
+                            type = when (validator.type) {
+                                "required" -> ValidationType.REQUIRED
+                                "email" -> ValidationType.EMAIL
+                                else -> ValidationType.CUSTOM
+                            },
+                            message = validator.message,
+                            value = validator.value,
+                            field = validator.field
+                        )
+                    } ?: emptyList()
+                )
+            },
+            styling = FormStyling(
+                primaryColor = "#00b942", 
+                errorColor = "#d32f2f",
+                successColor = "#00b942"
+            )
+        )
+    }
+    
+    val formViewModel = viewModel<DynamicFormViewModel> {
+        DynamicFormViewModel(initialConfiguration = formConfiguration)
+    }
+    
     val uiState by viewModel.uiState.collectAsState()
     val theme = PetWiseTheme.Light
     
@@ -116,10 +155,14 @@ fun ForgotPasswordScreen(
                         )
                     }
 
-                    DynamicAuthFormScreen(
-                        formStore = formStore,
-                        onLoginSuccess = {
-                            val email = formStore.getCurrentValues()["email"] ?: ""
+                    DynamicForm(
+                        viewModel = formViewModel,
+                        colorScheme = MaterialTheme.colorScheme.copy(
+                            primary = Color.fromHex(theme.palette.primary),
+                            error = Color.fromHex("#d32f2f")
+                        ),
+                        onSubmitSuccess = { values ->
+                            val email = values["email"]?.toString() ?: ""
                             viewModel.requestPasswordReset(email)
                         }
                     )

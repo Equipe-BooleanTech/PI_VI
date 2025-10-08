@@ -46,8 +46,8 @@ object PetDependencyContainer {
         UpdateHealthStatusUseCase(repository)
     }
     
-    fun providePetsViewModel(): PetsViewModel {
-        return PetsViewModel(
+    private val petsViewModel: PetsViewModel by lazy {
+        PetsViewModel(
             getPetsUseCase = getPetsUseCase,
             toggleFavoriteUseCase = toggleFavoriteUseCase,
             updateHealthStatusUseCase = updateHealthStatusUseCase,
@@ -55,9 +55,13 @@ object PetDependencyContainer {
         )
     }
     
-    fun provideAddPetViewModel(): AddPetViewModel {
-        return AddPetViewModel(
+    private val addPetViewModel: AddPetViewModel by lazy {
+        AddPetViewModel(
             addPetUseCase = addPetUseCase
         )
     }
+    
+    fun providePetsViewModel(): PetsViewModel = petsViewModel
+    
+    fun provideAddPetViewModel(): AddPetViewModel = addPetViewModel
 }

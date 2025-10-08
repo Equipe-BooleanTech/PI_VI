@@ -15,12 +15,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import edu.fatec.petwise.features.auth.shared.DynamicAuthFormScreen
-import edu.fatec.petwise.features.auth.shared.FormStore
 import edu.fatec.petwise.features.pets.domain.models.*
 import edu.fatec.petwise.features.pets.presentation.components.PetCard
 import edu.fatec.petwise.features.pets.presentation.components.AddPetDialog
 import edu.fatec.petwise.features.pets.presentation.components.FilterBottomSheet
+import edu.fatec.petwise.features.pets.presentation.components.PetErrorSnackbar
 import edu.fatec.petwise.features.pets.presentation.forms.addPetFormSchema
 import edu.fatec.petwise.features.pets.presentation.viewmodel.*
 import edu.fatec.petwise.features.pets.di.PetDependencyContainer
@@ -29,10 +28,9 @@ import edu.fatec.petwise.presentation.theme.fromHex
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PetsScreen(
-    petsViewModel: PetsViewModel = PetDependencyContainer.providePetsViewModel(),
-    addPetViewModel: AddPetViewModel = PetDependencyContainer.provideAddPetViewModel()
-) {
+fun PetsScreen() {
+    val petsViewModel = remember { PetDependencyContainer.providePetsViewModel() }
+    val addPetViewModel = remember { PetDependencyContainer.provideAddPetViewModel() }
     val theme = PetWiseTheme.Light
     val petsState by petsViewModel.uiState.collectAsState()
     val addPetState by addPetViewModel.uiState.collectAsState()
@@ -40,7 +38,7 @@ fun PetsScreen(
     var showSearchBar by remember { mutableStateOf(false) }
     var showFilterSheet by remember { mutableStateOf(false) }
 
-    val formStore = remember { FormStore(addPetFormSchema) }
+
 
     LaunchedEffect(addPetState.isSuccess) {
         if (addPetState.isSuccess) {
@@ -100,9 +98,20 @@ fun PetsScreen(
                 }
             }
 
+            // Enhanced error handling
             petsState.errorMessage?.let { errorMessage ->
-                LaunchedEffect(errorMessage) {
-                    petsViewModel.onEvent(PetsUiEvent.ClearError)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter)
+                ) {
+                    PetErrorSnackbar(
+                        message = errorMessage,
+                        isError = true,
+                        onDismiss = { petsViewModel.onEvent(PetsUiEvent.ClearError) },
+                        actionLabel = "Tentar Novamente",
+                        onAction = { petsViewModel.onEvent(PetsUiEvent.LoadPets) }
+                    )
                 }
             }
         }
@@ -110,7 +119,6 @@ fun PetsScreen(
 
     if (petsState.showAddPetDialog) {
         AddPetDialog(
-            formStore = formStore,
             addPetViewModel = addPetViewModel,
             isLoading = addPetState.isLoading,
             errorMessage = addPetState.errorMessage,
@@ -230,30 +238,56 @@ private fun SearchBar(
     onQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    OutlinedTextField(
-        value = query,
-        onValueChange = onQueryChange,
+    val theme = PetWiseTheme.Light
+    
+    Card(
         modifier = modifier,
-        placeholder = { Text("Buscar por nome, raça ou tutor...") },
-        leadingIcon = {
-            Icon(
-                imageVector = Icons.Default.Search,
-                contentDescription = "Buscar"
-            )
-        },
-        trailingIcon = {
-            if (query.isNotEmpty()) {
-                IconButton(onClick = { onQueryChange("") }) {
-                    Icon(
-                        imageVector = Icons.Default.Clear,
-                        contentDescription = "Limpar"
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        OutlinedTextField(
+            value = query,
+            onValueChange = onQueryChange,
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = { 
+                Text(
+                    "Buscar por nome, raça ou tutor...",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = Color.fromHex(theme.palette.textSecondary)
                     )
+                )
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Buscar",
+                    tint = Color.fromHex(theme.palette.primary)
+                )
+            },
+            trailingIcon = {
+                if (query.isNotEmpty()) {
+                    IconButton(onClick = { onQueryChange("") }) {
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = "Limpar",
+                            tint = Color.fromHex(theme.palette.textSecondary)
+                        )
+                    }
                 }
-            }
-        },
-        singleLine = true,
-        shape = RoundedCornerShape(12.dp)
-    )
+            },
+            singleLine = true,
+            shape = RoundedCornerShape(12.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color.fromHex(theme.palette.primary),
+                unfocusedBorderColor = Color.fromHex(theme.palette.textSecondary).copy(alpha = 0.3f),
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White
+            )
+        )
+    }
 }
 
 @Composable

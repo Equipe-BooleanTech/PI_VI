@@ -90,20 +90,22 @@ class PetsViewModel(
     private fun searchPets(query: String) {
         _uiState.value = _uiState.value.copy(searchQuery = query)
         
+        if (query.isBlank()) {
+            _uiState.value = _uiState.value.copy(filteredPets = _uiState.value.pets)
+            return
+        }
+        
         viewModelScope.launch {
             try {
-                if (query.isBlank()) {
-                    getPetsUseCase().collect { pets ->
-                        _uiState.value = _uiState.value.copy(filteredPets = pets)
-                    }
-                } else {
-                    getPetsUseCase.searchPets(query).collect { pets ->
-                        _uiState.value = _uiState.value.copy(filteredPets = pets)
-                    }
+                getPetsUseCase.searchPets(query).collect { pets ->
+                    _uiState.value = _uiState.value.copy(
+                        filteredPets = pets,
+                        errorMessage = null
+                    )
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    errorMessage = e.message ?: "Erro ao buscar pets"
+                    errorMessage = "Erro ao buscar pets: ${e.message}"
                 )
             }
         }
@@ -151,7 +153,6 @@ class PetsViewModel(
             try {
                 updateHealthStatusUseCase(petId, status).fold(
                     onSuccess = { updatedPet ->
-                        // Pet será atualizado automaticamente pelo Flow
                     },
                     onFailure = { error ->
                         _uiState.value = _uiState.value.copy(

@@ -1,6 +1,7 @@
 package edu.fatec.petwise.features.auth.data.repository
 
 import edu.fatec.petwise.features.auth.domain.repository.AuthRepository
+import edu.fatec.petwise.presentation.shared.form.currentTimeMs
 import kotlinx.coroutines.delay
 
 class AuthRepositoryImpl : AuthRepository {
@@ -29,7 +30,7 @@ class AuthRepositoryImpl : AuthRepository {
             return Result.failure(Exception("Senha muito curta"))
         }
         
-        return Result.success("user_id_${System.currentTimeMillis()}")
+        return Result.success("user_id_${currentTimeMs()}")
     }
     
     override suspend fun requestPasswordReset(email: String): Result<String> {
