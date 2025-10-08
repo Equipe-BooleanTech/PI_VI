@@ -13,7 +13,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import edu.fatec.petwise.features.auth.presentation.forms.forgotPasswordSchema
+import edu.fatec.petwise.features.auth.presentation.forms.forgotPasswordFormConfiguration
 import edu.fatec.petwise.features.auth.presentation.viewmodel.ForgotPasswordViewModel
 import edu.fatec.petwise.presentation.shared.form.*
 import edu.fatec.petwise.navigation.NavigationManager
@@ -28,44 +28,9 @@ fun ForgotPasswordScreen(
     navigationManager: NavigationManager,
     viewModel: ForgotPasswordViewModel = viewModel { ForgotPasswordViewModel() }
 ) {
-    val formConfiguration = remember {
-        FormConfiguration(
-            id = forgotPasswordSchema.id,
-            title = forgotPasswordSchema.title,
-            description = forgotPasswordSchema.description,
-            fields = forgotPasswordSchema.fields.map { field ->
-                FormFieldDefinition(
-                    id = field.id,
-                    label = field.label,
-                    type = when (field.type) {
-                        "email" -> FormFieldType.EMAIL
-                        "submit" -> FormFieldType.SUBMIT
-                        else -> FormFieldType.TEXT
-                    },
-                    placeholder = field.placeholder,
-                    validators = field.validators?.map { validator ->
-                        ValidationRule(
-                            type = when (validator.type) {
-                                "required" -> ValidationType.REQUIRED
-                                "email" -> ValidationType.EMAIL
-                                else -> ValidationType.CUSTOM
-                            },
-                            message = validator.message,
-                            value = validator.value,
-                            field = validator.field
-                        )
-                    } ?: emptyList()
-                )
-            },
-            styling = FormStyling(
-                primaryColor = "#00b942",
-                errorColor = "#d32f2f",
-                successColor = "#00b942"
-            )
-        )
-    }
+    val formConfiguration = forgotPasswordFormConfiguration
 
-    val formViewModel = viewModel<DynamicFormViewModel> {
+    val formViewModel = viewModel<DynamicFormViewModel>(key = "forgot_password_form") {
         DynamicFormViewModel(initialConfiguration = formConfiguration)
     }
 

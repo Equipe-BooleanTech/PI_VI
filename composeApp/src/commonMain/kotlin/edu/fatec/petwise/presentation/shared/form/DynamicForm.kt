@@ -2,11 +2,13 @@
 
 package edu.fatec.petwise.presentation.shared.form
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -16,13 +18,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import edu.fatec.petwise.features.auth.shared.InputMasks
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -132,15 +137,55 @@ private fun DynamicFormContent(
                         )
                     }
 
-                    if (fieldState.errors.isNotEmpty() && fieldState.isTouched) {
-                        fieldState.errors.forEach { error ->
+                    val shouldShowErrors = fieldState.errors.isNotEmpty() && fieldState.isTouched
+                    
+                    if (shouldShowErrors) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 4.dp, vertical = 4.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            fieldState.errors.forEach { error ->
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.Start,
+                                    verticalAlignment = Alignment.Top
+                                ) {
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = error.message,
+                                        color = colorScheme.error,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (fieldState.isValidating) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 4.dp),
+                            horizontalArrangement = Arrangement.Start,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(12.dp),
+                                color = colorScheme.primary,
+                                strokeWidth = 1.dp
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = error.message,
-                                color = colorScheme.error,
-                                style = MaterialTheme.typography.bodySmall,
-                                modifier = Modifier.fillMaxWidth()
+                                text = "Validando...",
+                                color = colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.bodySmall
                             )
                         }
+                    } else if (fieldState.isTouched && fieldState.errors.isEmpty() && fieldState.value?.toString()?.isNotEmpty() == true) {
+
                     }
                 }
             }
@@ -168,12 +213,37 @@ private fun DynamicFormContent(
             if (submitField != null) {
                 Spacer(modifier = Modifier.height(16.dp))
 
+                val formHasBeenSubmitted = state.metadata.submitCount > 0
+
+                val requiredFields = state.configuration.fields.filter { field ->
+                    field.validators.any { it.type == ValidationType.REQUIRED } && field.type != FormFieldType.SUBMIT
+                }
+                
+                val allRequiredFieldsValid = requiredFields.all { field ->
+                    val fieldState = state.fieldStates[field.id]
+                    fieldState != null && 
+                    fieldState.isVisible && 
+                    fieldState.errors.isEmpty() && 
+                    !fieldState.value?.toString().isNullOrBlank()
+                }
+                
+                val hasFieldErrors = state.fieldStates.values.any { fieldState ->
+                    fieldState.isVisible && fieldState.errors.isNotEmpty() && fieldState.isTouched
+                }
+                
+                val hasAnyTouchedField = state.fieldStates.values.any { it.isTouched }
+                val isFormValid = allRequiredFieldsValid && !hasFieldErrors
+                
+                val fieldsWithErrors = state.fieldStates.values.filter { 
+                    it.isVisible && it.errors.isNotEmpty() && it.isTouched
+                }
+
                 Button(
                     onClick = onSubmit,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),
-                    enabled = !state.isSubmitting && state.fieldStates.values.any { it.isTouched },
+                    enabled = !state.isSubmitting && isFormValid,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = colorScheme.primary,
                         contentColor = colorScheme.onPrimary
@@ -211,7 +281,7 @@ private fun RenderFormField(
     colorScheme: ColorScheme
 ) {
     when (fieldDefinition.type) {
-        FormFieldType.TEXT, FormFieldType.EMAIL, FormFieldType.NUMBER, FormFieldType.DECIMAL -> {
+        FormFieldType.TEXT, FormFieldType.EMAIL, FormFieldType.NUMBER, FormFieldType.DECIMAL, FormFieldType.PHONE -> {
             RenderTextField(
                 fieldDefinition = fieldDefinition,
                 fieldState = fieldState,
@@ -324,27 +394,90 @@ private fun RenderTextField(
         else -> KeyboardType.Text
     }
 
-    OutlinedTextField(
-        value = fieldState.displayValue,
-        onValueChange = onValueChange,
-        label = fieldDefinition.label?.let { { Text(it) } },
-        placeholder = fieldDefinition.placeholder?.let { { Text(it) } },
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = fieldHeight),
-        enabled = fieldState.isEnabled,
-        isError = fieldState.errors.isNotEmpty() && fieldState.isTouched,
-        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = colorScheme.primary,
-            unfocusedBorderColor = colorScheme.outline,
-            focusedLabelColor = colorScheme.primary,
-            unfocusedLabelColor = colorScheme.onSurfaceVariant,
-            errorBorderColor = colorScheme.error
-        ),
-        shape = RoundedCornerShape(8.dp),
-        singleLine = true
-    )
+    val shouldUseMask = fieldDefinition.formatting?.mask != null ||
+        InputMasks.getMaskForFieldType(fieldDefinition.id, fieldDefinition.type.name) != null
+
+    val maskPattern = fieldDefinition.formatting?.mask 
+        ?: InputMasks.getMaskForFieldType(fieldDefinition.id, fieldDefinition.type.name)
+    
+    val isRequired = fieldDefinition.validators.any { it.type == ValidationType.REQUIRED }
+    val labelText = if (isRequired && fieldDefinition.label != null) {
+        "${fieldDefinition.label} *"
+    } else {
+        fieldDefinition.label
+    }
+
+    if (shouldUseMask && maskPattern != null) {
+        var textFieldValue by remember(fieldState.displayValue) {
+            mutableStateOf(TextFieldValue(fieldState.displayValue, TextRange(fieldState.displayValue.length)))
+        }
+
+        OutlinedTextField(
+            value = textFieldValue,
+            onValueChange = { newValue ->
+                val processedValue = InputMasks.processTextWithMask(
+                    currentValue = textFieldValue,
+                    newText = newValue.text,
+                    mask = maskPattern
+                )
+                textFieldValue = processedValue
+                onValueChange(InputMasks.removeMask(processedValue.text))
+            },
+            label = labelText?.let { { Text(it) } },
+            placeholder = fieldDefinition.placeholder?.let { { Text(it) } },
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = fieldHeight)
+                .onFocusChanged { focusState ->
+                    if (focusState.isFocused) {
+                        onFocus()
+                    } else {
+                        onBlur()
+                    }
+                },
+            enabled = fieldState.isEnabled,
+            isError = fieldState.errors.isNotEmpty() && fieldState.isTouched,
+            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = colorScheme.primary,
+                unfocusedBorderColor = colorScheme.outline,
+                focusedLabelColor = colorScheme.primary,
+                unfocusedLabelColor = colorScheme.onSurfaceVariant,
+                errorBorderColor = colorScheme.error
+            ),
+            shape = RoundedCornerShape(8.dp),
+            singleLine = true
+        )
+    } else {
+        OutlinedTextField(
+            value = fieldState.displayValue,
+            onValueChange = onValueChange,
+            label = labelText?.let { { Text(it) } },
+            placeholder = fieldDefinition.placeholder?.let { { Text(it) } },
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = fieldHeight)
+                .onFocusChanged { focusState ->
+                    if (focusState.isFocused) {
+                        onFocus()
+                    } else {
+                        onBlur()
+                    }
+                },
+            enabled = fieldState.isEnabled,
+            isError = fieldState.errors.isNotEmpty() && fieldState.isTouched,
+            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = colorScheme.primary,
+                unfocusedBorderColor = colorScheme.outline,
+                focusedLabelColor = colorScheme.primary,
+                unfocusedLabelColor = colorScheme.onSurfaceVariant,
+                errorBorderColor = colorScheme.error
+            ),
+            shape = RoundedCornerShape(8.dp),
+            singleLine = true
+        )
+    }
 }
 
 @Composable
@@ -358,11 +491,28 @@ private fun RenderPasswordField(
     colorScheme: ColorScheme
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
+    
+    val isRequired = fieldDefinition.validators.any { it.type == ValidationType.REQUIRED }
+    val labelText = if (isRequired && fieldDefinition.label != null) {
+        "${fieldDefinition.label} *"
+    } else {
+        fieldDefinition.label
+    }
 
     OutlinedTextField(
         value = fieldState.displayValue,
-        onValueChange = onValueChange,
-        label = fieldDefinition.label?.let { { Text(it) } },
+        onValueChange = { newValue ->
+            val processedValue = when {
+                fieldDefinition.formatting?.uppercase == true -> newValue.uppercase()
+                fieldDefinition.formatting?.lowercase == true -> newValue.lowercase()
+                fieldDefinition.formatting?.capitalize == true -> newValue.replaceFirstChar { 
+                    if (it.isLowerCase()) it.titlecase() else it.toString() 
+                }
+                else -> newValue
+            }
+            onValueChange(processedValue)
+        },
+        label = labelText?.let { { Text(it) } },
         placeholder = fieldDefinition.placeholder?.let { { Text(it) } },
         visualTransformation = if (passwordVisible)
             VisualTransformation.None
@@ -385,7 +535,14 @@ private fun RenderPasswordField(
         },
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = fieldHeight),
+            .heightIn(min = fieldHeight)
+            .onFocusChanged { focusState ->
+                if (focusState.isFocused) {
+                    onFocus()
+                } else {
+                    onBlur()
+                }
+            },
         enabled = fieldState.isEnabled,
         isError = fieldState.errors.isNotEmpty() && fieldState.isTouched,
         colors = OutlinedTextFieldDefaults.colors(
@@ -414,7 +571,12 @@ private fun RenderSelectField(
 
     ExposedDropdownMenuBox(
         expanded = expanded,
-        onExpandedChange = { expanded = !expanded }
+        onExpandedChange = { newExpanded ->
+            expanded = newExpanded
+            if (newExpanded) {
+                onFocus()
+            }
+        }
     ) {
         OutlinedTextField(
             value = fieldState.displayValue,
@@ -442,7 +604,10 @@ private fun RenderSelectField(
 
         ExposedDropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false }
+            onDismissRequest = { 
+                expanded = false
+                onBlur()
+            }
         ) {
             fieldDefinition.options?.forEach { option ->
                 DropdownMenuItem(
@@ -450,6 +615,7 @@ private fun RenderSelectField(
                     onClick = {
                         onValueChange(option)
                         expanded = false
+                        onBlur() 
                     }
                 )
             }
@@ -561,12 +727,29 @@ private fun RenderTextAreaField(
 ) {
     OutlinedTextField(
         value = fieldState.displayValue,
-        onValueChange = onValueChange,
+        onValueChange = { newValue ->
+            val processedValue = when {
+                fieldDefinition.formatting?.uppercase == true -> newValue.uppercase()
+                fieldDefinition.formatting?.lowercase == true -> newValue.lowercase()
+                fieldDefinition.formatting?.capitalize == true -> newValue.split(" ").joinToString(" ") { word ->
+                    word.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+                }
+                else -> newValue
+            }
+            onValueChange(processedValue)
+        },
         label = fieldDefinition.label?.let { { Text(it) } },
         placeholder = fieldDefinition.placeholder?.let { { Text(it) } },
         modifier = Modifier
             .fillMaxWidth()
-            .height(120.dp),
+            .height(120.dp)
+            .onFocusChanged { focusState ->
+                if (focusState.isFocused) {
+                    onFocus()
+                } else {
+                    onBlur()
+                }
+            },
         enabled = fieldState.isEnabled,
         isError = fieldState.errors.isNotEmpty() && fieldState.isTouched,
         colors = OutlinedTextFieldDefaults.colors(

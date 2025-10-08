@@ -20,8 +20,8 @@ import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.PetWiseThemeWrapper
 import edu.fatec.petwise.presentation.theme.fromHex
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import edu.fatec.petwise.features.auth.presentation.forms.registerSchema
-import edu.fatec.petwise.features.auth.presentation.forms.loginSchema
+import edu.fatec.petwise.features.auth.presentation.forms.registerFormConfiguration
+import edu.fatec.petwise.features.auth.presentation.forms.loginFormConfiguration
 import kotlinx.serialization.json.JsonPrimitive
 
 
@@ -31,69 +31,7 @@ fun AuthScreen(navigationManager: NavigationManager) {
     var selectedTab by rememberSaveable { mutableStateOf(0) }
     val titles = listOf("Login", "Registrar")
 
-    val schema = if (selectedTab == 0) loginSchema else registerSchema
-
-    val formConfiguration = remember(schema) {
-        FormConfiguration(
-            id = schema.id,
-            title = schema.title,
-            description = schema.description,
-            fields = schema.fields.map { field ->
-                FormFieldDefinition(
-                    id = field.id,
-                    label = field.label,
-                    type = when (field.type) {
-                        "email" -> FormFieldType.EMAIL
-                        "password" -> FormFieldType.PASSWORD
-                        "text" -> FormFieldType.TEXT
-                        "submit" -> FormFieldType.SUBMIT
-                        "select" -> FormFieldType.SELECT
-                        "segmented" -> FormFieldType.SEGMENTED_CONTROL
-                        else -> FormFieldType.TEXT
-                    },
-                    placeholder = field.placeholder,
-                    options = field.options,
-                    default = field.default,
-                    validators = field.validators?.map { validator ->
-                        ValidationRule(
-                            type = when (validator.type) {
-                                "required" -> ValidationType.REQUIRED
-                                "email" -> ValidationType.EMAIL
-                                "minLength" -> ValidationType.MIN_LENGTH
-                                "password" -> ValidationType.PASSWORD_STRENGTH
-                                "matchesField" -> ValidationType.MATCHES_FIELD
-                                "cpf" -> ValidationType.CPF
-                                "cnpj" -> ValidationType.CNPJ
-                                "phone" -> ValidationType.PHONE
-                                "pattern" -> ValidationType.PATTERN
-                                else -> ValidationType.CUSTOM
-                            },
-                            message = validator.message,
-                            value = validator.value,
-                            field = validator.field
-                        )
-                    } ?: emptyList(),
-                    visibility = field.visibleIf?.let { visibleIf ->
-                        VisibilityRule(
-                            conditions = visibleIf.map { (fieldId, value) ->
-                                VisibilityCondition(
-                                    fieldId = fieldId,
-                                    operator = ComparisonOperator.EQUALS,
-                                    value = value
-                                )
-                            },
-                            operator = LogicalOperator.AND
-                        )
-                    }
-                )
-            },
-            styling = FormStyling(
-                primaryColor = "#00b942",
-                errorColor = "#d32f2f",
-                successColor = "#00b942"
-            )
-        )
-    }
+    val formConfiguration = if (selectedTab == 0) loginFormConfiguration else registerFormConfiguration
 
     val viewModel = remember(selectedTab) {
         DynamicFormViewModel(initialConfiguration = formConfiguration)

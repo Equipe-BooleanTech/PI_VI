@@ -1,34 +1,48 @@
 package edu.fatec.petwise.features.auth.presentation.forms
 
-import edu.fatec.petwise.features.auth.shared.Field
-import edu.fatec.petwise.features.auth.shared.FormSchema
-import edu.fatec.petwise.features.auth.shared.Validator
+import edu.fatec.petwise.presentation.shared.form.*
 
-val forgotPasswordSchema = FormSchema(
+val forgotPasswordFormConfiguration = FormConfiguration(
     id = "forgot_password_form",
     title = "Recuperar Senha",
     description = "Digite seu email para receber instruções de redefinição de senha.",
+    layout = FormLayout(
+        columns = 1,
+        maxWidth = 400,
+        spacing = 16,
+        responsive = true
+    ),
     fields = listOf(
-        Field(
+        FormFieldDefinition(
             id = "email",
             label = "Email",
-            type = "email",
+            type = FormFieldType.EMAIL,
             placeholder = "seu@email.com",
             validators = listOf(
-                Validator(
-                    type = "required",
+                ValidationRule(
+                    type = ValidationType.REQUIRED,
                     message = "Informe seu email cadastrado"
                 ),
-                Validator(
-                    type = "email",
+                ValidationRule(
+                    type = ValidationType.EMAIL,
                     message = "Por favor, informe um email válido"
                 )
             )
         ),
-        Field(
+        FormFieldDefinition(
             id = "submitForgotPassword",
-            type = "submit",
+            type = FormFieldType.SUBMIT,
             label = "Enviar Link de Recuperação"
         )
+    ),
+    validationBehavior = ValidationBehavior.ON_BLUR,
+    submitBehavior = SubmitBehavior.API_CALL,
+    styling = FormStyling(
+        primaryColor = "#007AFF",
+        errorColor = "#FF3B30",
+        successColor = "#34C759",
+        fieldHeight = 56,
+        borderRadius = 8,
+        spacing = 16
     )
 )

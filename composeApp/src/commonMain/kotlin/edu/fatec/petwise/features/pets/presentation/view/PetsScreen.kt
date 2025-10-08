@@ -20,7 +20,7 @@ import edu.fatec.petwise.features.pets.presentation.components.PetCard
 import edu.fatec.petwise.features.pets.presentation.components.AddPetDialog
 import edu.fatec.petwise.features.pets.presentation.components.FilterBottomSheet
 import edu.fatec.petwise.features.pets.presentation.components.PetErrorSnackbar
-import edu.fatec.petwise.features.pets.presentation.forms.addPetFormSchema
+import edu.fatec.petwise.features.pets.presentation.forms.addPetFormConfiguration
 import edu.fatec.petwise.features.pets.presentation.viewmodel.*
 import edu.fatec.petwise.features.pets.di.PetDependencyContainer
 import edu.fatec.petwise.presentation.theme.PetWiseTheme

@@ -17,7 +17,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import edu.fatec.petwise.presentation.shared.form.*
 import edu.fatec.petwise.features.pets.domain.models.*
-import edu.fatec.petwise.features.pets.presentation.forms.addPetFormSchema
+import edu.fatec.petwise.features.pets.presentation.forms.addPetFormConfiguration
 import edu.fatec.petwise.features.pets.presentation.viewmodel.AddPetViewModel
 import edu.fatec.petwise.features.pets.presentation.viewmodel.AddPetUiEvent
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
@@ -32,49 +32,9 @@ fun AddPetDialog(
 ) {
     val theme = PetWiseTheme.Light
 
-    val formConfiguration = remember {
-        FormConfiguration(
-            id = addPetFormSchema.id,
-            title = addPetFormSchema.title,
-            description = addPetFormSchema.description,
-            fields = addPetFormSchema.fields.map { field ->
-                FormFieldDefinition(
-                    id = field.id,
-                    label = field.label,
-                    type = when (field.type) {
-                        "text" -> FormFieldType.TEXT
-                        "select" -> FormFieldType.SELECT
-                        "segmented" -> FormFieldType.SEGMENTED_CONTROL
-                        "submit" -> FormFieldType.SUBMIT
-                        else -> FormFieldType.TEXT
-                    },
-                    placeholder = field.placeholder,
-                    options = field.options,
-                    default = field.default,
-                    validators = field.validators?.map { validator ->
-                        ValidationRule(
-                            type = when (validator.type) {
-                                "required" -> ValidationType.REQUIRED
-                                "minLength" -> ValidationType.MIN_LENGTH
-                                "pattern" -> ValidationType.PATTERN
-                                "phone" -> ValidationType.PHONE
-                                else -> ValidationType.CUSTOM
-                            },
-                            message = validator.message,
-                            value = validator.value
-                        )
-                    } ?: emptyList()
-                )
-            },
-            styling = FormStyling(
-                primaryColor = "#00b942",
-                errorColor = "#d32f2f",
-                successColor = "#00b942"
-            )
-        )
-    }
+    val formConfiguration = addPetFormConfiguration
 
-    val formViewModel = viewModel<DynamicFormViewModel> {
+    val formViewModel = viewModel<DynamicFormViewModel>(key = "add_pet_form") {
         DynamicFormViewModel(initialConfiguration = formConfiguration)
     }
 

@@ -1,115 +1,180 @@
 package edu.fatec.petwise.features.pets.presentation.forms
 
-import edu.fatec.petwise.features.auth.shared.Field
-import edu.fatec.petwise.features.auth.shared.FormSchema
-import edu.fatec.petwise.features.auth.shared.Validator
+import edu.fatec.petwise.presentation.shared.form.*
 import kotlinx.serialization.json.JsonPrimitive
 
-val addPetFormSchema: FormSchema = FormSchema(
+val addPetFormConfiguration: FormConfiguration = FormConfiguration(
     id = "add_pet_form",
     title = "Adicionar Novo Pet",
     description = "Preencha as informações do pet para adicionar ao sistema.",
+    layout = FormLayout(
+        columns = 1,
+        maxWidth = 600,
+        spacing = 16,
+        responsive = true
+    ),
     fields = listOf(
-        Field(
+        FormFieldDefinition(
             id = "name",
             label = "Nome",
-            type = "text",
+            type = FormFieldType.TEXT,
             placeholder = "Nome do pet",
             validators = listOf(
-                Validator(type = "required", message = "Nome é obrigatório"),
-                Validator(type = "minLength", value = JsonPrimitive(2), message = "Nome deve ter pelo menos 2 caracteres")
-            )
+                ValidationRule(
+                    type = ValidationType.REQUIRED,
+                    message = "Nome é obrigatório"
+                ),
+                ValidationRule(
+                    type = ValidationType.MIN_LENGTH,
+                    value = JsonPrimitive(2),
+                    message = "Nome deve ter pelo menos 2 caracteres"
+                )
+            ),
+            formatting = FieldFormatting(capitalize = true)
         ),
-        Field(
+        FormFieldDefinition(
             id = "breed",
             label = "Raça",
-            type = "text",
+            type = FormFieldType.TEXT,
             placeholder = "Raça do pet",
             validators = listOf(
-                Validator(type = "required", message = "Raça é obrigatória"),
-                Validator(type = "minLength", value = JsonPrimitive(2), message = "Raça deve ter pelo menos 2 caracteres")
-            )
+                ValidationRule(
+                    type = ValidationType.REQUIRED,
+                    message = "Raça é obrigatória"
+                ),
+                ValidationRule(
+                    type = ValidationType.MIN_LENGTH,
+                    value = JsonPrimitive(2),
+                    message = "Raça deve ter pelo menos 2 caracteres"
+                )
+            ),
+            formatting = FieldFormatting(capitalize = true)
         ),
-        Field(
+        FormFieldDefinition(
             id = "species",
             label = "Espécie",
-            type = "select",
+            type = FormFieldType.SELECT,
             options = listOf("Cão", "Gato", "Ave", "Coelho", "Outro"),
             validators = listOf(
-                Validator(type = "required", message = "Selecione a espécie")
+                ValidationRule(
+                    type = ValidationType.REQUIRED,
+                    message = "Selecione a espécie"
+                )
             )
         ),
-        Field(
+        FormFieldDefinition(
             id = "gender",
             label = "Sexo",
-            type = "segmented",
+            type = FormFieldType.SEGMENTED_CONTROL,
             options = listOf("Macho", "Fêmea"),
             validators = listOf(
-                Validator(type = "required", message = "Selecione o sexo")
+                ValidationRule(
+                    type = ValidationType.REQUIRED,
+                    message = "Selecione o sexo"
+                )
             )
         ),
-        Field(
+        FormFieldDefinition(
             id = "age",
             label = "Idade (anos)",
-            type = "text",
+            type = FormFieldType.NUMBER,
             placeholder = "Ex: 2",
             validators = listOf(
-                Validator(type = "required", message = "Idade é obrigatória"),
-                Validator(type = "pattern", value = JsonPrimitive("^[0-9]+$"), message = "Digite apenas números")
+                ValidationRule(
+                    type = ValidationType.REQUIRED,
+                    message = "Idade é obrigatória"
+                ),
+                ValidationRule(
+                    type = ValidationType.NUMERIC,
+                    message = "Digite apenas números"
+                )
             )
         ),
-        Field(
+        FormFieldDefinition(
             id = "weight",
             label = "Peso (kg)",
-            type = "text",
-            placeholder = "Ex: 15",
+            type = FormFieldType.DECIMAL,
+            placeholder = "Ex: 15.5",
             validators = listOf(
-                Validator(type = "required", message = "Peso é obrigatório"),
-                Validator(type = "pattern", value = JsonPrimitive("^[0-9]+(\\.[0-9]+)?$"), message = "Digite um peso válido (ex: 15 ou 15.5)")
+                ValidationRule(
+                    type = ValidationType.REQUIRED,
+                    message = "Peso é obrigatório"
+                ),
+                ValidationRule(
+                    type = ValidationType.DECIMAL,
+                    message = "Digite um peso válido (ex: 15 ou 15.5)"
+                )
             )
         ),
-        Field(
+        FormFieldDefinition(
             id = "healthStatus",
             label = "Status de Saúde",
-            type = "select",
+            type = FormFieldType.SELECT,
             options = listOf("Excelente", "Bom", "Regular", "Atenção", "Crítico"),
             default = JsonPrimitive("Bom"),
             validators = listOf(
-                Validator(type = "required", message = "Selecione o status de saúde")
+                ValidationRule(
+                    type = ValidationType.REQUIRED,
+                    message = "Selecione o status de saúde"
+                )
             )
         ),
-        Field(
+        FormFieldDefinition(
             id = "ownerName",
             label = "Nome do Tutor",
-            type = "text",
+            type = FormFieldType.TEXT,
             placeholder = "Nome completo",
             validators = listOf(
-                Validator(type = "required", message = "Nome do tutor é obrigatório"),
-                Validator(type = "minLength", value = JsonPrimitive(3), message = "Nome deve ter pelo menos 3 caracteres")
-            )
+                ValidationRule(
+                    type = ValidationType.REQUIRED,
+                    message = "Nome do tutor é obrigatório"
+                ),
+                ValidationRule(
+                    type = ValidationType.MIN_LENGTH,
+                    value = JsonPrimitive(3),
+                    message = "Nome deve ter pelo menos 3 caracteres"
+                )
+            ),
+            formatting = FieldFormatting(capitalize = true)
         ),
-        Field(
+        FormFieldDefinition(
             id = "ownerPhone",
             label = "Telefone",
-            type = "text",
+            type = FormFieldType.PHONE,
             placeholder = "(11) 99999-9999",
-            mask = "phone",
             validators = listOf(
-                Validator(type = "required", message = "Telefone é obrigatório"),
-                Validator(type = "phone", message = "Formato de telefone inválido")
-            )
+                ValidationRule(
+                    type = ValidationType.REQUIRED,
+                    message = "Telefone é obrigatório"
+                ),
+                ValidationRule(
+                    type = ValidationType.PHONE,
+                    message = "Formato de telefone inválido"
+                )
+            ),
+            formatting = FieldFormatting(mask = "(##) #####-####")
         ),
-        Field(
+        FormFieldDefinition(
             id = "healthHistory",
             label = "Histórico de Saúde",
-            type = "text",
+            type = FormFieldType.TEXTAREA,
             placeholder = "Descreva o histórico de saúde do pet...",
-            validators = listOf()
+            validators = emptyList()
         ),
-        Field(
+        FormFieldDefinition(
             id = "submit",
             label = "Adicionar Pet",
-            type = "submit"
+            type = FormFieldType.SUBMIT
         )
+    ),
+    validationBehavior = ValidationBehavior.ON_BLUR,
+    submitBehavior = SubmitBehavior.API_CALL,
+    styling = FormStyling(
+        primaryColor = "#007AFF",
+        errorColor = "#FF3B30",
+        successColor = "#34C759",
+        fieldHeight = 56,
+        borderRadius = 8,
+        spacing = 16
     )
 )

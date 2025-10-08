@@ -165,7 +165,7 @@ class DynamicFormViewModel(
         }
     }
 
-    fun updateFieldValue(fieldId: String, newValue: Any?) {
+    fun updateFieldValue(fieldId: String, newValue: Any?, isUserInput: Boolean = true) {
         formScope.launch {
             val currentState = _state.value
             val fieldState = currentState.fieldStates[fieldId] ?: return@launch
@@ -174,7 +174,7 @@ class DynamicFormViewModel(
             val updatedFieldState = fieldState.copy(
                 value = newValue,
                 displayValue = newValue?.toString() ?: "",
-                isTouched = true,
+                isTouched = if (isUserInput) true else fieldState.isTouched,
                 isDirty = oldValue != newValue
             )
 
