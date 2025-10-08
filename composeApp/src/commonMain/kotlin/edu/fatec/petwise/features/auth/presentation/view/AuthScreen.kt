@@ -1,6 +1,7 @@
 package edu.fatec.petwise.features.auth.presentation
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -11,28 +12,94 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.graphics.Color
-import edu.fatec.petwise.features.auth.shared.DynamicAuthFormScreen
-import edu.fatec.petwise.features.auth.shared.FormStore
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.lifecycle.viewmodel.compose.viewModel
+import edu.fatec.petwise.presentation.shared.form.*
+import edu.fatec.petwise.navigation.NavigationManager
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.PetWiseThemeWrapper
 import edu.fatec.petwise.presentation.theme.fromHex
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import edu.fatec.petwise.features.auth.presentation.forms.registerSchema
 import edu.fatec.petwise.features.auth.presentation.forms.loginSchema
+import kotlinx.serialization.json.JsonPrimitive
 
 
-@Preview
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AuthScreen() {
+fun AuthScreen(navigationManager: NavigationManager) {
     var selectedTab by rememberSaveable { mutableStateOf(0) }
     val titles = listOf("Login", "Registrar")
 
     val schema = if (selectedTab == 0) loginSchema else registerSchema
 
-    val formStore = remember(selectedTab) { FormStore(schema) }
+    val formConfiguration = remember(schema) {
+        FormConfiguration(
+            id = schema.id,
+            title = schema.title,
+            description = schema.description,
+            fields = schema.fields.map { field ->
+                FormFieldDefinition(
+                    id = field.id,
+                    label = field.label,
+                    type = when (field.type) {
+                        "email" -> FormFieldType.EMAIL
+                        "password" -> FormFieldType.PASSWORD
+                        "text" -> FormFieldType.TEXT
+                        "submit" -> FormFieldType.SUBMIT
+                        "select" -> FormFieldType.SELECT
+                        "segmented" -> FormFieldType.SEGMENTED_CONTROL
+                        else -> FormFieldType.TEXT
+                    },
+                    placeholder = field.placeholder,
+                    options = field.options,
+                    default = field.default,
+                    validators = field.validators?.map { validator ->
+                        ValidationRule(
+                            type = when (validator.type) {
+                                "required" -> ValidationType.REQUIRED
+                                "email" -> ValidationType.EMAIL
+                                "minLength" -> ValidationType.MIN_LENGTH
+                                "password" -> ValidationType.PASSWORD_STRENGTH
+                                "matchesField" -> ValidationType.MATCHES_FIELD
+                                "cpf" -> ValidationType.CPF
+                                "cnpj" -> ValidationType.CNPJ
+                                "phone" -> ValidationType.PHONE
+                                "pattern" -> ValidationType.PATTERN
+                                else -> ValidationType.CUSTOM
+                            },
+                            message = validator.message,
+                            value = validator.value,
+                            field = validator.field
+                        )
+                    } ?: emptyList(),
+                    visibility = field.visibleIf?.let { visibleIf ->
+                        VisibilityRule(
+                            conditions = visibleIf.map { (fieldId, value) ->
+                                VisibilityCondition(
+                                    fieldId = fieldId,
+                                    operator = ComparisonOperator.EQUALS,
+                                    value = value
+                                )
+                            },
+                            operator = LogicalOperator.AND
+                        )
+                    }
+                )
+            },
+            styling = FormStyling(
+                primaryColor = "#00b942",
+                errorColor = "#d32f2f",
+                successColor = "#00b942"
+            )
+        )
+    }
+    
+    val viewModel = remember(selectedTab) {
+        DynamicFormViewModel(initialConfiguration = formConfiguration)
+    }
 
-    val theme = if (isSystemInDarkTheme()) PetWiseTheme.Dark else PetWiseTheme.Light
+    val theme = PetWiseTheme.Light
 
     PetWiseThemeWrapper(theme) {
         BoxWithConstraints(
@@ -115,7 +182,36 @@ fun AuthScreen() {
 
                     Spacer(Modifier.height(24.dp))
 
-                    DynamicAuthFormScreen(formStore)
+                    key(formConfiguration.id) {
+                        DynamicForm(
+                            viewModel = viewModel,
+                            colorScheme = MaterialTheme.colorScheme.copy(
+                                primary = Color.fromHex(theme.palette.primary),
+                                error = Color.fromHex("#d32f2f")
+                            ),
+                            onSubmitSuccess = { values ->
+                                navigationManager.navigateTo(NavigationManager.Screen.Dashboard)
+                            }
+                        )
+                    }
+                    
+                    if (selectedTab == 0) {
+                        Spacer(Modifier.height(16.dp))
+                        
+                        Text(
+                            text = "Esqueceu sua senha?",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                color = Color.fromHex(theme.palette.primary),
+                                fontWeight = FontWeight.Medium,
+                                textDecoration = TextDecoration.Underline
+                            ),
+                            modifier = Modifier
+                                .clickable {
+                                    navigationManager.navigateTo(NavigationManager.Screen.ForgotPassword)
+                                }
+                                .padding(vertical = 8.dp)
+                        )
+                    }
                 }
             }
         }

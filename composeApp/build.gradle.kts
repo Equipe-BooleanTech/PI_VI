@@ -46,7 +46,6 @@ kotlin {
             implementation(libs.androidx.activity.compose)
 
         }
-        val version = "1.0.0-SNAPSHOT"
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
