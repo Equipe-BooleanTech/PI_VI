@@ -1,15 +1,27 @@
 package edu.fatec.petwise.presentation.shared.form
 
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 
+
+@OptIn(ExperimentalMaterial3Api::class)
 actual class PlatformFormBehavior {
     actual fun shouldShowKeyboardSpacer(): Boolean = false
     actual fun shouldUseNativePickerFor(fieldType: FormFieldType): Boolean = false
@@ -31,21 +43,21 @@ actual object PlatformFormStyling {
         placeholder = colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
     )
     actual fun getTypography(): PlatformTypography = PlatformTypography(
-        fieldLabel = androidx.compose.ui.text.TextStyle(
+        fieldLabel = TextStyle(
             fontSize = 16.sp,
-            fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
+            fontWeight = FontWeight.Medium
         ),
-        fieldText = androidx.compose.ui.text.TextStyle(
+        fieldText = TextStyle(
             fontSize = 16.sp,
-            fontWeight = androidx.compose.ui.text.font.FontWeight.Normal
+            fontWeight = FontWeight.Normal
         ),
-        errorText = androidx.compose.ui.text.TextStyle(
+        errorText = TextStyle(
             fontSize = 12.sp,
-            fontWeight = androidx.compose.ui.text.font.FontWeight.Normal
+            fontWeight = FontWeight.Normal
         ),
-        helperText = androidx.compose.ui.text.TextStyle(
+        helperText = TextStyle(
             fontSize = 12.sp,
-            fontWeight = androidx.compose.ui.text.font.FontWeight.Normal
+            fontWeight = FontWeight.Normal
         )
     )
     actual fun getSpacing(): PlatformSpacing = PlatformSpacing(
@@ -112,59 +124,154 @@ actual class PlatformFileHandling {
     }
 }
 
-@androidx.compose.runtime.Composable
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 actual fun PlatformDatePicker(
     fieldDefinition: FormFieldDefinition,
     fieldState: FieldState,
     onValueChange: (String) -> Unit,
-    modifier: androidx.compose.ui.Modifier
+    modifier: Modifier
 ) {
-    androidx.compose.material3.Text(
-        text = "JVM Date Picker - ${fieldState.displayValue}",
-        modifier = modifier
-    )
+    val datePickerState = rememberDatePickerState()
+    
+    DatePickerDialog(
+        onDismissRequest = { 
+            onValueChange(fieldState.displayValue)
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        val date = java.util.Date(millis)
+                        val formatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                        onValueChange(formatter.format(date))
+                    }
+                }
+            ) {
+                Text("OK")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = { 
+                    onValueChange(fieldState.displayValue)
+                }
+            ) {
+                Text("Cancelar")
+            }
+        }
+    ) {
+        DatePicker(
+            state = datePickerState,
+            title = {
+                Text(
+                    text = fieldDefinition.label ?: "Selecione a Data",
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+        )
+    }
 }
 
-@androidx.compose.runtime.Composable
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 actual fun PlatformTimePicker(
     fieldDefinition: FormFieldDefinition,
     fieldState: FieldState,
     onValueChange: (String) -> Unit,
-    modifier: androidx.compose.ui.Modifier
+    modifier: Modifier
 ) {
-    androidx.compose.material3.Text(
-        text = "JVM Time Picker - ${fieldState.displayValue}",
-        modifier = modifier
+    val timePickerState = rememberTimePickerState(
+        initialHour = 12,
+        initialMinute = 0,
+        is24Hour = true
     )
+    
+    Dialog(
+        onDismissRequest = { 
+            onValueChange(fieldState.displayValue)
+        }
+    ) {
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            tonalElevation = 6.dp
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = fieldDefinition.label ?: "Selecione o Horário",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                
+                TimePicker(
+                    state = timePickerState
+                )
+                
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 24.dp),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextButton(
+                        onClick = { 
+                            onValueChange(fieldState.displayValue)
+                        }
+                    ) {
+                        Text("Cancelar")
+                    }
+                    
+                    Spacer(
+                        modifier = Modifier.width(8.dp)
+                    )
+                    
+                    TextButton(
+                        onClick = {
+                            val hour = timePickerState.hour.toString().padStart(2, '0')
+                            val minute = timePickerState.minute.toString().padStart(2, '0')
+                            onValueChange("$hour:$minute")
+                        }
+                    ) {
+                        Text("OK")
+                    }
+                }
+            }
+        }
+    }
 }
 
-@androidx.compose.runtime.Composable
+@Composable
 actual fun PlatformFilePicker(
     fieldDefinition: FormFieldDefinition,
     fieldState: FieldState,
     onValueChange: (PlatformFile?) -> Unit,
-    modifier: androidx.compose.ui.Modifier
+    modifier: Modifier
 ) {
-    androidx.compose.material3.Button(
+    Button(
         onClick = {  },
         modifier = modifier
     ) {
-        androidx.compose.material3.Text("Pick File")
+        Text("Pick File")
     }
 }
 
-@androidx.compose.runtime.Composable
+@Composable
 actual fun PlatformCameraCapturer(
     fieldDefinition: FormFieldDefinition,
     fieldState: FieldState,
     onValueChange: (PlatformFile?) -> Unit,
-    modifier: androidx.compose.ui.Modifier
+    modifier: Modifier
 ) {
-    androidx.compose.material3.Button(
+    Button(
         onClick = {  },
         modifier = modifier
     ) {
-        androidx.compose.material3.Text("Take Photo")
+        Text("Take Photo")
     }
 }
 

@@ -10,6 +10,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
@@ -351,6 +353,42 @@ private fun RenderFormField(
                 onValueChange = onValueChange,
                 onFocus = onFocus,
                 onBlur = onBlur,
+                colorScheme = colorScheme
+            )
+        }
+
+        FormFieldType.DATE -> {
+            RenderDateField(
+                fieldDefinition = fieldDefinition,
+                fieldState = fieldState,
+                onValueChange = onValueChange,
+                onFocus = onFocus,
+                onBlur = onBlur,
+                fieldHeight = fieldHeight,
+                colorScheme = colorScheme
+            )
+        }
+
+        FormFieldType.TIME -> {
+            RenderTimeField(
+                fieldDefinition = fieldDefinition,
+                fieldState = fieldState,
+                onValueChange = onValueChange,
+                onFocus = onFocus,
+                onBlur = onBlur,
+                fieldHeight = fieldHeight,
+                colorScheme = colorScheme
+            )
+        }
+
+        FormFieldType.DATETIME -> {
+            RenderDateTimeField(
+                fieldDefinition = fieldDefinition,
+                fieldState = fieldState,
+                onValueChange = onValueChange,
+                onFocus = onFocus,
+                onBlur = onBlur,
+                fieldHeight = fieldHeight,
                 colorScheme = colorScheme
             )
         }
@@ -771,6 +809,263 @@ private fun RenderTextAreaField(
         shape = RoundedCornerShape(8.dp),
         maxLines = 5
     )
+}
+
+@Composable
+private fun RenderDateField(
+    fieldDefinition: FormFieldDefinition,
+    fieldState: FieldState,
+    onValueChange: (String) -> Unit,
+    onFocus: () -> Unit,
+    onBlur: () -> Unit,
+    fieldHeight: Dp,
+    colorScheme: ColorScheme
+) {
+    var showDatePicker by remember { mutableStateOf(false) }
+    
+    val isRequired = fieldDefinition.validators.any { it.type == ValidationType.REQUIRED }
+    val labelText = if (isRequired && fieldDefinition.label != null) {
+        "${fieldDefinition.label} *"
+    } else {
+        fieldDefinition.label
+    }
+
+    OutlinedTextField(
+        value = fieldState.displayValue,
+        onValueChange = {},
+        readOnly = true,
+        label = labelText?.let { { Text(it) } },
+        placeholder = fieldDefinition.placeholder?.let { { Text(it) } },
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = fieldHeight)
+            .onFocusChanged { focusState ->
+                if (focusState.isFocused) {
+                    onFocus()
+                    showDatePicker = true
+                }
+            },
+        enabled = fieldState.isEnabled,
+        isError = fieldState.errors.isNotEmpty() && fieldState.isTouched && fieldState.isDirty,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = colorScheme.primary,
+            unfocusedBorderColor = colorScheme.outline,
+            focusedLabelColor = colorScheme.primary,
+            unfocusedLabelColor = colorScheme.onSurfaceVariant,
+            errorBorderColor = colorScheme.error
+        ),
+        shape = RoundedCornerShape(8.dp),
+        trailingIcon = {
+            IconButton(onClick = { showDatePicker = true; onFocus() }) {
+                Icon(
+                    imageVector = Icons.Default.CalendarToday,
+                    contentDescription = "Select Date",
+                    tint = colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    )
+
+    if (showDatePicker) {
+        PlatformDatePicker(
+            fieldDefinition = fieldDefinition,
+            fieldState = fieldState,
+            onValueChange = { newValue ->
+                onValueChange(newValue)
+                showDatePicker = false
+                onBlur()
+            }
+        )
+    }
+}
+
+@Composable
+private fun RenderTimeField(
+    fieldDefinition: FormFieldDefinition,
+    fieldState: FieldState,
+    onValueChange: (String) -> Unit,
+    onFocus: () -> Unit,
+    onBlur: () -> Unit,
+    fieldHeight: Dp,
+    colorScheme: ColorScheme
+) {
+    var showTimePicker by remember { mutableStateOf(false) }
+    
+    val isRequired = fieldDefinition.validators.any { it.type == ValidationType.REQUIRED }
+    val labelText = if (isRequired && fieldDefinition.label != null) {
+        "${fieldDefinition.label} *"
+    } else {
+        fieldDefinition.label
+    }
+
+    OutlinedTextField(
+        value = fieldState.displayValue,
+        onValueChange = {},
+        readOnly = true,
+        label = labelText?.let { { Text(it) } },
+        placeholder = fieldDefinition.placeholder?.let { { Text(it) } },
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = fieldHeight)
+            .onFocusChanged { focusState ->
+                if (focusState.isFocused) {
+                    onFocus()
+                    showTimePicker = true
+                }
+            },
+        enabled = fieldState.isEnabled,
+        isError = fieldState.errors.isNotEmpty() && fieldState.isTouched && fieldState.isDirty,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = colorScheme.primary,
+            unfocusedBorderColor = colorScheme.outline,
+            focusedLabelColor = colorScheme.primary,
+            unfocusedLabelColor = colorScheme.onSurfaceVariant,
+            errorBorderColor = colorScheme.error
+        ),
+        shape = RoundedCornerShape(8.dp),
+        trailingIcon = {
+            IconButton(onClick = { showTimePicker = true; onFocus() }) {
+                Icon(
+                    imageVector = Icons.Default.Schedule,
+                    contentDescription = "Select Time",
+                    tint = colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    )
+
+    if (showTimePicker) {
+        PlatformTimePicker(
+            fieldDefinition = fieldDefinition,
+            fieldState = fieldState,
+            onValueChange = { newValue ->
+                onValueChange(newValue)
+                showTimePicker = false
+                onBlur()
+            }
+        )
+    }
+}
+
+@Composable
+private fun RenderDateTimeField(
+    fieldDefinition: FormFieldDefinition,
+    fieldState: FieldState,
+    onValueChange: (String) -> Unit,
+    onFocus: () -> Unit,
+    onBlur: () -> Unit,
+    fieldHeight: Dp,
+    colorScheme: ColorScheme
+) {
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
+    var dateValue by remember { mutableStateOf("") }
+    var timeValue by remember { mutableStateOf("") }
+    
+    LaunchedEffect(fieldState.displayValue) {
+        val parts = fieldState.displayValue.split(" ")
+        if (parts.size >= 2) {
+            dateValue = parts[0]
+            timeValue = parts[1]
+        }
+    }
+    
+    val isRequired = fieldDefinition.validators.any { it.type == ValidationType.REQUIRED }
+    val labelText = if (isRequired && fieldDefinition.label != null) {
+        "${fieldDefinition.label} *"
+    } else {
+        fieldDefinition.label
+    }
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        OutlinedTextField(
+            value = dateValue,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("${labelText ?: "Date/Time"} - Date") },
+            placeholder = { Text("Select Date") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = fieldHeight),
+            enabled = fieldState.isEnabled,
+            isError = fieldState.errors.isNotEmpty() && fieldState.isTouched && fieldState.isDirty,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = colorScheme.primary,
+                unfocusedBorderColor = colorScheme.outline,
+                focusedLabelColor = colorScheme.primary,
+                unfocusedLabelColor = colorScheme.onSurfaceVariant,
+                errorBorderColor = colorScheme.error
+            ),
+            shape = RoundedCornerShape(8.dp),
+            trailingIcon = {
+                IconButton(onClick = { showDatePicker = true; onFocus() }) {
+                    Icon(
+                        imageVector = Icons.Default.CalendarToday,
+                        contentDescription = "Select Date",
+                        tint = colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        )
+
+        OutlinedTextField(
+            value = timeValue,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("${labelText ?: "Date/Time"} - Time") },
+            placeholder = { Text("Select Time") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = fieldHeight),
+            enabled = fieldState.isEnabled,
+            isError = fieldState.errors.isNotEmpty() && fieldState.isTouched && fieldState.isDirty,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = colorScheme.primary,
+                unfocusedBorderColor = colorScheme.outline,
+                focusedLabelColor = colorScheme.primary,
+                unfocusedLabelColor = colorScheme.onSurfaceVariant,
+                errorBorderColor = colorScheme.error
+            ),
+            shape = RoundedCornerShape(8.dp),
+            trailingIcon = {
+                IconButton(onClick = { showTimePicker = true; onFocus() }) {
+                    Icon(
+                        imageVector = Icons.Default.Schedule,
+                        contentDescription = "Select Time",
+                        tint = colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        )
+    }
+
+    if (showDatePicker) {
+        PlatformDatePicker(
+            fieldDefinition = fieldDefinition,
+            fieldState = fieldState.copy(displayValue = dateValue),
+            onValueChange = { newDate ->
+                dateValue = newDate
+                onValueChange("$newDate $timeValue")
+                showDatePicker = false
+            }
+        )
+    }
+
+    if (showTimePicker) {
+        PlatformTimePicker(
+            fieldDefinition = fieldDefinition,
+            fieldState = fieldState.copy(displayValue = timeValue),
+            onValueChange = { newTime ->
+                timeValue = newTime
+                onValueChange("$dateValue $newTime")
+                showTimePicker = false
+                onBlur()
+            }
+        )
+    }
 }
 
 @Composable

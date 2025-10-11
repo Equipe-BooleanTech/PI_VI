@@ -39,6 +39,7 @@ class NavigationManager {
         object Dashboard : Screen()
         object ForgotPassword : Screen()
         data class ResetPassword(val token: String = "") : Screen()
+        
     }
 
     sealed class TabScreen {

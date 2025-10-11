@@ -1,15 +1,34 @@
 package edu.fatec.petwise.presentation.shared.form
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 
 actual class PlatformFormBehavior {
     actual fun shouldShowKeyboardSpacer(): Boolean = true
@@ -133,6 +152,7 @@ actual class PlatformFileHandling {
     }
 }
 
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 actual fun PlatformDatePicker(
     fieldDefinition: FormFieldDefinition,
@@ -140,13 +160,48 @@ actual fun PlatformDatePicker(
     onValueChange: (String) -> Unit,
     modifier: Modifier
 ) {
-
-    androidx.compose.material3.Text(
-        text = "Android Date Picker - ${fieldState.displayValue}",
-        modifier = modifier
-    )
+    val datePickerState = androidx.compose.material3.rememberDatePickerState()
+    
+    androidx.compose.material3.DatePickerDialog(
+        onDismissRequest = { 
+            onValueChange(fieldState.displayValue)
+        },
+        confirmButton = {
+            androidx.compose.material3.TextButton(
+                onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        val date = java.util.Date(millis)
+                        val formatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                        onValueChange(formatter.format(date))
+                    }
+                }
+            ) {
+                androidx.compose.material3.Text("OK")
+            }
+        },
+        dismissButton = {
+            androidx.compose.material3.TextButton(
+                onClick = { 
+                    onValueChange(fieldState.displayValue)
+                }
+            ) {
+                androidx.compose.material3.Text("Cancelar")
+            }
+        }
+    ) {
+        androidx.compose.material3.DatePicker(
+            state = datePickerState,
+            title = {
+                androidx.compose.material3.Text(
+                    text = fieldDefinition.label ?: "Selecione a Data",
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+        )
+    }
 }
 
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 actual fun PlatformTimePicker(
     fieldDefinition: FormFieldDefinition,
@@ -154,10 +209,68 @@ actual fun PlatformTimePicker(
     onValueChange: (String) -> Unit,
     modifier: Modifier
 ) {
-    androidx.compose.material3.Text(
-        text = "Android Time Picker - ${fieldState.displayValue}",
-        modifier = modifier
+    val timePickerState = androidx.compose.material3.rememberTimePickerState(
+        initialHour = 12,
+        initialMinute = 0,
+        is24Hour = true
     )
+    
+    androidx.compose.ui.window.Dialog(
+        onDismissRequest = { 
+            onValueChange(fieldState.displayValue)
+        }
+    ) {
+        androidx.compose.material3.Surface(
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+            tonalElevation = 6.dp
+        ) {
+            androidx.compose.foundation.layout.Column(
+                modifier = Modifier
+                    .padding(24.dp),
+                horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+            ) {
+                androidx.compose.material3.Text(
+                    text = fieldDefinition.label ?: "Selecione o Horário",
+                    style = androidx.compose.material3.MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                
+                androidx.compose.material3.TimePicker(
+                    state = timePickerState
+                )
+                
+                androidx.compose.foundation.layout.Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 24.dp),
+                    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.End,
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                ) {
+                    androidx.compose.material3.TextButton(
+                        onClick = { 
+                            onValueChange(fieldState.displayValue)
+                        }
+                    ) {
+                        androidx.compose.material3.Text("Cancelar")
+                    }
+                    
+                    androidx.compose.foundation.layout.Spacer(
+                        modifier = Modifier.width(8.dp)
+                    )
+                    
+                    androidx.compose.material3.TextButton(
+                        onClick = {
+                            val hour = timePickerState.hour.toString().padStart(2, '0')
+                            val minute = timePickerState.minute.toString().padStart(2, '0')
+                            onValueChange("$hour:$minute")
+                        }
+                    ) {
+                        androidx.compose.material3.Text("OK")
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable

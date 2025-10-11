@@ -29,6 +29,7 @@ import edu.fatec.petwise.features.dashboard.domain.models.DashboardDataProvider
 import edu.fatec.petwise.features.dashboard.domain.models.DefaultDashboardDataProvider
 import edu.fatec.petwise.features.dashboard.domain.models.UserType
 import edu.fatec.petwise.features.pets.presentation.view.PetsScreen
+import edu.fatec.petwise.features.consultas.presentation.view.ConsultasScreen
 import edu.fatec.petwise.navigation.NavigationManager
 import edu.fatec.petwise.presentation.components.BottomNavigation.BottomNavigationBar
 import edu.fatec.petwise.presentation.components.MoreMenu.MoreMenu
@@ -83,10 +84,13 @@ fun DashboardScreen(
                     }
                 }
                 NavigationManager.TabScreen.Appointments -> {
-                    PlaceholderContent(
-                        paddingValues = paddingValues,
-                        title = "Consultas"
-                    )
+                   Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues)
+                    ) {
+                        ConsultasScreen()
+                    }
                 }
                 NavigationManager.TabScreen.Medication -> {
                     PlaceholderContent(

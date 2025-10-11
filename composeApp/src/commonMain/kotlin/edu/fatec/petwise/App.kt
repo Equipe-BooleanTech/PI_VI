@@ -27,6 +27,7 @@ fun App() {
             is NavigationManager.Screen.Dashboard -> {
                 HomeScreen(navigationManager)
             }
+            
             is NavigationManager.Screen.ForgotPassword -> {
                 ForgotPasswordScreen(navigationManager)
             }

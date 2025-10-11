@@ -238,7 +238,7 @@ private fun getSpeciesColor(species: PetSpecies): Color {
 private fun getSpeciesIcon(species: PetSpecies) = when (species) {
     PetSpecies.DOG -> Icons.Default.Pets
     PetSpecies.CAT -> Icons.Default.Pets
-    PetSpecies.BIRD -> Icons.Default.Flight
+    PetSpecies.BIRD -> Icons.Default.Pets
     PetSpecies.RABBIT -> Icons.Default.Pets
     PetSpecies.OTHER -> Icons.Default.Pets
 }
