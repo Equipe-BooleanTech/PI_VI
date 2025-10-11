@@ -15,7 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import edu.fatec.petwise.features.auth.presentation.forms.resetPasswordSchema
+import edu.fatec.petwise.features.auth.presentation.forms.resetPasswordFormConfiguration
 import edu.fatec.petwise.features.auth.presentation.viewmodel.ResetPasswordViewModel
 import edu.fatec.petwise.presentation.shared.form.*
 import edu.fatec.petwise.navigation.NavigationManager
@@ -30,52 +30,15 @@ fun ResetPasswordScreen(
     resetToken: String,
     viewModel: ResetPasswordViewModel = viewModel { ResetPasswordViewModel() }
 ) {
-    val formConfiguration = remember {
-        FormConfiguration(
-            id = resetPasswordSchema.id,
-            title = resetPasswordSchema.title,
-            description = resetPasswordSchema.description,
-            fields = resetPasswordSchema.fields.map { field ->
-                FormFieldDefinition(
-                    id = field.id,
-                    label = field.label,
-                    type = when (field.type) {
-                        "password" -> FormFieldType.PASSWORD
-                        "submit" -> FormFieldType.SUBMIT
-                        else -> FormFieldType.TEXT
-                    },
-                    placeholder = field.placeholder,
-                    validators = field.validators?.map { validator ->
-                        ValidationRule(
-                            type = when (validator.type) {
-                                "required" -> ValidationType.REQUIRED
-                                "minLength" -> ValidationType.MIN_LENGTH
-                                "password" -> ValidationType.PASSWORD_STRENGTH
-                                "matchesField" -> ValidationType.MATCHES_FIELD
-                                else -> ValidationType.CUSTOM
-                            },
-                            message = validator.message,
-                            value = validator.value,
-                            field = validator.field
-                        )
-                    } ?: emptyList()
-                )
-            },
-            styling = FormStyling(
-                primaryColor = "#00b942", 
-                errorColor = "#d32f2f",
-                successColor = "#00b942"
-            )
-        )
-    }
-    
-    val formViewModel = viewModel<DynamicFormViewModel> {
+    val formConfiguration = resetPasswordFormConfiguration
+
+    val formViewModel = viewModel<DynamicFormViewModel>(key = "reset_password_form") {
         DynamicFormViewModel(initialConfiguration = formConfiguration)
     }
-    
+
     val uiState by viewModel.uiState.collectAsState()
     val theme = PetWiseTheme.Light
-    
+
     LaunchedEffect(resetToken) {
         viewModel.setResetToken(resetToken)
     }

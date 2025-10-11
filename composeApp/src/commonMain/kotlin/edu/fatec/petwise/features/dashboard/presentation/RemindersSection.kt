@@ -32,7 +32,7 @@ fun RemindersSection(
 ) {
     val theme =PetWiseTheme.Light
     val reminders = dataProvider.getReminders(userType)
-        .sortedWith(compareBy<edu.fatec.petwise.features.dashboard.domain.models.ReminderData> { 
+        .sortedWith(compareBy<edu.fatec.petwise.features.dashboard.domain.models.ReminderData> {
              when (it.priority) {
                 PriorityLevel.CRITICAL -> 0
                 PriorityLevel.HIGH -> 1
@@ -41,7 +41,7 @@ fun RemindersSection(
             }
         })
         .take(2)
-    
+
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -66,7 +66,7 @@ fun RemindersSection(
                 )
             )
         }
-        
+
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(8.dp)

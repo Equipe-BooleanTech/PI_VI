@@ -7,27 +7,27 @@ import kotlinx.coroutines.flow.map
 
 class LocalPetDataSourceImpl : LocalPetDataSource {
     private val _pets = MutableStateFlow(generateMockPets())
-    
+
     override fun getAllPets(): Flow<List<Pet>> = _pets
-    
+
     override fun getPetById(id: String): Flow<Pet?> = _pets.map { pets ->
         pets.find { it.id == id }
     }
-    
+
     override suspend fun insertPet(pet: Pet) {
         _pets.value = _pets.value + pet
     }
-    
+
     override suspend fun updatePet(pet: Pet) {
         _pets.value = _pets.value.map { existingPet ->
             if (existingPet.id == pet.id) pet else existingPet
         }
     }
-    
+
     override suspend fun deletePet(id: String) {
         _pets.value = _pets.value.filter { it.id != id }
     }
-    
+
     private fun generateMockPets(): List<Pet> {
         return listOf(
             Pet(
@@ -36,7 +36,7 @@ class LocalPetDataSourceImpl : LocalPetDataSource {
                 breed = "Golden Retriever",
                 species = PetSpecies.DOG,
                 gender = PetGender.MALE,
-                age = 36, // 3 anos
+                age = 36,
                 weight = 28.0f,
                 healthStatus = HealthStatus.GOOD,
                 ownerName = "João Silva",
@@ -53,7 +53,7 @@ class LocalPetDataSourceImpl : LocalPetDataSource {
                 breed = "Siamês",
                 species = PetSpecies.CAT,
                 gender = PetGender.FEMALE,
-                age = 24, // 2 anos
+                age = 24,
                 weight = 4.0f,
                 healthStatus = HealthStatus.EXCELLENT,
                 ownerName = "Maria Santos",
@@ -70,7 +70,7 @@ class LocalPetDataSourceImpl : LocalPetDataSource {
                 breed = "Vira-lata",
                 species = PetSpecies.DOG,
                 gender = PetGender.MALE,
-                age = 48, // 4 anos
+                age = 48,
                 weight = 15.5f,
                 healthStatus = HealthStatus.ATTENTION,
                 ownerName = "Carlos Oliveira",
@@ -87,7 +87,7 @@ class LocalPetDataSourceImpl : LocalPetDataSource {
                 breed = "Poodle",
                 species = PetSpecies.DOG,
                 gender = PetGender.FEMALE,
-                age = 72, // 6 anos
+                age = 72,
                 weight = 12.0f,
                 healthStatus = HealthStatus.REGULAR,
                 ownerName = "Ana Costa",

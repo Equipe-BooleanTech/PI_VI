@@ -31,9 +31,9 @@ fun StatusCardsSection(
     onCardClick: (String) -> Unit
 ) {
     val statusCards = dataProvider.getStatusCards(userType).take(4)
-    
+
     val theme =PetWiseTheme.Light
-    
+
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -57,7 +57,7 @@ fun StatusCardsSection(
                 )
             )
         }
-        
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -70,9 +70,9 @@ fun StatusCardsSection(
                 )
             }
         }
-        
+
         Column(modifier = Modifier.height(12.dp)) {}
-        
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)

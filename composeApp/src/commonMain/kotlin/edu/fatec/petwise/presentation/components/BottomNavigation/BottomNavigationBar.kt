@@ -44,7 +44,7 @@ fun BottomNavigationBar(
     navigationManager: NavigationManager
 ) {
     val currentTabScreen by navigationManager.currentTabScreen.collectAsState()
-    
+
     val navItems = listOf(
         BottomNavItem("Início", Icons.Default.Home, NavigationManager.TabScreen.Home),
         BottomNavItem("Pets", Icons.Default.Pets, NavigationManager.TabScreen.Pets),
@@ -52,7 +52,7 @@ fun BottomNavigationBar(
         BottomNavItem("Medicação", Icons.Default.Medication, NavigationManager.TabScreen.Medication),
         BottomNavItem("Mais", Icons.Default.Menu, NavigationManager.TabScreen.More)
     )
-    
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -69,11 +69,11 @@ fun BottomNavigationBar(
             navItems.forEach { item ->
                 val isSelected = currentTabScreen == item.tabScreen
                 val itemColor = if (isSelected) Color.fromHex("#00b942") else Color.Gray
-                
+
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .clickable { 
+                        .clickable {
                             navigationManager.navigateToTab(item.tabScreen)
                             if (item.tabScreen == NavigationManager.TabScreen.More) {
                                 navigationManager.toggleMoreMenu()

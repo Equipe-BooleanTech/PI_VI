@@ -83,7 +83,7 @@ private fun PetWiseMaskedTextField(
     onValueChange: (Any?) -> Unit
 ) {
     val theme = LocalPetWiseTheme.current
-    
+
     val keyboardType = when {
         fieldDefinition.type == FormFieldType.EMAIL -> KeyboardType.Email
         fieldDefinition.type == FormFieldType.PHONE -> KeyboardType.Phone
@@ -91,29 +91,29 @@ private fun PetWiseMaskedTextField(
         fieldDefinition.type == FormFieldType.NUMBER -> KeyboardType.Number
         else -> KeyboardType.Text
     }
-    
+
     val shouldUseMask = InputMaskBridge.shouldUseMask(fieldDefinition.id, fieldDefinition.formatting)
     val maskPattern = fieldDefinition.formatting?.mask ?: InputMaskBridge.getMaskForFieldId(fieldDefinition.id)
-    
+
     BoxWithConstraints {
         val fieldHeight = PetWiseFormSpacing.getFieldHeight(maxWidth)
-        
+
         if (shouldUseMask && maskPattern != null) {
-            var textFieldValue by remember { 
-                mutableStateOf(TextFieldValue(fieldState.displayValue)) 
+            var textFieldValue by remember {
+                mutableStateOf(TextFieldValue(fieldState.displayValue))
             }
-            
+
             LaunchedEffect(fieldState.displayValue) {
                 if (textFieldValue.text != fieldState.displayValue) {
                     textFieldValue = TextFieldValue(fieldState.displayValue)
                 }
             }
-            
+
             OutlinedTextField(
                 value = textFieldValue,
-                onValueChange = { newValue: TextFieldValue -> 
+                onValueChange = { newValue: TextFieldValue ->
                     val processedValue = InputMasks.processTextWithMask(
-                        textFieldValue, 
+                        textFieldValue,
                         newValue.text,
                         maskPattern
                     )
@@ -126,7 +126,7 @@ private fun PetWiseMaskedTextField(
                     .fillMaxWidth()
                     .heightIn(min = fieldHeight),
                 colors = PetWiseFormColors.getFieldColors(
-                    theme, 
+                    theme,
                     isError = fieldState.errors.isNotEmpty() && fieldState.isTouched
                 ),
                 shape = RoundedCornerShape(8.dp),
@@ -136,7 +136,7 @@ private fun PetWiseMaskedTextField(
                 isError = fieldState.errors.isNotEmpty() && fieldState.isTouched
             )
         } else {
-            // Standard text field without mask
+
             OutlinedTextField(
                 value = fieldState.displayValue,
                 onValueChange = { onValueChange(it) },
@@ -167,10 +167,10 @@ private fun PetWisePasswordField(
 ) {
     val theme = LocalPetWiseTheme.current
     var passwordVisible by remember { mutableStateOf(false) }
-    
+
     BoxWithConstraints {
         val fieldHeight = PetWiseFormSpacing.getFieldHeight(maxWidth)
-        
+
         OutlinedTextField(
             value = fieldState.displayValue,
             onValueChange = { onValueChange(it) },
@@ -218,14 +218,14 @@ private fun PetWiseSegmentedControl(
 ) {
     val theme = LocalPetWiseTheme.current
     val options = fieldDefinition.options ?: emptyList()
-    
+
     val buttonsInRow = options.size
     val buttonSpacing = when {
         buttonsInRow <= 2 -> 8.dp
         buttonsInRow <= 3 -> 6.dp
         else -> 4.dp
     }
-    
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(buttonSpacing, Alignment.CenterHorizontally),
@@ -233,7 +233,7 @@ private fun PetWiseSegmentedControl(
     ) {
         options.forEach { option ->
             val isSelected = fieldState.displayValue == option
-            
+
             ElevatedButton(
                 onClick = { onValueChange(option) },
                 colors = PetWiseFormColors.getSegmentedControlColors(theme, isSelected),
@@ -259,10 +259,10 @@ private fun PetWiseSelectField(
 ) {
     val theme = LocalPetWiseTheme.current
     var expanded by remember { mutableStateOf(false) }
-    
+
     BoxWithConstraints {
         val fieldHeight = PetWiseFormSpacing.getFieldHeight(maxWidth)
-        
+
         ExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = { expanded = !expanded && fieldState.isEnabled }
@@ -287,7 +287,7 @@ private fun PetWiseSelectField(
                 enabled = fieldState.isEnabled,
                 isError = fieldState.errors.isNotEmpty() && fieldState.isTouched
             )
-            
+
             ExposedDropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
@@ -314,14 +314,14 @@ private fun PetWiseButtonGroup(
 ) {
     val theme = LocalPetWiseTheme.current
     val options = fieldDefinition.options ?: emptyList()
-    
+
     val buttonsInRow = options.size
     val buttonSpacing = when {
         buttonsInRow <= 2 -> 8.dp
         buttonsInRow <= 3 -> 6.dp
         else -> 4.dp
     }
-    
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(buttonSpacing, Alignment.CenterHorizontally),

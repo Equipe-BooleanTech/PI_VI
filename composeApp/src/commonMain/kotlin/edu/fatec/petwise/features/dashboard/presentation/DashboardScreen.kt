@@ -29,6 +29,7 @@ import edu.fatec.petwise.features.dashboard.domain.models.DashboardDataProvider
 import edu.fatec.petwise.features.dashboard.domain.models.DefaultDashboardDataProvider
 import edu.fatec.petwise.features.dashboard.domain.models.UserType
 import edu.fatec.petwise.features.pets.presentation.view.PetsScreen
+import edu.fatec.petwise.features.consultas.presentation.view.ConsultasScreen
 import edu.fatec.petwise.navigation.NavigationManager
 import edu.fatec.petwise.presentation.components.BottomNavigation.BottomNavigationBar
 import edu.fatec.petwise.presentation.components.MoreMenu.MoreMenu
@@ -45,10 +46,10 @@ fun DashboardScreen(
 ) {
     val theme = PetWiseTheme.Light
     val scrollState = rememberScrollState()
-    
+
     val currentTabScreen by navigationManager.currentTabScreen.collectAsState()
     val showMoreMenu by navigationManager.showMoreMenu.collectAsState()
-    
+
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             containerColor = Color.White,
@@ -83,56 +84,59 @@ fun DashboardScreen(
                     }
                 }
                 NavigationManager.TabScreen.Appointments -> {
-                    PlaceholderContent(
-                        paddingValues = paddingValues, 
-                        title = "Consultas"
-                    )
+                   Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues)
+                    ) {
+                        ConsultasScreen()
+                    }
                 }
                 NavigationManager.TabScreen.Medication -> {
                     PlaceholderContent(
-                        paddingValues = paddingValues, 
+                        paddingValues = paddingValues,
                         title = "Medicações"
                     )
                 }
                 NavigationManager.TabScreen.Settings -> {
                     PlaceholderContent(
-                        paddingValues = paddingValues, 
+                        paddingValues = paddingValues,
                         title = "Configurações"
                     )
                 }
                 NavigationManager.TabScreen.Help -> {
                     PlaceholderContent(
-                        paddingValues = paddingValues, 
+                        paddingValues = paddingValues,
                         title = "Ajuda"
                     )
                 }
                 NavigationManager.TabScreen.Vaccines -> {
                     PlaceholderContent(
-                        paddingValues = paddingValues, 
+                        paddingValues = paddingValues,
                         title = "Vacinas"
                     )
                 }
                 NavigationManager.TabScreen.Veterinarians -> {
                     PlaceholderContent(
-                        paddingValues = paddingValues, 
+                        paddingValues = paddingValues,
                         title = "Veterinários"
                     )
                 }
                 NavigationManager.TabScreen.Supplies -> {
                     PlaceholderContent(
-                        paddingValues = paddingValues, 
+                        paddingValues = paddingValues,
                         title = "Suprimentos"
                     )
                 }
                 NavigationManager.TabScreen.Pharmacy -> {
                     PlaceholderContent(
-                        paddingValues = paddingValues, 
+                        paddingValues = paddingValues,
                         title = "Farmácias"
                     )
                 }
                 NavigationManager.TabScreen.Labs -> {
                     PlaceholderContent(
-                        paddingValues = paddingValues, 
+                        paddingValues = paddingValues,
                         title = "Exames"
                     )
                 }
@@ -148,7 +152,7 @@ fun DashboardScreen(
                 }
             }
         }
-        
+
         MoreMenu(
             isVisible = showMoreMenu,
             navigationManager = navigationManager,
@@ -201,7 +205,7 @@ fun HomeTabContent(
                             fontSize = 20.sp
                         )
                     )
-                    
+
                     Text(
                         text = dataProvider.getSubGreeting(userType),
                         style = MaterialTheme.typography.bodyMedium.copy(
@@ -211,7 +215,7 @@ fun HomeTabContent(
                     )
                 }
             }
-            
+
             StatusCardsSection(
                 userType = userType,
                 dataProvider = dataProvider,
@@ -225,9 +229,9 @@ fun HomeTabContent(
                     }
                 }
             )
-            
+
             Spacer(modifier = Modifier.height(24.dp))
-            
+
             QuickActionsSection(
                 userType = userType,
                 dataProvider = dataProvider,
@@ -241,9 +245,9 @@ fun HomeTabContent(
                     }
                 }
             )
-            
+
             Spacer(modifier = Modifier.height(24.dp))
-            
+
             RecentActivitiesSection(
                 userType = userType,
                 dataProvider = dataProvider,
@@ -260,9 +264,9 @@ fun HomeTabContent(
                     navigationManager.navigateToTab(NavigationManager.TabScreen.Home)
                 }
             )
-            
+
             Spacer(modifier = Modifier.height(24.dp))
-            
+
             RemindersSection(
                 userType = userType,
                 dataProvider = dataProvider,
@@ -278,7 +282,7 @@ fun HomeTabContent(
                     }
                 }
             )
-            
+
             Spacer(modifier = Modifier.height(24.dp))
         }
     }
@@ -305,9 +309,9 @@ fun PlaceholderContent(
                     fontWeight = FontWeight.Bold
                 )
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             Text(
                 text = "Em desenvolvimento",
                 style = MaterialTheme.typography.bodyLarge

@@ -11,12 +11,12 @@ import kotlinx.coroutines.launch
 class ResetPasswordViewModel(
     private val resetPasswordUseCase: ResetPasswordUseCase = ResetPasswordUseCase()
 ) : ViewModel() {
-    
+
     private val _uiState = MutableStateFlow(ResetPasswordUiState())
     val uiState: StateFlow<ResetPasswordUiState> = _uiState.asStateFlow()
-    
+
     private var resetToken: String = ""
-    
+
     fun setResetToken(token: String) {
         resetToken = token
     }
@@ -28,9 +28,9 @@ class ResetPasswordViewModel(
                 errorMessage = null,
                 successMessage = null
             )
-            
+
             val result = resetPasswordUseCase.execute(resetToken, newPassword)
-            
+
             result.fold(
                 onSuccess = { message ->
                     _uiState.value = _uiState.value.copy(
@@ -48,7 +48,7 @@ class ResetPasswordViewModel(
             )
         }
     }
-    
+
     fun clearError() {
         _uiState.value = _uiState.value.copy(errorMessage = null)
     }

@@ -1,15 +1,27 @@
 package edu.fatec.petwise.presentation.shared.form
 
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 
+
+@OptIn(ExperimentalMaterial3Api::class)
 actual class PlatformFormBehavior {
     actual fun shouldShowKeyboardSpacer(): Boolean = false
     actual fun shouldUseNativePickerFor(fieldType: FormFieldType): Boolean = false
@@ -31,21 +43,21 @@ actual object PlatformFormStyling {
         placeholder = colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
     )
     actual fun getTypography(): PlatformTypography = PlatformTypography(
-        fieldLabel = androidx.compose.ui.text.TextStyle(
+        fieldLabel = TextStyle(
             fontSize = 16.sp,
-            fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
+            fontWeight = FontWeight.Medium
         ),
-        fieldText = androidx.compose.ui.text.TextStyle(
+        fieldText = TextStyle(
             fontSize = 16.sp,
-            fontWeight = androidx.compose.ui.text.font.FontWeight.Normal
+            fontWeight = FontWeight.Normal
         ),
-        errorText = androidx.compose.ui.text.TextStyle(
+        errorText = TextStyle(
             fontSize = 12.sp,
-            fontWeight = androidx.compose.ui.text.font.FontWeight.Normal
+            fontWeight = FontWeight.Normal
         ),
-        helperText = androidx.compose.ui.text.TextStyle(
+        helperText = TextStyle(
             fontSize = 12.sp,
-            fontWeight = androidx.compose.ui.text.font.FontWeight.Normal
+            fontWeight = FontWeight.Normal
         )
     )
     actual fun getSpacing(): PlatformSpacing = PlatformSpacing(
@@ -69,7 +81,7 @@ actual class PlatformInputHandling {
             else -> digits
         }
     }
-    
+
     actual fun formatCurrency(amount: Double, currency: String): String {
         return when (currency) {
             "BRL" -> "R$ %.2f".format(amount)
@@ -77,12 +89,12 @@ actual class PlatformInputHandling {
             else -> "%.2f %s".format(amount, currency)
         }
     }
-    
+
     actual fun formatDate(timestamp: Long, format: String): String {
         return java.text.SimpleDateFormat(format, java.util.Locale.getDefault())
             .format(java.util.Date(timestamp))
     }
-    
+
     actual fun validatePlatformSpecific(fieldType: FormFieldType, value: String): Boolean {
         return when (fieldType) {
             FormFieldType.EMAIL -> {
@@ -98,93 +110,188 @@ actual class PlatformInputHandling {
 
 actual class PlatformFileHandling {
     actual suspend fun pickFile(mimeTypes: List<String>): PlatformFile? {
-        // JVM file picker would need to be implemented with Swing or JavaFX
+
         return null
     }
-    
+
     actual suspend fun pickImage(): PlatformFile? {
-        // JVM image picker would need to be implemented with Swing or JavaFX
+
         return null
     }
-    
+
     actual suspend fun uploadFile(file: PlatformFile, endpoint: String): Result<String> {
         return Result.failure(Exception("File upload not implemented for JVM"))
     }
 }
 
-@androidx.compose.runtime.Composable
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 actual fun PlatformDatePicker(
     fieldDefinition: FormFieldDefinition,
     fieldState: FieldState,
     onValueChange: (String) -> Unit,
-    modifier: androidx.compose.ui.Modifier
+    modifier: Modifier
 ) {
-    androidx.compose.material3.Text(
-        text = "JVM Date Picker - ${fieldState.displayValue}",
-        modifier = modifier
-    )
+    val datePickerState = rememberDatePickerState()
+    
+    DatePickerDialog(
+        onDismissRequest = { 
+            onValueChange(fieldState.displayValue)
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        val date = java.util.Date(millis)
+                        val formatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                        onValueChange(formatter.format(date))
+                    }
+                }
+            ) {
+                Text("OK")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = { 
+                    onValueChange(fieldState.displayValue)
+                }
+            ) {
+                Text("Cancelar")
+            }
+        }
+    ) {
+        DatePicker(
+            state = datePickerState,
+            title = {
+                Text(
+                    text = fieldDefinition.label ?: "Selecione a Data",
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+        )
+    }
 }
 
-@androidx.compose.runtime.Composable
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 actual fun PlatformTimePicker(
     fieldDefinition: FormFieldDefinition,
     fieldState: FieldState,
     onValueChange: (String) -> Unit,
-    modifier: androidx.compose.ui.Modifier
+    modifier: Modifier
 ) {
-    androidx.compose.material3.Text(
-        text = "JVM Time Picker - ${fieldState.displayValue}",
-        modifier = modifier
+    val timePickerState = rememberTimePickerState(
+        initialHour = 12,
+        initialMinute = 0,
+        is24Hour = true
     )
+    
+    Dialog(
+        onDismissRequest = { 
+            onValueChange(fieldState.displayValue)
+        }
+    ) {
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            tonalElevation = 6.dp
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = fieldDefinition.label ?: "Selecione o Horário",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                
+                TimePicker(
+                    state = timePickerState
+                )
+                
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 24.dp),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextButton(
+                        onClick = { 
+                            onValueChange(fieldState.displayValue)
+                        }
+                    ) {
+                        Text("Cancelar")
+                    }
+                    
+                    Spacer(
+                        modifier = Modifier.width(8.dp)
+                    )
+                    
+                    TextButton(
+                        onClick = {
+                            val hour = timePickerState.hour.toString().padStart(2, '0')
+                            val minute = timePickerState.minute.toString().padStart(2, '0')
+                            onValueChange("$hour:$minute")
+                        }
+                    ) {
+                        Text("OK")
+                    }
+                }
+            }
+        }
+    }
 }
 
-@androidx.compose.runtime.Composable
+@Composable
 actual fun PlatformFilePicker(
     fieldDefinition: FormFieldDefinition,
     fieldState: FieldState,
     onValueChange: (PlatformFile?) -> Unit,
-    modifier: androidx.compose.ui.Modifier
+    modifier: Modifier
 ) {
-    androidx.compose.material3.Button(
-        onClick = { /* Launch JVM file picker */ },
+    Button(
+        onClick = {  },
         modifier = modifier
     ) {
-        androidx.compose.material3.Text("Pick File")
+        Text("Pick File")
     }
 }
 
-@androidx.compose.runtime.Composable
+@Composable
 actual fun PlatformCameraCapturer(
     fieldDefinition: FormFieldDefinition,
     fieldState: FieldState,
     onValueChange: (PlatformFile?) -> Unit,
-    modifier: androidx.compose.ui.Modifier
+    modifier: Modifier
 ) {
-    androidx.compose.material3.Button(
-        onClick = { /* Launch JVM camera */ },
+    Button(
+        onClick = {  },
         modifier = modifier
     ) {
-        androidx.compose.material3.Text("Take Photo")
+        Text("Take Photo")
     }
 }
 
 actual object PlatformAccessibility {
     actual fun announceForAccessibility(message: String) {
-        // JVM accessibility announcements would need platform-specific implementation
+
     }
-    
+
     actual fun setContentDescription(elementId: String, description: String) {
-        // JVM content descriptions would need platform-specific implementation
+
     }
-    
+
     actual fun shouldUseHighContrast(): Boolean {
         return false
     }
-    
+
     actual fun shouldUseLargeText(): Boolean {
         return false
     }
-    
+
     actual fun shouldReduceMotion(): Boolean {
         return false
     }
@@ -192,40 +299,40 @@ actual object PlatformAccessibility {
 
 actual object PlatformHaptics {
     actual fun performLightImpact() {
-        // JVM doesn't support haptic feedback
+
     }
-    
+
     actual fun performMediumImpact() {
-        // JVM doesn't support haptic feedback
+
     }
-    
+
     actual fun performHeavyImpact() {
-        // JVM doesn't support haptic feedback
+
     }
-    
+
     actual fun performSelectionChanged() {
-        // JVM doesn't support haptic feedback
+
     }
-    
+
     actual fun performNotificationSuccess() {
-        // JVM doesn't support haptic feedback
+
     }
-    
+
     actual fun performNotificationWarning() {
-        // JVM doesn't support haptic feedback
+
     }
-    
+
     actual fun performNotificationError() {
-        // JVM doesn't support haptic feedback
+
     }
 }
 
 actual object PlatformValidation {
     actual fun validateBankAccount(accountNumber: String, bankCode: String): Boolean {
-        // Basic validation - could be enhanced with proper algorithms
+
         return accountNumber.isNotBlank() && bankCode.isNotBlank()
     }
-    
+
     actual fun validateGovernmentId(id: String, type: String): Boolean {
         return when (type.uppercase()) {
             "CPF" -> validateCPF(id)
@@ -233,20 +340,20 @@ actual object PlatformValidation {
             else -> true
         }
     }
-    
+
     actual fun validatePostalCode(code: String): Boolean {
-        // Brazilian CEP format: XXXXX-XXX
+
         return code.matches(Regex("^\\d{5}-?\\d{3}$"))
     }
-    
+
     actual fun validateCreditCard(number: String): Boolean {
         val cleanNumber = number.replace(Regex("[^0-9]"), "")
         if (cleanNumber.length < 13 || cleanNumber.length > 19) return false
-        
-        // Luhn algorithm
+
+
         var sum = 0
         var alternate = false
-        
+
         for (i in cleanNumber.length - 1 downTo 0) {
             var n = cleanNumber[i].toString().toInt()
             if (alternate) {
@@ -258,55 +365,55 @@ actual object PlatformValidation {
             sum += n
             alternate = !alternate
         }
-        
+
         return sum % 10 == 0
     }
-    
+
     private fun validateCPF(cpf: String): Boolean {
         val cleanCpf = cpf.replace(Regex("[^0-9]"), "")
         if (cleanCpf.length != 11) return false
-        
-        // Check for known invalid sequences
+
+
         if (cleanCpf.all { it == cleanCpf[0] }) return false
-        
-        // Validate check digits
+
+
         val digits = cleanCpf.map { it.toString().toInt() }
-        
+
         val sum1 = (0..8).sumOf { digits[it] * (10 - it) }
         val checkDigit1 = 11 - (sum1 % 11)
         val validDigit1 = if (checkDigit1 >= 10) 0 else checkDigit1
-        
+
         if (digits[9] != validDigit1) return false
-        
+
         val sum2 = (0..9).sumOf { digits[it] * (11 - it) }
         val checkDigit2 = 11 - (sum2 % 11)
         val validDigit2 = if (checkDigit2 >= 10) 0 else checkDigit2
-        
+
         return digits[10] == validDigit2
     }
-    
+
     private fun validateCNPJ(cnpj: String): Boolean {
         val cleanCnpj = cnpj.replace(Regex("[^0-9]"), "")
         if (cleanCnpj.length != 14) return false
-        
-        // Check for known invalid sequences
+
+
         if (cleanCnpj.all { it == cleanCnpj[0] }) return false
-        
-        // Validate check digits
+
+
         val digits = cleanCnpj.map { it.toString().toInt() }
-        
+
         val weights1 = listOf(5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2)
         val sum1 = (0..11).sumOf { digits[it] * weights1[it] }
         val checkDigit1 = 11 - (sum1 % 11)
         val validDigit1 = if (checkDigit1 >= 10) 0 else checkDigit1
-        
+
         if (digits[12] != validDigit1) return false
-        
+
         val weights2 = listOf(6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2)
         val sum2 = (0..12).sumOf { digits[it] * weights2[it] }
         val checkDigit2 = 11 - (sum2 % 11)
         val validDigit2 = if (checkDigit2 >= 10) 0 else checkDigit2
-        
+
         return digits[13] == validDigit2
     }
 }

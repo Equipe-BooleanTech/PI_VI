@@ -10,7 +10,7 @@ sealed class FormError {
     abstract val id: String
     abstract val message: String
     abstract val timestamp: Long
-    
+
     data class ValidationError(
         override val id: String,
         override val message: String,
@@ -18,7 +18,7 @@ sealed class FormError {
         val fieldId: String,
         val validationType: ValidationType
     ) : FormError()
-    
+
     data class ApiError(
         override val id: String,
         override val message: String,
@@ -27,21 +27,21 @@ sealed class FormError {
         val details: Map<String, Any> = emptyMap(),
         val retryable: Boolean = true
     ) : FormError()
-    
+
     data class NetworkError(
         override val id: String,
         override val message: String,
         override val timestamp: Long = currentTimeMs(),
         val cause: Throwable? = null
     ) : FormError()
-    
+
     data class BusinessLogicError(
         override val id: String,
         override val message: String,
         override val timestamp: Long = currentTimeMs(),
         val context: Map<String, Any> = emptyMap()
     ) : FormError()
-    
+
     data class SystemError(
         override val id: String,
         override val message: String,
@@ -71,7 +71,7 @@ interface ErrorMessageProvider {
         fieldId: String,
         context: Map<String, Any> = emptyMap()
     ): Result<String>
-    
+
     suspend fun getApiErrorMessage(
         errorCode: String,
         context: Map<String, Any> = emptyMap()
@@ -79,7 +79,7 @@ interface ErrorMessageProvider {
 }
 
 class DefaultErrorMessageProvider : ErrorMessageProvider {
-    
+
     private val validationMessages = mapOf(
         ValidationType.REQUIRED to "Este campo é obrigatório",
         ValidationType.EMAIL to "Digite um email válido",
@@ -97,7 +97,7 @@ class DefaultErrorMessageProvider : ErrorMessageProvider {
         ValidationType.MATCHES_FIELD to "Os campos não coincidem",
         ValidationType.UNIQUE to "Este valor já está em uso"
     )
-    
+
     override suspend fun getErrorMessage(
         errorType: ValidationType,
         fieldId: String,
@@ -107,7 +107,7 @@ class DefaultErrorMessageProvider : ErrorMessageProvider {
             validationMessages[errorType] ?: "Erro de validação"
         )
     }
-    
+
     override suspend fun getApiErrorMessage(
         errorCode: String,
         context: Map<String, Any>
@@ -130,7 +130,7 @@ sealed class ErrorHandlingResult {
 }
 
 class DefaultErrorHandler : ErrorHandler {
-    
+
     override suspend fun handleError(error: FormError): ErrorHandlingResult {
         return when (error) {
             is FormError.NetworkError -> ErrorHandlingResult.Retry(delayMs = 2000)
@@ -144,7 +144,7 @@ class DefaultErrorHandler : ErrorHandler {
             else -> ErrorHandlingResult.ShowMessage(error.message)
         }
     }
-    
+
     override fun canHandle(error: FormError): Boolean = true
 }
 
@@ -153,7 +153,7 @@ interface ErrorAggregator {
         formId: String,
         fieldValues: Map<String, Any>
     ): List<FormError>
-    
+
     suspend fun processApiErrors(
         response: Map<String, Any>
     ): List<FormError>
@@ -162,19 +162,19 @@ interface ErrorAggregator {
 class DefaultErrorAggregator(
     private val errorMessageProvider: ErrorMessageProvider
 ) : ErrorAggregator {
-    
+
     override suspend fun collectErrors(
         formId: String,
         fieldValues: Map<String, Any>
     ): List<FormError> {
         return emptyList()
     }
-    
+
     override suspend fun processApiErrors(
         response: Map<String, Any>
     ): List<FormError> {
         val errors = mutableListOf<FormError>()
-        
+
         response["field_errors"]?.let { fieldErrors ->
             if (fieldErrors is Map<*, *>) {
                 fieldErrors.forEach { (fieldId, errorMessages) ->
@@ -193,7 +193,7 @@ class DefaultErrorAggregator(
                 }
             }
         }
-        
+
         response["errors"]?.let { globalErrors ->
             if (globalErrors is List<*>) {
                 globalErrors.filterIsInstance<String>().forEach { message ->
@@ -207,7 +207,7 @@ class DefaultErrorAggregator(
                 }
             }
         }
-        
+
         return errors
     }
 }

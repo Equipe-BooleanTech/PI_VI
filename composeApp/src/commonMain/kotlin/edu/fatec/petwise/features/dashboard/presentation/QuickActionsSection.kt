@@ -32,7 +32,7 @@ fun QuickActionsSection(
 ) {
     val theme = PetWiseTheme.Light
     val quickActions = dataProvider.getQuickActions(userType).take(4)
-    
+
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -56,7 +56,7 @@ fun QuickActionsSection(
                 )
             )
         }
-        
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -69,9 +69,9 @@ fun QuickActionsSection(
                 )
             }
         }
-        
+
         Column(modifier = Modifier.height(12.dp)) {}
-        
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)

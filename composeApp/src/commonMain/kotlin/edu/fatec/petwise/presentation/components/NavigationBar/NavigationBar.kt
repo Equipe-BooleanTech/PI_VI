@@ -105,7 +105,7 @@ private fun LargeScreenTopNavigation(navItems: List<NavItem>) {
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 navItems.forEach { item ->
                     TextButton(
-                        onClick = { /* TODO: Navegação */ },
+                        onClick = {  },
                         colors = ButtonDefaults.textButtonColors(contentColor = Branco)
                     ) {
                         Text(text = item.label, style = MaterialTheme.typography.bodyLarge)
@@ -115,13 +115,13 @@ private fun LargeScreenTopNavigation(navItems: List<NavItem>) {
 
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedButton(
-                    onClick = { /* TODO: Login */ },
+                    onClick = {  },
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = Branco)
                 ) {
                     Text("Login")
                 }
                 Button(
-                    onClick = { /* TODO: Cadastro */ },
+                    onClick = {  },
                     colors = ButtonDefaults.buttonColors(containerColor = VerdeMenta, contentColor = Branco)
                 ) {
                     Text("Cadastrar")

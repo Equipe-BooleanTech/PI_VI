@@ -44,10 +44,10 @@ fun ActivityItem(
     modifier: Modifier = Modifier
 ) {
     val theme =PetWiseTheme.Light
-    
+
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
-    
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -85,7 +85,7 @@ fun ActivityItem(
                 modifier = Modifier.size(22.dp)
             )
         }
-        
+
         Spacer(modifier = Modifier.width(12.dp))
 
         Column(
@@ -100,7 +100,7 @@ fun ActivityItem(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            
+
             Text(
                 text = activityData.description,
                 style = MaterialTheme.typography.bodySmall.copy(
@@ -111,7 +111,7 @@ fun ActivityItem(
                 overflow = TextOverflow.Ellipsis
             )
         }
-        
+
         Text(
             text = activityData.date,
             style = MaterialTheme.typography.bodySmall.copy(

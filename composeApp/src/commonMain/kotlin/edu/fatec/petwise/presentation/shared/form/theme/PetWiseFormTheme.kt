@@ -10,8 +10,8 @@ import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.fromHex
 import androidx.compose.ui.unit.dp
 
-val LocalPetWiseTheme = staticCompositionLocalOf<ThemeDefinition> { 
-    PetWiseTheme.Light 
+val LocalPetWiseTheme = staticCompositionLocalOf<ThemeDefinition> {
+    PetWiseTheme.Light
 }
 
 @Composable
@@ -21,35 +21,35 @@ fun createPetWiseColorScheme(petWiseTheme: ThemeDefinition): ColorScheme {
         onPrimary = Color.White,
         primaryContainer = Color.fromHex(petWiseTheme.palette.primaryVariant),
         onPrimaryContainer = Color.fromHex(petWiseTheme.palette.textPrimary),
-        
+
         secondary = Color.fromHex(petWiseTheme.palette.secondary),
         onSecondary = Color.fromHex(petWiseTheme.palette.textPrimary),
         secondaryContainer = Color.fromHex(petWiseTheme.palette.cardBackground),
         onSecondaryContainer = Color.fromHex(petWiseTheme.palette.textPrimary),
-        
+
         tertiary = Color.fromHex(petWiseTheme.palette.accent),
         onTertiary = Color.White,
-        
+
         background = Color.fromHex(petWiseTheme.palette.inputBackground),
         onBackground = Color.fromHex(petWiseTheme.palette.textPrimary),
-        
+
         surface = Color.fromHex(petWiseTheme.palette.inputBackground),
         onSurface = Color.fromHex(petWiseTheme.palette.textPrimary),
         surfaceVariant = Color.fromHex(petWiseTheme.palette.cardBackground),
         onSurfaceVariant = Color.fromHex(petWiseTheme.palette.textSecondary),
-        
+
         surfaceTint = Color.fromHex(petWiseTheme.palette.primary),
         inverseSurface = Color.fromHex(petWiseTheme.palette.textPrimary),
         inverseOnSurface = Color.fromHex(petWiseTheme.palette.inputBackground),
-        
+
         error = Color.fromHex("#ff0000"),
         onError = Color.White,
         errorContainer = Color.fromHex("#FFEBEE"),
         onErrorContainer = Color.fromHex("#d32f2f"),
-        
+
         outline = Color.fromHex(petWiseTheme.palette.textSecondary),
         outlineVariant = Color.fromHex(petWiseTheme.palette.border),
-        
+
         scrim = Color.Black.copy(alpha = 0.32f),
         surfaceBright = Color.fromHex(petWiseTheme.palette.inputBackground),
         surfaceContainer = Color.fromHex(petWiseTheme.palette.cardBackground),
@@ -68,7 +68,7 @@ fun PetWiseFormTheme(
     content: @Composable () -> Unit
 ) {
     val colorScheme = createPetWiseColorScheme(petWiseTheme)
-    
+
     CompositionLocalProvider(LocalPetWiseTheme provides petWiseTheme) {
         MaterialTheme(
             colorScheme = colorScheme,
@@ -79,7 +79,7 @@ fun PetWiseFormTheme(
 }
 
 object PetWiseFormColors {
-    
+
     @Composable
     fun getFieldColors(
         petWiseTheme: ThemeDefinition = LocalPetWiseTheme.current,
@@ -87,13 +87,13 @@ object PetWiseFormColors {
         isFocused: Boolean = false
     ): TextFieldColors {
         return OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = if (isError) Color.fromHex("#ff0000") 
+            focusedBorderColor = if (isError) Color.fromHex("#ff0000")
                 else Color.fromHex(petWiseTheme.palette.primary),
-            unfocusedBorderColor = if (isError) Color.fromHex("#ff0000") 
+            unfocusedBorderColor = if (isError) Color.fromHex("#ff0000")
                 else Color.fromHex(petWiseTheme.palette.textSecondary),
-            focusedLabelColor = if (isError) Color.fromHex("#ff0000") 
+            focusedLabelColor = if (isError) Color.fromHex("#ff0000")
                 else Color.fromHex(petWiseTheme.palette.primary),
-            unfocusedLabelColor = if (isError) Color.fromHex("#ff0000") 
+            unfocusedLabelColor = if (isError) Color.fromHex("#ff0000")
                 else Color.fromHex(petWiseTheme.palette.textSecondary),
             focusedContainerColor = Color.White,
             unfocusedContainerColor = Color.White,
@@ -105,7 +105,7 @@ object PetWiseFormColors {
             unfocusedPlaceholderColor = Color.fromHex(petWiseTheme.palette.textSecondary).copy(alpha = 0.6f)
         )
     }
-    
+
     @Composable
     fun getPrimaryButtonColors(
         petWiseTheme: ThemeDefinition = LocalPetWiseTheme.current
@@ -117,24 +117,24 @@ object PetWiseFormColors {
             disabledContentColor = Color.fromHex(petWiseTheme.palette.textSecondary).copy(alpha = 0.6f)
         )
     }
-    
+
     @Composable
     fun getSegmentedControlColors(
         petWiseTheme: ThemeDefinition = LocalPetWiseTheme.current,
         isSelected: Boolean
     ): ButtonColors {
         return ButtonDefaults.buttonColors(
-            containerColor = if (isSelected) 
-                Color.fromHex(petWiseTheme.palette.primary) 
-            else 
+            containerColor = if (isSelected)
+                Color.fromHex(petWiseTheme.palette.primary)
+            else
                 Color.White,
-            contentColor = if (isSelected) 
-                Color.White 
-            else 
+            contentColor = if (isSelected)
+                Color.White
+            else
                 Color.fromHex(petWiseTheme.palette.textPrimary)
         )
     }
-    
+
     @Composable
     fun getOutlinedButtonColors(
         petWiseTheme: ThemeDefinition = LocalPetWiseTheme.current
@@ -144,7 +144,7 @@ object PetWiseFormColors {
             disabledContentColor = Color.fromHex(petWiseTheme.palette.textSecondary).copy(alpha = 0.6f)
         )
     }
-    
+
     @Composable
     fun getErrorTextColor(): Color {
         return Color.fromHex("#d32f2f")
@@ -152,7 +152,7 @@ object PetWiseFormColors {
 }
 
 object PetWiseFormSpacing {
-    
+
     @Composable
     fun getFieldSpacing(screenWidth: androidx.compose.ui.unit.Dp): androidx.compose.ui.unit.Dp {
         return when {
@@ -161,7 +161,7 @@ object PetWiseFormSpacing {
             else -> 20.dp
         }
     }
-    
+
     @Composable
     fun getFieldHeight(screenWidth: androidx.compose.ui.unit.Dp): androidx.compose.ui.unit.Dp {
         return when {
@@ -169,7 +169,7 @@ object PetWiseFormSpacing {
             else -> 56.dp
         }
     }
-    
+
     @Composable
     fun getButtonHeight(screenWidth: androidx.compose.ui.unit.Dp): androidx.compose.ui.unit.Dp {
         return when {

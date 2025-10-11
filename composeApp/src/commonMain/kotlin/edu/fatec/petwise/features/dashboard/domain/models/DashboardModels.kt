@@ -16,7 +16,7 @@ enum class PriorityLevel(val displayName: String, val color: String) {
     HIGH("Alta", "#FF9800"),
     MEDIUM("Média", "#FFEB3B"),
     LOW("Baixa", "#4CAF50");
-    
+
     companion object {
         fun fromString(value: String): PriorityLevel {
             return when (value.lowercase()) {

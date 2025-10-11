@@ -12,10 +12,10 @@ import kotlinx.coroutines.launch
 class ForgotPasswordViewModel(
     private val requestPasswordResetUseCase: RequestPasswordResetUseCase = RequestPasswordResetUseCase()
 ) : ViewModel() {
-    
+
     private val _uiState = MutableStateFlow(ForgotPasswordUiState())
     val uiState: StateFlow<ForgotPasswordUiState> = _uiState.asStateFlow()
-    
+
     fun requestPasswordReset(email: String) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(
@@ -23,9 +23,9 @@ class ForgotPasswordViewModel(
                 errorMessage = null,
                 successMessage = null
             )
-            
+
             val result = requestPasswordResetUseCase.execute(email)
-            
+
             result.fold(
                 onSuccess = { message ->
                     _uiState.value = _uiState.value.copy(
@@ -43,11 +43,11 @@ class ForgotPasswordViewModel(
             )
         }
     }
-    
+
     fun clearError() {
         _uiState.value = _uiState.value.copy(errorMessage = null)
     }
-    
+
     fun reset() {
         _uiState.value = ForgotPasswordUiState()
     }

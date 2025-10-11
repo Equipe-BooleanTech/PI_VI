@@ -140,12 +140,12 @@ data class VisibilityCondition(
 enum class LogicalOperator { AND, OR }
 
 @Serializable
-enum class ComparisonOperator { 
-    EQUALS, 
-    NOT_EQUALS, 
-    CONTAINS, 
-    NOT_CONTAINS, 
-    GREATER_THAN, 
+enum class ComparisonOperator {
+    EQUALS,
+    NOT_EQUALS,
+    CONTAINS,
+    NOT_CONTAINS,
+    GREATER_THAN,
     LESS_THAN,
     IN_LIST,
     NOT_IN_LIST

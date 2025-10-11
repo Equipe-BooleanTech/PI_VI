@@ -13,7 +13,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import edu.fatec.petwise.features.auth.presentation.forms.forgotPasswordSchema
+import edu.fatec.petwise.features.auth.presentation.forms.forgotPasswordFormConfiguration
 import edu.fatec.petwise.features.auth.presentation.viewmodel.ForgotPasswordViewModel
 import edu.fatec.petwise.presentation.shared.form.*
 import edu.fatec.petwise.navigation.NavigationManager
@@ -28,50 +28,15 @@ fun ForgotPasswordScreen(
     navigationManager: NavigationManager,
     viewModel: ForgotPasswordViewModel = viewModel { ForgotPasswordViewModel() }
 ) {
-    val formConfiguration = remember {
-        FormConfiguration(
-            id = forgotPasswordSchema.id,
-            title = forgotPasswordSchema.title,
-            description = forgotPasswordSchema.description,
-            fields = forgotPasswordSchema.fields.map { field ->
-                FormFieldDefinition(
-                    id = field.id,
-                    label = field.label,
-                    type = when (field.type) {
-                        "email" -> FormFieldType.EMAIL
-                        "submit" -> FormFieldType.SUBMIT
-                        else -> FormFieldType.TEXT
-                    },
-                    placeholder = field.placeholder,
-                    validators = field.validators?.map { validator ->
-                        ValidationRule(
-                            type = when (validator.type) {
-                                "required" -> ValidationType.REQUIRED
-                                "email" -> ValidationType.EMAIL
-                                else -> ValidationType.CUSTOM
-                            },
-                            message = validator.message,
-                            value = validator.value,
-                            field = validator.field
-                        )
-                    } ?: emptyList()
-                )
-            },
-            styling = FormStyling(
-                primaryColor = "#00b942", 
-                errorColor = "#d32f2f",
-                successColor = "#00b942"
-            )
-        )
-    }
-    
-    val formViewModel = viewModel<DynamicFormViewModel> {
+    val formConfiguration = forgotPasswordFormConfiguration
+
+    val formViewModel = viewModel<DynamicFormViewModel>(key = "forgot_password_form") {
         DynamicFormViewModel(initialConfiguration = formConfiguration)
     }
-    
+
     val uiState by viewModel.uiState.collectAsState()
     val theme = PetWiseTheme.Light
-    
+
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
@@ -125,25 +90,8 @@ fun ForgotPasswordScreen(
                         onBackToLogin = { navigationManager.navigateTo(NavigationManager.Screen.Auth) }
                     )
                 } else {
-                    Text(
-                        text = "Recuperar Senha",
-                        style = MaterialTheme.typography.headlineSmall.copy(
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
 
                     Spacer(Modifier.height(8.dp))
-
-                    Text(
-                        text = "Digite seu email para receber instruções de redefinição de senha.",
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        ),
-                        textAlign = TextAlign.Center
-                    )
-
-                    Spacer(Modifier.height(24.dp))
 
                     uiState.errorMessage?.let {
                         Text(

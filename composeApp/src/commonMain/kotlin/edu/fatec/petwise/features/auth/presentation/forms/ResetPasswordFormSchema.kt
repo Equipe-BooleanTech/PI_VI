@@ -1,57 +1,71 @@
 package edu.fatec.petwise.features.auth.presentation.forms
 
-import edu.fatec.petwise.features.auth.shared.Field
-import edu.fatec.petwise.features.auth.shared.FormSchema
-import edu.fatec.petwise.features.auth.shared.Validator
+import edu.fatec.petwise.presentation.shared.form.*
 import kotlinx.serialization.json.JsonPrimitive
 
-val resetPasswordSchema = FormSchema(
+val resetPasswordFormConfiguration = FormConfiguration(
     id = "reset_password_form",
     title = "Criar Nova Senha",
     description = "Digite sua nova senha para acessar sua conta.",
+    layout = FormLayout(
+        columns = 1,
+        maxWidth = 400,
+        spacing = 16,
+        responsive = true
+    ),
     fields = listOf(
-        Field(
+        FormFieldDefinition(
             id = "newPassword",
             label = "Nova Senha",
-            type = "password",
+            type = FormFieldType.PASSWORD,
             placeholder = "Digite sua nova senha",
             validators = listOf(
-                Validator(
-                    type = "required",
+                ValidationRule(
+                    type = ValidationType.REQUIRED,
                     message = "Informe sua nova senha"
                 ),
-                Validator(
-                    type = "minLength", 
+                ValidationRule(
+                    type = ValidationType.MIN_LENGTH,
                     value = JsonPrimitive(8),
                     message = "A senha deve ter pelo menos 8 caracteres"
                 ),
-                Validator(
-                    type = "password",
+                ValidationRule(
+                    type = ValidationType.PASSWORD_STRENGTH,
                     message = "A senha deve conter letras e números"
                 )
             )
         ),
-        Field(
+        FormFieldDefinition(
             id = "confirmNewPassword",
             label = "Confirmar Nova Senha",
-            type = "password",
+            type = FormFieldType.PASSWORD,
             placeholder = "Confirme sua nova senha",
             validators = listOf(
-                Validator(
-                    type = "required",
+                ValidationRule(
+                    type = ValidationType.REQUIRED,
                     message = "Confirme sua nova senha"
                 ),
-                Validator(
-                    type = "matchesField", 
+                ValidationRule(
+                    type = ValidationType.MATCHES_FIELD,
                     field = "newPassword",
                     message = "As senhas não conferem"
                 )
             )
         ),
-        Field(
+        FormFieldDefinition(
             id = "submitResetPassword",
-            type = "submit",
+            type = FormFieldType.SUBMIT,
             label = "Redefinir Senha"
         )
+    ),
+    validationBehavior = ValidationBehavior.ON_BLUR,
+    submitBehavior = SubmitBehavior.API_CALL,
+    styling = FormStyling(
+        primaryColor = "#007AFF",
+        errorColor = "#FF3B30",
+        successColor = "#34C759",
+        fieldHeight = 56,
+        borderRadius = 8,
+        spacing = 16
     )
 )

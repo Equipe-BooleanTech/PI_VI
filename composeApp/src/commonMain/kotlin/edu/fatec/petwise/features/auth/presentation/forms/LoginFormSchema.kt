@@ -1,35 +1,58 @@
 package edu.fatec.petwise.features.auth.presentation.forms
 
-import edu.fatec.petwise.features.auth.shared.Field
-import edu.fatec.petwise.features.auth.shared.FormSchema
-import edu.fatec.petwise.features.auth.shared.Validator
+import edu.fatec.petwise.presentation.shared.form.*
 
-val loginSchema = FormSchema(
+val loginFormConfiguration = FormConfiguration(
     id = "login_form",
     title = "PetWise",
     description = "Acesse sua conta para gerenciar seus pets.",
+    layout = FormLayout(
+        columns = 1,
+        maxWidth = 400,
+        spacing = 16,
+        responsive = true
+    ),
     fields = listOf(
-        Field(
+        FormFieldDefinition(
             id = "email",
             label = "Email",
-            type = "email",
+            type = FormFieldType.EMAIL,
             validators = listOf(
-                Validator(type = "required", message = "Informe seu email para entrar"),
-                Validator(type = "email")
+                ValidationRule(
+                    type = ValidationType.REQUIRED,
+                    message = "Informe seu email para entrar"
+                ),
+                ValidationRule(
+                    type = ValidationType.EMAIL,
+                    message = "Por favor, informe um email válido"
+                )
             )
         ),
-        Field(
+        FormFieldDefinition(
             id = "password",
             label = "Senha",
-            type = "password",
+            type = FormFieldType.PASSWORD,
             validators = listOf(
-                Validator(type = "required", message = "Informe sua senha para entrar")
+                ValidationRule(
+                    type = ValidationType.REQUIRED,
+                    message = "Informe sua senha para entrar"
+                )
             )
         ),
-        Field(
+        FormFieldDefinition(
             id = "submitLogin",
-            type = "submit",
+            type = FormFieldType.SUBMIT,
             label = "Entrar"
         )
+    ),
+    validationBehavior = ValidationBehavior.ON_BLUR,
+    submitBehavior = SubmitBehavior.API_CALL,
+    styling = FormStyling(
+        primaryColor = "#007AFF",
+        errorColor = "#FF3B30",
+        successColor = "#34C759",
+        fieldHeight = 56,
+        borderRadius = 8,
+        spacing = 16
     )
 )

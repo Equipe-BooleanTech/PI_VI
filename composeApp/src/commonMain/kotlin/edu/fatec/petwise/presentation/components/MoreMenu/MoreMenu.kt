@@ -228,7 +228,7 @@ fun MoreMenu(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { 
+                        .clickable {
                             navigationManager.navigateTo(NavigationManager.Screen.Auth)
                             onClose()
                         }
@@ -280,9 +280,9 @@ fun MoreMenuItemRow(
                 modifier = Modifier.size(20.dp)
             )
         }
-        
+
         Spacer(modifier = Modifier.width(16.dp))
-        
+
         Text(
             text = item.title,
             style = MaterialTheme.typography.bodyLarge.copy(

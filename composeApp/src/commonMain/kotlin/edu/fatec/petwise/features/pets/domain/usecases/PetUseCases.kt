@@ -10,11 +10,11 @@ class GetPetsUseCase(
     private val repository: PetRepository
 ) {
     operator fun invoke(): Flow<List<Pet>> = repository.getAllPets()
-    
+
     fun filterPets(options: PetFilterOptions): Flow<List<Pet>> = repository.filterPets(options)
-    
+
     fun searchPets(query: String): Flow<List<Pet>> = repository.searchPets(query)
-    
+
     fun getFavorites(): Flow<List<Pet>> = repository.getFavoritePets()
 }
 
@@ -34,11 +34,11 @@ class AddPetUseCase(
             Result.failure(IllegalArgumentException("Pet data is invalid"))
         }
     }
-    
+
     private fun validatePet(pet: Pet): Boolean {
-        return pet.name.isNotBlank() && 
-               pet.breed.isNotBlank() && 
-               pet.ownerName.isNotBlank() && 
+        return pet.name.isNotBlank() &&
+               pet.breed.isNotBlank() &&
+               pet.ownerName.isNotBlank() &&
                pet.ownerPhone.isNotBlank() &&
                pet.age > 0 &&
                pet.weight > 0

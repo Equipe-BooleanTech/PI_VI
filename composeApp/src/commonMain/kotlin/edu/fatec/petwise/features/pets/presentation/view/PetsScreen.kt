@@ -20,7 +20,7 @@ import edu.fatec.petwise.features.pets.presentation.components.PetCard
 import edu.fatec.petwise.features.pets.presentation.components.AddPetDialog
 import edu.fatec.petwise.features.pets.presentation.components.FilterBottomSheet
 import edu.fatec.petwise.features.pets.presentation.components.PetErrorSnackbar
-import edu.fatec.petwise.features.pets.presentation.forms.addPetFormSchema
+import edu.fatec.petwise.features.pets.presentation.forms.addPetFormConfiguration
 import edu.fatec.petwise.features.pets.presentation.viewmodel.*
 import edu.fatec.petwise.features.pets.di.PetDependencyContainer
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
@@ -37,6 +37,9 @@ fun PetsScreen() {
 
     var showSearchBar by remember { mutableStateOf(false) }
     var showFilterSheet by remember { mutableStateOf(false) }
+    var selectionMode by remember { mutableStateOf(false) }
+    var selectedPetIds by remember { mutableStateOf(setOf<String>()) }
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
 
 
 
@@ -55,9 +58,20 @@ fun PetsScreen() {
     ) {
         PetsHeader(
             petCount = petsState.filteredPets.size,
+            selectionMode = selectionMode,
+            selectedCount = selectedPetIds.size,
             onSearchClick = { showSearchBar = !showSearchBar },
             onFilterClick = { showFilterSheet = true },
-            onAddPetClick = { petsViewModel.onEvent(PetsUiEvent.ShowAddPetDialog) }
+            onAddPetClick = { petsViewModel.onEvent(PetsUiEvent.ShowAddPetDialog) },
+            onSelectionModeToggle = { 
+                selectionMode = !selectionMode
+                if (!selectionMode) selectedPetIds = setOf()
+            },
+            onDeleteSelected = { 
+                if (selectedPetIds.isNotEmpty()) {
+                    showDeleteConfirmation = true
+                }
+            }
         )
 
         if (showSearchBar) {
@@ -85,20 +99,30 @@ fun PetsScreen() {
                 else -> {
                     PetsListContent(
                         pets = petsState.filteredPets,
+                        selectionMode = selectionMode,
+                        selectedPetIds = selectedPetIds,
                         onPetClick = { pet ->
-                            petsViewModel.onEvent(PetsUiEvent.SelectPet(pet))
+                            if (selectionMode) {
+                                selectedPetIds = if (selectedPetIds.contains(pet.id)) {
+                                    selectedPetIds - pet.id
+                                } else {
+                                    selectedPetIds + pet.id
+                                }
+                            } else {
+                                petsViewModel.onEvent(PetsUiEvent.SelectPet(pet))
+                            }
                         },
                         onFavoriteClick = { petId ->
                             petsViewModel.onEvent(PetsUiEvent.ToggleFavorite(petId))
                         },
                         onEditClick = { pet ->
-                            // TODO: Navegar à tela de edição
+
                         }
                     )
                 }
             }
 
-            // Enhanced error handling
+
             petsState.errorMessage?.let { errorMessage ->
                 Box(
                     modifier = Modifier
@@ -122,7 +146,7 @@ fun PetsScreen() {
             addPetViewModel = addPetViewModel,
             isLoading = addPetState.isLoading,
             errorMessage = addPetState.errorMessage,
-            onDismiss = { 
+            onDismiss = {
                 petsViewModel.onEvent(PetsUiEvent.HideAddPetDialog)
                 addPetViewModel.onEvent(AddPetUiEvent.ClearState)
             }
@@ -139,14 +163,33 @@ fun PetsScreen() {
             onDismiss = { showFilterSheet = false }
         )
     }
+
+    if (showDeleteConfirmation) {
+        DeleteConfirmationDialog(
+            petCount = selectedPetIds.size,
+            onConfirm = {
+                selectedPetIds.forEach { petId ->
+                    petsViewModel.onEvent(PetsUiEvent.DeletePet(petId))
+                }
+                selectedPetIds = setOf()
+                selectionMode = false
+                showDeleteConfirmation = false
+            },
+            onDismiss = { showDeleteConfirmation = false }
+        )
+    }
 }
 
 @Composable
 private fun PetsHeader(
     petCount: Int,
+    selectionMode: Boolean,
+    selectedCount: Int,
     onSearchClick: () -> Unit,
     onFilterClick: () -> Unit,
-    onAddPetClick: () -> Unit
+    onAddPetClick: () -> Unit,
+    onSelectionModeToggle: () -> Unit,
+    onDeleteSelected: () -> Unit
 ) {
     val theme = PetWiseTheme.Light
 
@@ -155,7 +198,7 @@ private fun PetsHeader(
             .fillMaxWidth()
             .padding(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.fromHex("#00b942")
+            containerColor = if (selectionMode) Color.fromHex("#d32f2f") else Color.fromHex("#00b942")
         ),
         shape = RoundedCornerShape(16.dp)
     ) {
@@ -171,14 +214,18 @@ private fun PetsHeader(
             ) {
                 Column {
                     Text(
-                        text = "Meus Pets",
+                        text = if (selectionMode) "Selecionados" else "Meus Pets",
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold,
                             color = Color.White
                         )
                     )
                     Text(
-                        text = if (petCount > 0) "Cuidando de $petCount pets com carinho" else "Nenhum pet cadastrado",
+                        text = if (selectionMode) {
+                            "$selectedCount pet(s) selecionado(s)"
+                        } else {
+                            if (petCount > 0) "Cuidando de $petCount pets com carinho" else "Nenhum pet cadastrado"
+                        },
                         style = MaterialTheme.typography.bodyMedium.copy(
                             color = Color.White.copy(alpha = 0.9f)
                         )
@@ -186,46 +233,98 @@ private fun PetsHeader(
                 }
 
                 Row {
-                    IconButton(onClick = onSearchClick) {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = "Buscar",
-                            tint = Color.White
-                        )
-                    }
-                    IconButton(onClick = onFilterClick) {
-                        Icon(
-                            imageVector = Icons.Default.FilterList,
-                            contentDescription = "Filtrar",
-                            tint = Color.White
-                        )
+                    if (selectionMode) {
+                        IconButton(
+                            onClick = onDeleteSelected,
+                            enabled = selectedCount > 0
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Excluir selecionados",
+                                tint = Color.White
+                            )
+                        }
+                        IconButton(onClick = onSelectionModeToggle) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Cancelar seleção",
+                                tint = Color.White
+                            )
+                        }
+                    } else {
+                        IconButton(onClick = onSearchClick) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = "Buscar",
+                                tint = Color.White
+                            )
+                        }
+                        IconButton(onClick = onFilterClick) {
+                            Icon(
+                                imageVector = Icons.Default.FilterList,
+                                contentDescription = "Filtrar",
+                                tint = Color.White
+                            )
+                        }
+                        IconButton(onClick = onSelectionModeToggle) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = "Selecionar",
+                                tint = Color.White
+                            )
+                        }
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(
-                onClick = onAddPetClick,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.White,
-                    contentColor = Color.fromHex("#00b942")
-                ),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Adicionar",
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Adicionar Pet",
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontWeight = FontWeight.SemiBold
+            if (!selectionMode) {
+                Button(
+                    onClick = onAddPetClick,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White,
+                        contentColor = Color.fromHex("#00b942")
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Adicionar",
+                        modifier = Modifier.size(20.dp)
                     )
-                )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Adicionar Pet",
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    )
+                }
+            } else if (selectedCount > 0) {
+                Button(
+                    onClick = onDeleteSelected,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White,
+                        contentColor = Color.fromHex("#d32f2f")
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Excluir",
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Excluir Selecionados ($selectedCount)",
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    )
+                }
             }
         }
     }
@@ -239,7 +338,7 @@ private fun SearchBar(
     modifier: Modifier = Modifier
 ) {
     val theme = PetWiseTheme.Light
-    
+
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(
@@ -252,7 +351,7 @@ private fun SearchBar(
             value = query,
             onValueChange = onQueryChange,
             modifier = Modifier.fillMaxWidth(),
-            placeholder = { 
+            placeholder = {
                 Text(
                     "Buscar por nome, raça ou tutor...",
                     style = MaterialTheme.typography.bodyMedium.copy(
@@ -362,6 +461,8 @@ private fun EmptyContent(
 @Composable
 private fun PetsListContent(
     pets: List<Pet>,
+    selectionMode: Boolean,
+    selectedPetIds: Set<String>,
     onPetClick: (Pet) -> Unit,
     onFavoriteClick: (String) -> Unit,
     onEditClick: (Pet) -> Unit
@@ -371,13 +472,77 @@ private fun PetsListContent(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(pets) { pet ->
+        items(pets, key = { it.id }) { pet ->
             PetCard(
                 pet = pet,
+                selectionMode = selectionMode,
+                isSelected = selectedPetIds.contains(pet.id),
                 onClick = onPetClick,
                 onFavoriteClick = onFavoriteClick,
                 onEditClick = onEditClick
             )
         }
     }
+}
+
+@Composable
+private fun DeleteConfirmationDialog(
+    petCount: Int,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    val theme = PetWiseTheme.Light
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = Color.White,
+        shape = RoundedCornerShape(16.dp),
+        icon = {
+            Icon(
+                imageVector = Icons.Default.Warning,
+                contentDescription = "Aviso",
+                tint = Color.fromHex("#d32f2f"),
+                modifier = Modifier.size(48.dp)
+            )
+        },
+        title = {
+            Text(
+                text = "Confirmar Exclusão",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = Color.fromHex(theme.palette.textPrimary)
+                )
+            )
+        },
+        text = {
+            Text(
+                text = "Tem certeza que deseja excluir ${if (petCount == 1) "este pet" else "estes $petCount pets"}? Esta ação não pode ser desfeita.",
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = Color.fromHex(theme.palette.textSecondary)
+                )
+            )
+        },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.fromHex("#d32f2f")
+                ),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text("Excluir", color = Color.White)
+            }
+        },
+        dismissButton = {
+            OutlinedButton(
+                onClick = onDismiss,
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = Color.fromHex(theme.palette.textPrimary)
+                )
+            ) {
+                Text("Cancelar")
+            }
+        }
+    )
 }

@@ -1,9 +1,7 @@
 package edu.fatec.petwise.features.pets.presentation.components
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
@@ -19,7 +17,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import edu.fatec.petwise.presentation.shared.form.*
 import edu.fatec.petwise.features.pets.domain.models.*
-import edu.fatec.petwise.features.pets.presentation.forms.addPetFormSchema
+import edu.fatec.petwise.features.pets.presentation.forms.addPetFormConfiguration
 import edu.fatec.petwise.features.pets.presentation.viewmodel.AddPetViewModel
 import edu.fatec.petwise.features.pets.presentation.viewmodel.AddPetUiEvent
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
@@ -33,52 +31,18 @@ fun AddPetDialog(
     onDismiss: () -> Unit
 ) {
     val theme = PetWiseTheme.Light
-    val scrollState = rememberScrollState()
-    
-    val formConfiguration = remember {
-        FormConfiguration(
-            id = addPetFormSchema.id,
-            title = addPetFormSchema.title,
-            description = addPetFormSchema.description,
-            fields = addPetFormSchema.fields.map { field ->
-                FormFieldDefinition(
-                    id = field.id,
-                    label = field.label,
-                    type = when (field.type) {
-                        "text" -> FormFieldType.TEXT
-                        "select" -> FormFieldType.SELECT
-                        "segmented" -> FormFieldType.SEGMENTED_CONTROL
-                        "submit" -> FormFieldType.SUBMIT
-                        else -> FormFieldType.TEXT
-                    },
-                    placeholder = field.placeholder,
-                    options = field.options,
-                    default = field.default,
-                    validators = field.validators?.map { validator ->
-                        ValidationRule(
-                            type = when (validator.type) {
-                                "required" -> ValidationType.REQUIRED
-                                "minLength" -> ValidationType.MIN_LENGTH
-                                "pattern" -> ValidationType.PATTERN
-                                "phone" -> ValidationType.PHONE
-                                else -> ValidationType.CUSTOM
-                            },
-                            message = validator.message,
-                            value = validator.value
-                        )
-                    } ?: emptyList()
-                )
-            },
-            styling = FormStyling(
-                primaryColor = "#00b942", 
-                errorColor = "#d32f2f",
-                successColor = "#00b942"
-            )
-        )
+    val addPetState by addPetViewModel.uiState.collectAsState()
+
+    val formConfiguration = addPetFormConfiguration
+
+    val formViewModel = viewModel<DynamicFormViewModel>(key = "add_pet_form") {
+        DynamicFormViewModel(initialConfiguration = formConfiguration)
     }
     
-    val formViewModel = viewModel<DynamicFormViewModel> {
-        DynamicFormViewModel(initialConfiguration = formConfiguration)
+    LaunchedEffect(addPetState.isSuccess) {
+        if (addPetState.isSuccess) {
+            formViewModel.resetForm()
+        }
     }
 
     Dialog(
@@ -103,7 +67,6 @@ fun AddPetDialog(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(scrollState)
                     .padding(20.dp)
             ) {
                 Card(
@@ -137,7 +100,7 @@ fun AddPetDialog(
                                 )
                             )
                         }
-                        
+
                         IconButton(onClick = onDismiss) {
                             Icon(
                                 imageVector = Icons.Default.Close,
@@ -169,6 +132,7 @@ fun AddPetDialog(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .weight(1f)
                         .padding(vertical = 8.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = Color.fromHex("#F8F9FA")
@@ -176,10 +140,13 @@ fun AddPetDialog(
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Column(
-                        modifier = Modifier.padding(16.dp)
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp)
                     ) {
                         DynamicForm(
                             viewModel = formViewModel,
+                            modifier = Modifier.fillMaxSize(),
                             colorScheme = MaterialTheme.colorScheme.copy(
                                 primary = Color.fromHex(theme.palette.primary),
                                 error = Color.fromHex("#d32f2f")
@@ -192,13 +159,13 @@ fun AddPetDialog(
                                     "Coelho" -> PetSpecies.RABBIT
                                     else -> PetSpecies.OTHER
                                 }
-                                
+
                                 val gender = when (values["gender"]) {
                                     "Macho" -> PetGender.MALE
                                     "Fêmea" -> PetGender.FEMALE
                                     else -> PetGender.MALE
                                 }
-                                
+
                                 val healthStatus = when (values["healthStatus"]) {
                                     "Excelente" -> HealthStatus.EXCELLENT
                                     "Bom" -> HealthStatus.GOOD
@@ -313,14 +280,14 @@ fun FilterBottomSheet(
                         ),
                         modifier = Modifier.padding(bottom = 12.dp)
                     )
-                    
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         PetSpecies.values().forEach { species ->
                             FilterChip(
-                                onClick = { 
+                                onClick = {
                                     selectedSpecies = if (selectedSpecies == species) null else species
                                 },
                                 label = { Text(species.displayName) },
@@ -366,7 +333,7 @@ fun FilterBottomSheet(
                         ) {
                             RadioButton(
                                 selected = selectedHealthStatus == status,
-                                onClick = { 
+                                onClick = {
                                     selectedHealthStatus = if (selectedHealthStatus == status) null else status
                                 },
                                 colors = RadioButtonDefaults.colors(
@@ -443,7 +410,7 @@ fun FilterBottomSheet(
                 ) {
                     Text("Limpar")
                 }
-                
+
                 Button(
                     onClick = {
                         onFilterApply(

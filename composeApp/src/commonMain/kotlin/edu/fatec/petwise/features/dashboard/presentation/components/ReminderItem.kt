@@ -45,17 +45,17 @@ fun ReminderItem(
     modifier: Modifier = Modifier
 ) {
     val theme =PetWiseTheme.Light
-    
+
     val priorityColor = when (reminderData.priority) {
         PriorityLevel.CRITICAL -> Color.fromHex("#F44336")
         PriorityLevel.HIGH -> Color.fromHex("#FF9800")
         PriorityLevel.MEDIUM -> Color.fromHex("#2196F3")
         PriorityLevel.LOW -> Color.fromHex("#4CAF50")
     }
-    
+
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
-    
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -93,9 +93,9 @@ fun ReminderItem(
                     modifier = Modifier.size(20.dp)
                 )
             }
-            
+
             Spacer(modifier = Modifier.width(12.dp))
-            
+
             Column(
                 modifier = Modifier.weight(1f)
             ) {
@@ -108,7 +108,7 @@ fun ReminderItem(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                
+
                 Text(
                     text = reminderData.description,
                     style = MaterialTheme.typography.bodySmall.copy(
@@ -118,9 +118,9 @@ fun ReminderItem(
                     overflow = TextOverflow.Ellipsis
                 )
             }
-            
+
             Spacer(modifier = Modifier.width(8.dp))
-            
+
             Column(
                 horizontalAlignment = Alignment.End
             ) {
@@ -137,7 +137,7 @@ fun ReminderItem(
                         style = MaterialTheme.typography.labelSmall
                     )
                 }
-                
+
                 Text(
                     text = reminderData.date.split(" - ").first(),
                     style = MaterialTheme.typography.bodySmall.copy(

@@ -68,7 +68,7 @@ class PetsViewModel(
     private fun loadPets() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
-            
+
             try {
                 getPetsUseCase().collect { pets ->
                     _uiState.value = _uiState.value.copy(
@@ -89,12 +89,12 @@ class PetsViewModel(
 
     private fun searchPets(query: String) {
         _uiState.value = _uiState.value.copy(searchQuery = query)
-        
+
         if (query.isBlank()) {
             _uiState.value = _uiState.value.copy(filteredPets = _uiState.value.pets)
             return
         }
-        
+
         viewModelScope.launch {
             try {
                 getPetsUseCase.searchPets(query).collect { pets ->
@@ -113,7 +113,7 @@ class PetsViewModel(
 
     private fun filterPets(options: PetFilterOptions) {
         _uiState.value = _uiState.value.copy(filterOptions = options)
-        
+
         viewModelScope.launch {
             try {
                 getPetsUseCase.filterPets(options).collect { pets ->
@@ -132,7 +132,7 @@ class PetsViewModel(
             try {
                 toggleFavoriteUseCase(petId).fold(
                     onSuccess = { updatedPet ->
-                        // Pet será atualizado automaticamente pelo Flow
+
                     },
                     onFailure = { error ->
                         _uiState.value = _uiState.value.copy(
@@ -177,7 +177,7 @@ class PetsViewModel(
             try {
                 deletePetUseCase(petId).fold(
                     onSuccess = {
-                        // Pet será removido automaticamente pelo Flow
+
                     },
                     onFailure = { error ->
                         _uiState.value = _uiState.value.copy(
