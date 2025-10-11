@@ -389,6 +389,49 @@ class DynamicFormViewModel(
         }
     }
 
+    fun resetForm() {
+        formScope.launch {
+            val currentState = _state.value
+            
+            val resetFieldStates = currentState.configuration.fields
+                .filter { it.type != FormFieldType.SUBMIT }
+                .associate { field ->
+                    val defaultValue = field.default?.jsonPrimitive?.content ?: ""
+                    field.id to FieldState(
+                        id = field.id,
+                        value = defaultValue,
+                        displayValue = defaultValue,
+                        isVisible = true,
+                        isEnabled = true,
+                        isFocused = false,
+                        isTouched = false,
+                        isDirty = false,
+                        isValidating = false,
+                        isValid = true,
+                        errors = emptyList()
+                    )
+                }
+            
+            _state.value = currentState.copy(
+                fieldStates = resetFieldStates,
+                isSubmitting = false,
+                isValidating = false,
+                isValid = false,
+                errors = ErrorState()
+            )
+            
+            emitEvent(
+                FormEvent.FormReset(
+                    formId = currentState.id
+                )
+            )
+            
+            lifecycleCallbacks?.onFormReset(currentState.id)
+            
+            recomputeVisibilityAndValidation()
+        }
+    }
+
     private suspend fun validateEntireForm(): ValidationResult {
         val currentState = _state.value
         val allErrors = mutableListOf<FormError.ValidationError>()
@@ -584,26 +627,6 @@ class DynamicFormViewModel(
     private suspend fun emitEvent(event: FormEvent) {
         _events.emit(event)
         eventDispatcher.dispatch(event)
-    }
-
-    fun resetForm() {
-        formScope.launch {
-            val currentState = _state.value
-            val resetStates = initializeFieldStates()
-
-            _state.value = currentState.copy(
-                fieldStates = resetStates,
-                isSubmitting = false,
-                isValidating = false,
-                isValid = false,
-                errors = ErrorState(),
-                metadata = FormMetadata(),
-                asyncOperations = emptyMap()
-            )
-
-            emitEvent(FormEvent.FormReset(formId = currentState.id))
-            lifecycleCallbacks?.onFormReset(currentState.id)
-        }
     }
 
     fun updateConfiguration(newConfiguration: FormConfiguration) {

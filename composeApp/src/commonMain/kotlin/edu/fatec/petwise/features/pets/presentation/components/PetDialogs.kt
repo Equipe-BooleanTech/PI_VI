@@ -31,11 +31,18 @@ fun AddPetDialog(
     onDismiss: () -> Unit
 ) {
     val theme = PetWiseTheme.Light
+    val addPetState by addPetViewModel.uiState.collectAsState()
 
     val formConfiguration = addPetFormConfiguration
 
     val formViewModel = viewModel<DynamicFormViewModel>(key = "add_pet_form") {
         DynamicFormViewModel(initialConfiguration = formConfiguration)
+    }
+    
+    LaunchedEffect(addPetState.isSuccess) {
+        if (addPetState.isSuccess) {
+            formViewModel.resetForm()
+        }
     }
 
     Dialog(

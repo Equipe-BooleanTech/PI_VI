@@ -30,7 +30,9 @@ fun PetCard(
     onClick: (Pet) -> Unit,
     onFavoriteClick: (String) -> Unit,
     onEditClick: (Pet) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    selectionMode: Boolean = false,
+    isSelected: Boolean = false
 ) {
     val theme = PetWiseTheme.Light
     val interactionSource = remember { MutableInteractionSource() }
@@ -46,11 +48,18 @@ fun PetCard(
             .padding(vertical = 4.dp),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isHovered) Color.White.copy(alpha = 0.9f) else Color.White
+            containerColor = when {
+                isSelected -> Color.fromHex("#00b942").copy(alpha = 0.1f)
+                isHovered -> Color.White.copy(alpha = 0.9f)
+                else -> Color.White
+            }
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = if (isHovered) 3.dp else 1.dp
-        )
+        ),
+        border = if (isSelected) {
+            androidx.compose.foundation.BorderStroke(2.dp, Color.fromHex("#00b942"))
+        } else null
     ) {
         Row(
             modifier = Modifier
@@ -58,6 +67,17 @@ fun PetCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            if (selectionMode) {
+                Checkbox(
+                    checked = isSelected,
+                    onCheckedChange = { onClick(pet) },
+                    colors = CheckboxDefaults.colors(
+                        checkedColor = Color.fromHex("#00b942")
+                    ),
+                    modifier = Modifier.padding(end = 16.dp)
+                )
+            }
+
             Box(
                 modifier = Modifier
                     .size(56.dp)
@@ -78,29 +98,15 @@ fun PetCard(
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = pet.name,
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = Color.fromHex(theme.palette.textPrimary)
-                        ),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    if (pet.isFavorite) {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = "Favorito",
-                            tint = Color.fromHex("#FFC107"),
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
+                Text(
+                    text = pet.name,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = Color.fromHex(theme.palette.textPrimary)
+                    ),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
 
                 Spacer(modifier = Modifier.height(4.dp))
 
@@ -155,31 +161,33 @@ fun PetCard(
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                IconButton(
-                    onClick = { onFavoriteClick(pet.id) },
-                    modifier = Modifier.size(36.dp)
+            if (!selectionMode) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Icon(
-                        imageVector = if (pet.isFavorite) Icons.Default.Star else Icons.Default.StarBorder,
-                        contentDescription = if (pet.isFavorite) "Remover dos favoritos" else "Adicionar aos favoritos",
-                        tint = if (pet.isFavorite) Color.fromHex("#FFC107") else Color.fromHex(theme.palette.textSecondary),
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+                    IconButton(
+                        onClick = { onFavoriteClick(pet.id) },
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (pet.isFavorite) Icons.Default.Star else Icons.Default.StarBorder,
+                            contentDescription = if (pet.isFavorite) "Remover dos favoritos" else "Adicionar aos favoritos",
+                            tint = if (pet.isFavorite) Color.fromHex("#FFC107") else Color.fromHex(theme.palette.textSecondary),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
 
-                IconButton(
-                    onClick = { onEditClick(pet) },
-                    modifier = Modifier.size(36.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Editar",
-                        tint = Color.fromHex(theme.palette.primary),
-                        modifier = Modifier.size(20.dp)
-                    )
+                    IconButton(
+                        onClick = { onEditClick(pet) },
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Editar",
+                            tint = Color.fromHex(theme.palette.primary),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
         }

@@ -137,7 +137,7 @@ private fun DynamicFormContent(
                         )
                     }
 
-                    val shouldShowErrors = fieldState.errors.isNotEmpty() && fieldState.isTouched
+                    val shouldShowErrors = fieldState.errors.isNotEmpty() && fieldState.isTouched && fieldState.isDirty
                     
                     if (shouldShowErrors) {
                         Column(
@@ -411,6 +411,15 @@ private fun RenderTextField(
         var textFieldValue by remember(fieldState.displayValue) {
             mutableStateOf(TextFieldValue(fieldState.displayValue, TextRange(fieldState.displayValue.length)))
         }
+        
+        LaunchedEffect(fieldState.displayValue) {
+            if (textFieldValue.text != fieldState.displayValue) {
+                textFieldValue = TextFieldValue(
+                    text = fieldState.displayValue,
+                    selection = TextRange(fieldState.displayValue.length)
+                )
+            }
+        }
 
         OutlinedTextField(
             value = textFieldValue,
@@ -436,7 +445,7 @@ private fun RenderTextField(
                     }
                 },
             enabled = fieldState.isEnabled,
-            isError = fieldState.errors.isNotEmpty() && fieldState.isTouched,
+            isError = fieldState.errors.isNotEmpty() && fieldState.isTouched && fieldState.isDirty,
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = colorScheme.primary,
@@ -465,7 +474,7 @@ private fun RenderTextField(
                     }
                 },
             enabled = fieldState.isEnabled,
-            isError = fieldState.errors.isNotEmpty() && fieldState.isTouched,
+            isError = fieldState.errors.isNotEmpty() && fieldState.isTouched && fieldState.isDirty,
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = colorScheme.primary,
@@ -544,7 +553,7 @@ private fun RenderPasswordField(
                 }
             },
         enabled = fieldState.isEnabled,
-        isError = fieldState.errors.isNotEmpty() && fieldState.isTouched,
+        isError = fieldState.errors.isNotEmpty() && fieldState.isTouched && fieldState.isDirty,
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = colorScheme.primary,
             unfocusedBorderColor = colorScheme.outline,
@@ -591,7 +600,7 @@ private fun RenderSelectField(
                 .fillMaxWidth()
                 .heightIn(min = fieldHeight),
             enabled = fieldState.isEnabled,
-            isError = fieldState.errors.isNotEmpty() && fieldState.isTouched,
+            isError = fieldState.errors.isNotEmpty() && fieldState.isTouched && fieldState.isDirty,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = colorScheme.primary,
                 unfocusedBorderColor = colorScheme.outline,
@@ -751,7 +760,7 @@ private fun RenderTextAreaField(
                 }
             },
         enabled = fieldState.isEnabled,
-        isError = fieldState.errors.isNotEmpty() && fieldState.isTouched,
+        isError = fieldState.errors.isNotEmpty() && fieldState.isTouched && fieldState.isDirty,
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = colorScheme.primary,
             unfocusedBorderColor = colorScheme.outline,
