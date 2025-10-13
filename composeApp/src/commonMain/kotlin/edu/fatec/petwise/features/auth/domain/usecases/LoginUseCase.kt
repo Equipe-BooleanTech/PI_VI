@@ -1,18 +1,27 @@
 package edu.fatec.petwise.features.auth.domain.usecases
 
-import kotlinx.coroutines.delay
+import edu.fatec.petwise.features.auth.domain.repository.AuthRepository
 
-
-class LoginUseCase {
+class LoginUseCase(
+    private val authRepository: AuthRepository
+) {
     suspend fun execute(email: String, password: String): Result<String> {
-
-        delay(1000)
-
-
-        return if (email.contains("@") && password.length >= 6) {
-            Result.success("user_id_123")
-        } else {
-            Result.failure(Exception("Invalid credentials"))
+        if (email.isBlank()) {
+            return Result.failure(Exception("Email não pode estar vazio"))
         }
+
+        if (!email.contains("@")) {
+            return Result.failure(Exception("Email inválido"))
+        }
+
+        if (password.isBlank()) {
+            return Result.failure(Exception("Senha não pode estar vazia"))
+        }
+
+        if (password.length < 6) {
+            return Result.failure(Exception("Senha deve ter pelo menos 6 caracteres"))
+        }
+
+        return authRepository.login(email, password)
     }
 }

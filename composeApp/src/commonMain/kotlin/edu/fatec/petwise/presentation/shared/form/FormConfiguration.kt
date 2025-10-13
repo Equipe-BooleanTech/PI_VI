@@ -7,6 +7,12 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 
 @Serializable
+data class SelectOption(
+    val key: String,
+    val value: String
+)
+
+@Serializable
 @Immutable
 data class FormConfiguration(
     val id: String,
@@ -38,6 +44,7 @@ data class FormFieldDefinition(
     val placeholder: String? = null,
     val description: String? = null,
     val options: List<String>? = null,
+    val selectOptions: List<SelectOption>? = null,
     val default: JsonElement? = null,
     val validators: List<ValidationRule> = emptyList(),
     val visibility: VisibilityRule? = null,

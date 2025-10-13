@@ -215,7 +215,7 @@ fun ConsultaCard(
                         )
                         if (consulta.price > 0) {
                             Text(
-                                text = "R$ ${String.format("%.2f", consulta.price)}",
+                                text = "R${consulta.price}",
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     fontWeight = FontWeight.Bold,
                                     color = if (consulta.isPaid) 

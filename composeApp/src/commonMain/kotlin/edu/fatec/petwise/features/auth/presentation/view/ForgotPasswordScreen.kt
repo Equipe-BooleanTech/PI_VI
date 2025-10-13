@@ -13,6 +13,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import edu.fatec.petwise.features.auth.di.AuthDependencyContainer
 import edu.fatec.petwise.features.auth.presentation.forms.forgotPasswordFormConfiguration
 import edu.fatec.petwise.features.auth.presentation.viewmodel.ForgotPasswordViewModel
 import edu.fatec.petwise.presentation.shared.form.*
@@ -26,7 +27,7 @@ import androidx.compose.ui.graphics.Color
 @Composable
 fun ForgotPasswordScreen(
     navigationManager: NavigationManager,
-    viewModel: ForgotPasswordViewModel = viewModel { ForgotPasswordViewModel() }
+    viewModel: ForgotPasswordViewModel = remember { AuthDependencyContainer.provideForgotPasswordViewModel() }
 ) {
     val formConfiguration = forgotPasswordFormConfiguration
 

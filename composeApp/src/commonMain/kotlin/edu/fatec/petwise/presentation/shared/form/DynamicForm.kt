@@ -99,6 +99,8 @@ private fun DynamicFormContent(
             verticalArrangement = Arrangement.spacedBy(spacing),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            val formHasBeenSubmitted = state.metadata.submitCount > 0
+            
             state.configuration.title?.let { title ->
                 Text(
                     text = title,
@@ -135,11 +137,13 @@ private fun DynamicFormContent(
                             onFocus = { onFieldFocus(fieldDef.id) },
                             onBlur = { onFieldBlur(fieldDef.id) },
                             fieldHeight = fieldHeight,
-                            colorScheme = colorScheme
+                            colorScheme = colorScheme,
+                            formHasBeenSubmitted = formHasBeenSubmitted
                         )
                     }
 
-                    val shouldShowErrors = fieldState.errors.isNotEmpty() && fieldState.isTouched && fieldState.isDirty
+                    val shouldShowErrors = fieldState.errors.isNotEmpty() && 
+                        (fieldState.isTouched || (formHasBeenSubmitted && fieldState.errors.isNotEmpty()))
                     
                     if (shouldShowErrors) {
                         Column(
@@ -156,7 +160,7 @@ private fun DynamicFormContent(
                                 ) {
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
-                                        text = error.message,
+                                        text = extractCleanErrorMessage(error.message),
                                         color = colorScheme.error,
                                         style = MaterialTheme.typography.bodySmall,
                                         modifier = Modifier.weight(1f)
@@ -202,7 +206,7 @@ private fun DynamicFormContent(
                         )
                     ) {
                         Text(
-                            text = error.message,
+                            text = extractCleanErrorMessage(error.message),
                             color = colorScheme.onErrorContainer,
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.padding(12.dp)
@@ -215,26 +219,59 @@ private fun DynamicFormContent(
             if (submitField != null) {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                val formHasBeenSubmitted = state.metadata.submitCount > 0
-
-                val requiredFields = state.configuration.fields.filter { field ->
-                    field.validators.any { it.type == ValidationType.REQUIRED } && field.type != FormFieldType.SUBMIT
+                val visibleRequiredFields = state.configuration.fields.filter { field ->
+                    field.validators.any { it.type == ValidationType.REQUIRED } && 
+                    field.type != FormFieldType.SUBMIT &&
+                    state.fieldStates[field.id]?.isVisible == true
                 }
+            
                 
-                val allRequiredFieldsValid = requiredFields.all { field ->
+                val allRequiredFieldsValid = visibleRequiredFields.all { field ->
                     val fieldState = state.fieldStates[field.id]
-                    fieldState != null && 
-                    fieldState.isVisible && 
-                    fieldState.errors.isEmpty() && 
-                    !fieldState.value?.toString().isNullOrBlank()
+                    if (fieldState != null && fieldState.isVisible) {
+                        val hasValue = !fieldState.value?.toString().isNullOrBlank()
+                        val hasNoErrors = fieldState.errors.isEmpty()
+                        hasValue && hasNoErrors
+                    } else {
+                        false
+                    }
                 }
                 
                 val hasFieldErrors = state.fieldStates.values.any { fieldState ->
-                    fieldState.isVisible && fieldState.errors.isNotEmpty() && fieldState.isTouched
+                    fieldState.isVisible && fieldState.errors.isNotEmpty()
                 }
                 
-                val hasAnyTouchedField = state.fieldStates.values.any { it.isTouched }
-                val isFormValid = allRequiredFieldsValid && !hasFieldErrors
+                val allVisibleFieldsValidated = state.configuration.fields
+                    .filter { field -> 
+                        field.type != FormFieldType.SUBMIT &&
+                        state.fieldStates[field.id]?.isVisible == true 
+                    }
+                    .all { field ->
+                        val fieldState = state.fieldStates[field.id]
+                        val isRequired = field.validators.any { it.type == ValidationType.REQUIRED }
+                        
+                        if (fieldState != null) {
+                            if (isRequired) {
+                                !fieldState.value?.toString().isNullOrBlank() && fieldState.errors.isEmpty()
+                            } else {
+                                fieldState.errors.isEmpty()
+                            }
+                        } else {
+                            !isRequired
+                        }
+                    }
+                
+                val isFormValid = allRequiredFieldsValid && !hasFieldErrors && allVisibleFieldsValidated
+                
+                println("=== Validação do Formulário ===")
+                println("Campos obrigatórios válidos: $allRequiredFieldsValid")
+                println("Tem erros nos campos: $hasFieldErrors")
+                println("Todos os campos visíveis validados: $allVisibleFieldsValidated")
+                println("Formulário válido: $isFormValid")
+                println("Campos obrigatórios visíveis: ${visibleRequiredFields.map { "${it.id}: ${state.fieldStates[it.id]?.value}" }}")
+                println("Estados dos campos visíveis: ${state.fieldStates.filter { it.value.isVisible }.map { 
+                    "${it.key}: valor='${it.value.value}', erro=${it.value.errors.isEmpty()}, tocado=${it.value.isTouched}" 
+                }}")
                 
                 val fieldsWithErrors = state.fieldStates.values.filter { 
                     it.isVisible && it.errors.isNotEmpty() && it.isTouched
@@ -280,7 +317,8 @@ private fun RenderFormField(
     onFocus: () -> Unit,
     onBlur: () -> Unit,
     fieldHeight: Dp,
-    colorScheme: ColorScheme
+    colorScheme: ColorScheme,
+    formHasBeenSubmitted: Boolean
 ) {
     when (fieldDefinition.type) {
         FormFieldType.TEXT, FormFieldType.EMAIL, FormFieldType.NUMBER, FormFieldType.DECIMAL, FormFieldType.PHONE -> {
@@ -291,7 +329,8 @@ private fun RenderFormField(
                 onFocus = onFocus,
                 onBlur = onBlur,
                 fieldHeight = fieldHeight,
-                colorScheme = colorScheme
+                colorScheme = colorScheme,
+                formHasBeenSubmitted = formHasBeenSubmitted
             )
         }
 
@@ -303,7 +342,8 @@ private fun RenderFormField(
                 onFocus = onFocus,
                 onBlur = onBlur,
                 fieldHeight = fieldHeight,
-                colorScheme = colorScheme
+                colorScheme = colorScheme,
+                formHasBeenSubmitted = formHasBeenSubmitted
             )
         }
 
@@ -315,7 +355,8 @@ private fun RenderFormField(
                 onFocus = onFocus,
                 onBlur = onBlur,
                 fieldHeight = fieldHeight,
-                colorScheme = colorScheme
+                colorScheme = colorScheme,
+                formHasBeenSubmitted = formHasBeenSubmitted
             )
         }
 
@@ -406,7 +447,7 @@ private fun RenderFormField(
 
         else -> {
             Text(
-                text = "Unsupported field type: ${fieldDefinition.type}",
+                text = "Tipo de campo não suportado: ${fieldDefinition.type}",
                 color = colorScheme.error,
                 style = MaterialTheme.typography.bodySmall
             )
@@ -422,7 +463,8 @@ private fun RenderTextField(
     onFocus: () -> Unit,
     onBlur: () -> Unit,
     fieldHeight: Dp,
-    colorScheme: ColorScheme
+    colorScheme: ColorScheme,
+    formHasBeenSubmitted: Boolean
 ) {
     val keyboardType = when (fieldDefinition.type) {
         FormFieldType.EMAIL -> KeyboardType.Email
@@ -483,7 +525,7 @@ private fun RenderTextField(
                     }
                 },
             enabled = fieldState.isEnabled,
-            isError = fieldState.errors.isNotEmpty() && fieldState.isTouched && fieldState.isDirty,
+            isError = shouldShowFieldError(fieldState, formHasBeenSubmitted),
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = colorScheme.primary,
@@ -512,7 +554,7 @@ private fun RenderTextField(
                     }
                 },
             enabled = fieldState.isEnabled,
-            isError = fieldState.errors.isNotEmpty() && fieldState.isTouched && fieldState.isDirty,
+            isError = shouldShowFieldError(fieldState, formHasBeenSubmitted),
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = colorScheme.primary,
@@ -535,7 +577,8 @@ private fun RenderPasswordField(
     onFocus: () -> Unit,
     onBlur: () -> Unit,
     fieldHeight: Dp,
-    colorScheme: ColorScheme
+    colorScheme: ColorScheme,
+    formHasBeenSubmitted: Boolean
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
     
@@ -591,7 +634,7 @@ private fun RenderPasswordField(
                 }
             },
         enabled = fieldState.isEnabled,
-        isError = fieldState.errors.isNotEmpty() && fieldState.isTouched && fieldState.isDirty,
+        isError = shouldShowFieldError(fieldState, formHasBeenSubmitted),
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = colorScheme.primary,
             unfocusedBorderColor = colorScheme.outline,
@@ -612,7 +655,8 @@ private fun RenderSelectField(
     onFocus: () -> Unit,
     onBlur: () -> Unit,
     fieldHeight: Dp,
-    colorScheme: ColorScheme
+    colorScheme: ColorScheme,
+    formHasBeenSubmitted: Boolean
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -656,6 +700,19 @@ private fun RenderSelectField(
                 onBlur()
             }
         ) {
+            // Handle new selectOptions
+            fieldDefinition.selectOptions?.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option.value) },
+                    onClick = {
+                        onValueChange(option.key)
+                        expanded = false
+                        onBlur() 
+                    }
+                )
+            }
+            
+            // Handle legacy string options
             fieldDefinition.options?.forEach { option ->
                 DropdownMenuItem(
                     text = { Text(option) },
@@ -677,17 +734,20 @@ private fun RenderSegmentedControl(
     onValueChange: (String) -> Unit,
     colorScheme: ColorScheme
 ) {
-    fieldDefinition.options?.let { options ->
+    val allOptions = (fieldDefinition.selectOptions?.map { it.key to it.value } ?: emptyList()) +
+                     (fieldDefinition.options?.map { it to it } ?: emptyList())
+    
+    if (allOptions.isNotEmpty()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            options.forEach { option ->
-                val isSelected = fieldState.displayValue == option
+            allOptions.forEach { (key, value) ->
+                val isSelected = fieldState.value == key
 
                 FilterChip(
-                    onClick = { onValueChange(option) },
-                    label = { Text(option) },
+                    onClick = { onValueChange(key) },
+                    label = { Text(value) },
                     selected = isSelected,
                     modifier = Modifier.weight(1f),
                     colors = FilterChipDefaults.filterChipColors(
@@ -1086,5 +1146,65 @@ private fun calculateFieldHeight(screenWidth: Dp): Dp {
             screenWidth < 400.dp -> 52.dp
             else -> 56.dp
         }
+    }
+}
+
+private fun shouldShowFieldError(fieldState: FieldState, formHasBeenSubmitted: Boolean): Boolean {
+    return fieldState.errors.isNotEmpty() && 
+        (fieldState.isTouched || formHasBeenSubmitted)
+}
+
+private fun extractCleanErrorMessage(rawMessage: String): String {
+    return try {
+        when {
+            rawMessage.contains("\"message\":") -> {
+                val patterns = listOf("\"message\":\"", "\"message\": \"")
+                for (pattern in patterns) {
+                    val messageStart = rawMessage.indexOf(pattern)
+                    if (messageStart != -1) {
+                        val start = messageStart + pattern.length
+                        val end = rawMessage.indexOf("\"", start)
+                        if (end != -1) {
+                            return rawMessage.substring(start, end)
+                        }
+                    }
+                }
+                rawMessage
+            }
+            rawMessage.contains("\"error\":") -> {
+                val patterns = listOf("\"error\":\"", "\"error\": \"")
+                for (pattern in patterns) {
+                    val errorStart = rawMessage.indexOf(pattern)
+                    if (errorStart != -1) {
+                        val start = errorStart + pattern.length
+                        val end = rawMessage.indexOf("\"", start)
+                        if (end != -1) {
+                            return rawMessage.substring(start, end)
+                        }
+                    }
+                }
+                rawMessage
+            }
+            rawMessage.contains("HTTP") && rawMessage.contains("Regra de negócio violada") -> {
+                "Email ou senha incorretos"
+            }
+            rawMessage.startsWith("HTTP") && rawMessage.contains(":") -> {
+                val colonIndex = rawMessage.indexOf(":", rawMessage.indexOf(" ") + 1)
+                if (colonIndex != -1) {
+                    val cleaned = rawMessage.substring(colonIndex + 1).trim()
+                    if (cleaned.contains("validationErrors")) {
+                        "Dados inválidos. Verifique as informações inseridas."
+                    } else {
+                        cleaned
+                    }
+                } else rawMessage
+            }
+            rawMessage.length > 100 -> {
+                "Erro no servidor. Tente novamente."
+            }
+            else -> rawMessage
+        }
+    } catch (e: Exception) {
+        "Erro inesperado. Tente novamente."
     }
 }

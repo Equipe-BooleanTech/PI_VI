@@ -123,7 +123,7 @@ class DynamicFormViewModel(
     }
 
     private fun initializeFieldStates(): Map<String, FieldState> {
-        return initialConfiguration.fields
+        val initialStates = initialConfiguration.fields
             .filter { it.type != FormFieldType.SUBMIT }
             .associate { field ->
                 val defaultValue = field.default?.jsonPrimitive?.content ?: ""
@@ -131,10 +131,12 @@ class DynamicFormViewModel(
                     id = field.id,
                     value = defaultValue,
                     displayValue = defaultValue,
-                    isVisible = true,
+                    isVisible = field.visibility == null,
                     isEnabled = true
                 )
             }
+        
+        return initialStates
     }
 
     private fun setupEventHandling() {
@@ -169,11 +171,21 @@ class DynamicFormViewModel(
         formScope.launch {
             val currentState = _state.value
             val fieldState = currentState.fieldStates[fieldId] ?: return@launch
+            val fieldDefinition = currentState.configuration.fields.find { it.id == fieldId }
             val oldValue = fieldState.value
+
+            val displayValue = if (fieldDefinition?.type == FormFieldType.SELECT) {
+                // Try selectOptions first
+                fieldDefinition.selectOptions?.find { it.key == newValue }?.value
+                    ?: fieldDefinition.options?.find { it == newValue }
+                    ?: newValue?.toString() ?: ""
+            } else {
+                newValue?.toString() ?: ""
+            }
 
             val updatedFieldState = fieldState.copy(
                 value = newValue,
-                displayValue = newValue?.toString() ?: "",
+                displayValue = displayValue,
                 isTouched = if (isUserInput) true else fieldState.isTouched,
                 isDirty = oldValue != newValue
             )
@@ -281,7 +293,7 @@ class DynamicFormViewModel(
             val validationResult = validationEngine.validateField(
                 fieldDefinition,
                 fieldState.value,
-                getAllFieldValues()
+                getAllFieldValuesIncludingInvisible()
             )
 
             val errors = when (validationResult) {
@@ -435,26 +447,49 @@ class DynamicFormViewModel(
     private suspend fun validateEntireForm(): ValidationResult {
         val currentState = _state.value
         val allErrors = mutableListOf<FormError.ValidationError>()
+        val updatedFieldStates = currentState.fieldStates.toMutableMap()
 
         for (field in currentState.configuration.fields) {
             if (field.type == FormFieldType.SUBMIT) continue
 
             val fieldState = currentState.fieldStates[field.id] ?: continue
-            if (!fieldState.isVisible) continue
+            
+            if (!fieldState.isVisible) {
+                updatedFieldStates[field.id] = fieldState.copy(
+                    errors = emptyList(),
+                    isValid = true
+                )
+                continue
+            }
 
             val fieldValidationResult = validationEngine.validateField(
                 field,
                 fieldState.value,
-                getAllFieldValues()
+                getAllFieldValuesIncludingInvisible()
             )
 
-            if (fieldValidationResult is ValidationResult.Invalid) {
-                allErrors.addAll(fieldValidationResult.errors)
+            val fieldErrors = when (fieldValidationResult) {
+                is ValidationResult.Valid -> emptyList()
+                is ValidationResult.Invalid -> fieldValidationResult.errors
+                is ValidationResult.Pending -> emptyList()
             }
+
+            if (fieldErrors.isNotEmpty()) {
+                allErrors.addAll(fieldErrors)
+            }
+
+            updatedFieldStates[field.id] = fieldState.copy(
+                isTouched = true,
+                isValid = fieldErrors.isEmpty(),
+                errors = fieldErrors
+            )
         }
 
         val isValid = allErrors.isEmpty()
-        _state.value = _state.value.copy(isValid = isValid)
+        _state.value = currentState.copy(
+            isValid = isValid,
+            fieldStates = updatedFieldStates
+        )
 
         emitEvent(
             FormEvent.FormValidated(
@@ -508,7 +543,7 @@ class DynamicFormViewModel(
 
     private suspend fun recomputeVisibilityAndValidation() {
         val currentState = _state.value
-        val allValues = getAllFieldValues()
+        val allValues = getAllFieldValuesIncludingInvisible()
         val updatedStates = currentState.fieldStates.toMutableMap()
 
         for (field in currentState.configuration.fields) {
@@ -518,7 +553,58 @@ class DynamicFormViewModel(
             val isVisible = evaluateVisibility(field, allValues)
 
             if (fieldState.isVisible != isVisible) {
-                updatedStates[field.id] = fieldState.copy(isVisible = isVisible)
+                updatedStates[field.id] = if (isVisible) {
+                    val revalidatedField = fieldState.copy(isVisible = true)
+                    
+                    val validationResult = validationEngine.validateField(
+                        field,
+                        revalidatedField.value,
+                        allValues
+                    )
+                    
+                    val errors = when (validationResult) {
+                        is ValidationResult.Valid -> emptyList()
+                        is ValidationResult.Invalid -> validationResult.errors
+                        is ValidationResult.Pending -> emptyList()
+                    }
+                    
+                    revalidatedField.copy(
+                        errors = errors,
+                        isValid = errors.isEmpty()
+                    )
+                } else {
+                    fieldState.copy(
+                        isVisible = false,
+                        errors = emptyList(),
+                        isValid = true,
+                        isTouched = false,
+                        isDirty = false,
+                        value = field.default?.jsonPrimitive?.content ?: "",
+                        displayValue = field.default?.jsonPrimitive?.content ?: ""
+                    )
+                }
+            } else if (!isVisible && fieldState.errors.isNotEmpty()) {
+                updatedStates[field.id] = fieldState.copy(
+                    errors = emptyList(),
+                    isValid = true
+                )
+            } else if (isVisible && fieldState.isTouched) {
+                val validationResult = validationEngine.validateField(
+                    field,
+                    fieldState.value,
+                    allValues
+                )
+                
+                val errors = when (validationResult) {
+                    is ValidationResult.Valid -> emptyList()
+                    is ValidationResult.Invalid -> validationResult.errors
+                    is ValidationResult.Pending -> emptyList()
+                }
+                
+                updatedStates[field.id] = fieldState.copy(
+                    errors = errors,
+                    isValid = errors.isEmpty()
+                )
             }
         }
 
@@ -581,6 +667,14 @@ class DynamicFormViewModel(
     }
 
     private fun getAllFieldValues(): Map<String, Any> {
+        return _state.value.fieldStates
+            .filter { (_, fieldState) -> fieldState.isVisible }
+            .mapValues { (_, fieldState) ->
+                fieldState.value ?: ""
+            }
+    }
+
+    private fun getAllFieldValuesIncludingInvisible(): Map<String, Any> {
         return _state.value.fieldStates.mapValues { (_, fieldState) ->
             fieldState.value ?: ""
         }

@@ -1,14 +1,17 @@
 package edu.fatec.petwise.features.auth.domain.usecases
 
-import kotlinx.coroutines.delay
+import edu.fatec.petwise.features.auth.domain.repository.AuthRepository
 
-class ResetPasswordUseCase {
-
+class ResetPasswordUseCase(
+    private val authRepository: AuthRepository
+) {
     suspend fun execute(token: String, newPassword: String): Result<String> {
-        delay(1500)
-
         if (token.isBlank()) {
             return Result.failure(Exception("Token de recuperação inválido"))
+        }
+
+        if (newPassword.isBlank()) {
+            return Result.failure(Exception("Nova senha não pode estar vazia"))
         }
 
         if (newPassword.length < 8) {
@@ -19,8 +22,7 @@ class ResetPasswordUseCase {
             return Result.failure(Exception("A senha deve conter letras e números"))
         }
 
-
-
-        return Result.success("Senha redefinida com sucesso!")
+        return authRepository.resetPassword(token, newPassword)
     }
 }
+

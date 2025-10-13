@@ -14,6 +14,8 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.lifecycle.viewmodel.compose.viewModel
+import edu.fatec.petwise.features.auth.di.AuthDependencyContainer
+import edu.fatec.petwise.features.auth.presentation.viewmodel.AuthViewModel
 import edu.fatec.petwise.presentation.shared.form.*
 import edu.fatec.petwise.navigation.NavigationManager
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
@@ -27,17 +29,27 @@ import kotlinx.serialization.json.JsonPrimitive
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AuthScreen(navigationManager: NavigationManager) {
+fun AuthScreen(
+    navigationManager: NavigationManager,
+    authViewModel: AuthViewModel = remember { AuthDependencyContainer.provideAuthViewModel() }
+) {
     var selectedTab by rememberSaveable { mutableStateOf(0) }
     val titles = listOf("Login", "Registrar")
 
     val formConfiguration = if (selectedTab == 0) loginFormConfiguration else registerFormConfiguration
 
-    val viewModel = remember(selectedTab) {
+    val formViewModel = remember(selectedTab) {
         DynamicFormViewModel(initialConfiguration = formConfiguration)
     }
 
+    val authUiState by authViewModel.uiState.collectAsState()
     val theme = PetWiseTheme.Light
+
+    LaunchedEffect(authUiState.isAuthenticated) {
+        if (authUiState.isAuthenticated) {
+            navigationManager.navigateTo(NavigationManager.Screen.Dashboard)
+        }
+    }
 
     PetWiseThemeWrapper(theme) {
         BoxWithConstraints(
@@ -104,15 +116,33 @@ fun AuthScreen(navigationManager: NavigationManager) {
 
                     Spacer(Modifier.height(24.dp))
 
+                    authUiState.errorMessage?.let { errorMsg ->
+                        Text(
+                            text = errorMsg,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp)
+                        )
+                    }
+
                     key(formConfiguration.id) {
                         DynamicForm(
-                            viewModel = viewModel,
+                            viewModel = formViewModel,
                             colorScheme = MaterialTheme.colorScheme.copy(
                                 primary = Color.fromHex(theme.palette.primary),
                                 error = Color.fromHex("#d32f2f")
                             ),
                             onSubmitSuccess = { values ->
-                                navigationManager.navigateTo(NavigationManager.Screen.Dashboard)
+                                if (selectedTab == 0) {
+                                    val email = values["email"]?.toString() ?: ""
+                                    val password = values["password"]?.toString() ?: ""
+                                    authViewModel.login(email, password)
+                                } else {
+                                    val userData = values.mapValues { it.value.toString() }
+                                    authViewModel.register(userData)
+                                }
                             }
                         )
                     }

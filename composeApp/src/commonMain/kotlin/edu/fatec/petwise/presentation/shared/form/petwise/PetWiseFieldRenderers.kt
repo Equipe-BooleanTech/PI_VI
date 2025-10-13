@@ -231,17 +231,20 @@ private fun PetWiseSegmentedControl(
         horizontalArrangement = Arrangement.spacedBy(buttonSpacing, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        options.forEach { option ->
-            val isSelected = fieldState.displayValue == option
+        val allOptions = (fieldDefinition.selectOptions?.map { it.key to it.value } ?: emptyList()) +
+                         (fieldDefinition.options?.map { it to it } ?: emptyList())
+        
+        allOptions.forEach { (optionKey, optionValue) ->
+            val isSelected = fieldState.value == optionKey
 
             ElevatedButton(
-                onClick = { onValueChange(option) },
+                onClick = { onValueChange(optionKey) },
                 colors = PetWiseFormColors.getSegmentedControlColors(theme, isSelected),
                 modifier = Modifier.weight(1f, fill = false),
                 enabled = fieldState.isEnabled
             ) {
                 Text(
-                    text = option,
+                    text = optionValue,
                     maxLines = 1,
                     style = MaterialTheme.typography.bodyMedium
                 )
@@ -292,11 +295,14 @@ private fun PetWiseSelectField(
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
             ) {
-                fieldDefinition.options?.forEach { option ->
+                val allOptions = (fieldDefinition.selectOptions?.map { it.key to it.value } ?: emptyList()) +
+                                 (fieldDefinition.options?.map { it to it } ?: emptyList())
+                
+                allOptions.forEach { (optionKey, optionValue) ->
                     DropdownMenuItem(
-                        text = { Text(option) },
+                        text = { Text(optionValue) },
                         onClick = {
-                            onValueChange(option)
+                            onValueChange(optionKey)
                             expanded = false
                         }
                     )
@@ -328,8 +334,17 @@ private fun PetWiseButtonGroup(
         verticalAlignment = Alignment.CenterVertically
     ) {
         options.forEach { option ->
+            val (optionKey, optionValue) = when (option) {
+                is Map<*, *> -> {
+                    val key = option["key"] as? String ?: ""
+                    val value = option["value"] as? String ?: ""
+                    key to value
+                }
+                else -> option.toString() to option.toString()
+            }
+            
             OutlinedButton(
-                onClick = { onValueChange(option) },
+                onClick = { onValueChange(optionKey) },
                 modifier = Modifier.weight(1f),
                 colors = PetWiseFormColors.getOutlinedButtonColors(theme),
                 border = ButtonDefaults.outlinedButtonBorder.copy(
@@ -340,7 +355,7 @@ private fun PetWiseButtonGroup(
                 enabled = fieldState.isEnabled
             ) {
                 Text(
-                    text = option,
+                    text = optionValue,
                     maxLines = 1,
                     style = MaterialTheme.typography.bodyMedium
                 )

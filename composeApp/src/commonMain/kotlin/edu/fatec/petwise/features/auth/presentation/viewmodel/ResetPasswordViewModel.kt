@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class ResetPasswordViewModel(
-    private val resetPasswordUseCase: ResetPasswordUseCase = ResetPasswordUseCase()
+    private val resetPasswordUseCase: ResetPasswordUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ResetPasswordUiState())

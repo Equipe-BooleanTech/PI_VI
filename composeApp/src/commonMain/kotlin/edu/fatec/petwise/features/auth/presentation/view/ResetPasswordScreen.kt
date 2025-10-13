@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import edu.fatec.petwise.features.auth.di.AuthDependencyContainer
 import edu.fatec.petwise.features.auth.presentation.forms.resetPasswordFormConfiguration
 import edu.fatec.petwise.features.auth.presentation.viewmodel.ResetPasswordViewModel
 import edu.fatec.petwise.presentation.shared.form.*
@@ -28,7 +29,7 @@ import edu.fatec.petwise.presentation.theme.fromHex
 fun ResetPasswordScreen(
     navigationManager: NavigationManager,
     resetToken: String,
-    viewModel: ResetPasswordViewModel = viewModel { ResetPasswordViewModel() }
+    viewModel: ResetPasswordViewModel = remember { AuthDependencyContainer.provideResetPasswordViewModel() }
 ) {
     val formConfiguration = resetPasswordFormConfiguration
 

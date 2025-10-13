@@ -1,0 +1,97 @@
+package edu.fatec.petwise.core.network.api
+
+import edu.fatec.petwise.core.network.ApiEndpoints
+import edu.fatec.petwise.core.network.NetworkRequestHandler
+import edu.fatec.petwise.core.network.NetworkResult
+import edu.fatec.petwise.core.network.dto.*
+import io.ktor.client.request.*
+
+/**
+ * Authentication API service
+ */
+interface AuthApiService {
+    suspend fun login(request: LoginRequest): NetworkResult<LoginResponse>
+    suspend fun register(request: RegisterRequest): NetworkResult<RegisterResponse>
+    suspend fun refreshToken(request: RefreshTokenRequest): NetworkResult<RefreshTokenResponse>
+    suspend fun forgotPassword(request: ForgotPasswordRequest): NetworkResult<ForgotPasswordResponse>
+    suspend fun resetPassword(request: ResetPasswordRequest): NetworkResult<ResetPasswordResponse>
+    suspend fun logout(): NetworkResult<Unit>
+    suspend fun verifyEmail(token: String): NetworkResult<UserProfileDto>
+    suspend fun getUserProfile(): NetworkResult<UserProfileDto>
+}
+
+/**
+ * Implementation of AuthApiService
+ */
+class AuthApiServiceImpl(
+    private val networkHandler: NetworkRequestHandler
+) : AuthApiService {
+
+    override suspend fun login(request: LoginRequest): NetworkResult<LoginResponse> {
+        return networkHandler.executeWithRetry(maxAttempts = 1) {
+            networkHandler.post<LoginResponse, LoginRequest>(
+                urlString = ApiEndpoints.LOGIN,
+                body = request
+            )
+        }
+    }
+
+    override suspend fun register(request: RegisterRequest): NetworkResult<RegisterResponse> {
+        return networkHandler.executeWithRetry(maxAttempts = 1) {
+            networkHandler.post<RegisterResponse, RegisterRequest>(
+                urlString = ApiEndpoints.REGISTER,
+                body = request
+            )
+        }
+    }
+
+    override suspend fun refreshToken(request: RefreshTokenRequest): NetworkResult<RefreshTokenResponse> {
+        return networkHandler.executeWithRetry(maxAttempts = 1) {
+            networkHandler.post<RefreshTokenResponse, RefreshTokenRequest>(
+                urlString = ApiEndpoints.REFRESH_TOKEN,
+                body = request
+            )
+        }
+    }
+
+    override suspend fun forgotPassword(request: ForgotPasswordRequest): NetworkResult<ForgotPasswordResponse> {
+        return networkHandler.executeWithRetry {
+            networkHandler.post<ForgotPasswordResponse, ForgotPasswordRequest>(
+                urlString = ApiEndpoints.FORGOT_PASSWORD,
+                body = request
+            )
+        }
+    }
+
+    override suspend fun resetPassword(request: ResetPasswordRequest): NetworkResult<ResetPasswordResponse> {
+        return networkHandler.executeWithRetry(maxAttempts = 1) {
+            networkHandler.post<ResetPasswordResponse, ResetPasswordRequest>(
+                urlString = ApiEndpoints.RESET_PASSWORD,
+                body = request
+            )
+        }
+    }
+
+    override suspend fun logout(): NetworkResult<Unit> {
+        return networkHandler.executeWithRetry(maxAttempts = 1) {
+            networkHandler.post<Unit, Unit>(
+                urlString = ApiEndpoints.LOGOUT,
+                body = Unit
+            )
+        }
+    }
+
+    override suspend fun verifyEmail(token: String): NetworkResult<UserProfileDto> {
+        return networkHandler.executeWithRetry {
+            networkHandler.get<UserProfileDto>(ApiEndpoints.VERIFY_EMAIL) {
+                parameter("token", token)
+            }
+        }
+    }
+
+    override suspend fun getUserProfile(): NetworkResult<UserProfileDto> {
+        return networkHandler.executeWithRetry {
+            networkHandler.get<UserProfileDto>(ApiEndpoints.USER_PROFILE)
+        }
+    }
+}

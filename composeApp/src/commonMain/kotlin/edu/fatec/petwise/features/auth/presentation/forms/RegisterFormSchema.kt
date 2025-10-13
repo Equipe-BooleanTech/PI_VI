@@ -50,7 +50,12 @@ val registerFormConfiguration: FormConfiguration = FormConfiguration(
             id = "userType",
             label = "Tipo de Usuário",
             type = FormFieldType.SELECT,
-            options = listOf("Cliente", "Veterinário", "Farmácia", "Admin"),
+            selectOptions = listOf(
+                SelectOption("OWNER", "Cliente"),
+                SelectOption("VETERINARIAN", "Veterinário"),
+                SelectOption("PHARMACY", "Farmácia"),
+                SelectOption("ADMIN", "Admin")
+            ),
             validators = listOf(
                 ValidationRule(
                     type = ValidationType.REQUIRED,
@@ -69,7 +74,7 @@ val registerFormConfiguration: FormConfiguration = FormConfiguration(
                     VisibilityCondition(
                         fieldId = "userType",
                         operator = ComparisonOperator.EQUALS,
-                        value = JsonPrimitive("Cliente")
+                        value = JsonPrimitive("OWNER")
                     )
                 )
             ),
@@ -96,7 +101,7 @@ val registerFormConfiguration: FormConfiguration = FormConfiguration(
                     VisibilityCondition(
                         fieldId = "userType",
                         operator = ComparisonOperator.EQUALS,
-                        value = JsonPrimitive("Veterinário")
+                        value = JsonPrimitive("VETERINARIAN")
                     )
                 )
             ),
@@ -118,13 +123,22 @@ val registerFormConfiguration: FormConfiguration = FormConfiguration(
             label = "Especialização",
             type = FormFieldType.SELECT,
             placeholder = "Selecione sua especialização",
-            options = listOf("Clínica Geral", "Cirurgia", "Dermatologia", "Cardiologia", "Ortopedia", "Neurologia", "Oftalmologia", "Outra"),
+            selectOptions = listOf(
+                SelectOption("GENERAL_CLINIC", "Clínica Geral"),
+                SelectOption("SURGERY", "Cirurgia"),
+                SelectOption("DERMATOLOGY", "Dermatologia"),
+                SelectOption("CARDIOLOGY", "Cardiologia"),
+                SelectOption("ORTHOPEDICS", "Ortopedia"),
+                SelectOption("NEUROLOGY", "Neurologia"),
+                SelectOption("OPHTHALMOLOGY", "Oftalmologia"),
+                SelectOption("OTHER", "Outra")
+            ),
             visibility = VisibilityRule(
                 conditions = listOf(
                     VisibilityCondition(
                         fieldId = "userType",
                         operator = ComparisonOperator.EQUALS,
-                        value = JsonPrimitive("Veterinário")
+                        value = JsonPrimitive("VETERINARIAN")
                     )
                 )
             ),
@@ -146,7 +160,7 @@ val registerFormConfiguration: FormConfiguration = FormConfiguration(
                     VisibilityCondition(
                         fieldId = "userType",
                         operator = ComparisonOperator.EQUALS,
-                        value = JsonPrimitive("Farmácia")
+                        value = JsonPrimitive("PHARMACY")
                     )
                 )
             ),
@@ -171,7 +185,7 @@ val registerFormConfiguration: FormConfiguration = FormConfiguration(
                     VisibilityCondition(
                         fieldId = "userType",
                         operator = ComparisonOperator.EQUALS,
-                        value = JsonPrimitive("Farmácia")
+                        value = JsonPrimitive("PHARMACY")
                     )
                 )
             ),
@@ -182,27 +196,6 @@ val registerFormConfiguration: FormConfiguration = FormConfiguration(
                 )
             ),
             formatting = FieldFormatting(capitalize = true)
-        ),
-
-        FormFieldDefinition(
-            id = "adminCode",
-            label = "Código de Administrador",
-            type = FormFieldType.TEXT,
-            visibility = VisibilityRule(
-                conditions = listOf(
-                    VisibilityCondition(
-                        fieldId = "userType",
-                        operator = ComparisonOperator.EQUALS,
-                        value = JsonPrimitive("Admin")
-                    )
-                )
-            ),
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Código de administrador é obrigatório"
-                )
-            )
         ),
 
         FormFieldDefinition(

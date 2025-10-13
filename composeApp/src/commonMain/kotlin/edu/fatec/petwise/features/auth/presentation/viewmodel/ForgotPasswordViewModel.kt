@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 
 
 class ForgotPasswordViewModel(
-    private val requestPasswordResetUseCase: RequestPasswordResetUseCase = RequestPasswordResetUseCase()
+    private val requestPasswordResetUseCase: RequestPasswordResetUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ForgotPasswordUiState())
