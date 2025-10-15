@@ -18,8 +18,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import edu.fatec.petwise.presentation.shared.form.*
 import edu.fatec.petwise.features.pets.domain.models.*
 import edu.fatec.petwise.features.pets.presentation.forms.addPetFormConfiguration
+import edu.fatec.petwise.features.pets.presentation.forms.createEditPetFormConfiguration
 import edu.fatec.petwise.features.pets.presentation.viewmodel.AddPetViewModel
 import edu.fatec.petwise.features.pets.presentation.viewmodel.AddPetUiEvent
+import edu.fatec.petwise.features.pets.presentation.viewmodel.UpdatePetViewModel
+import edu.fatec.petwise.features.pets.presentation.viewmodel.UpdatePetUiEvent
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.fromHex
 
@@ -177,6 +180,210 @@ fun AddPetDialog(
 
                                 addPetViewModel.onEvent(
                                     AddPetUiEvent.AddPet(
+                                        name = values["name"]?.toString() ?: "",
+                                        breed = values["breed"]?.toString() ?: "",
+                                        species = species,
+                                        gender = gender,
+                                        age = values["age"]?.toString() ?: "",
+                                        weight = values["weight"]?.toString() ?: "",
+                                        healthStatus = healthStatus,
+                                        ownerName = values["ownerName"]?.toString() ?: "",
+                                        ownerPhone = values["ownerPhone"]?.toString() ?: "",
+                                        healthHistory = values["healthHistory"]?.toString() ?: ""
+                                    )
+                                )
+                            }
+                        )
+                    }
+                }
+
+                if (isLoading) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = Color.fromHex(theme.palette.primary)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun EditPetDialog(
+    pet: Pet,
+    updatePetViewModel: UpdatePetViewModel,
+    isLoading: Boolean,
+    errorMessage: String?,
+    onDismiss: () -> Unit
+) {
+    val theme = PetWiseTheme.Light
+    val updatePetState by updatePetViewModel.uiState.collectAsState()
+
+    val formConfiguration = createEditPetFormConfiguration(pet.name)
+
+    val formViewModel = viewModel<DynamicFormViewModel>(key = "edit_pet_form_${pet.id}") {
+        DynamicFormViewModel(initialConfiguration = formConfiguration)
+    }
+
+    LaunchedEffect(pet) {
+        updatePetViewModel.onEvent(UpdatePetUiEvent.LoadPet(pet))
+        
+        formViewModel.updateFieldValue("name", pet.name)
+        formViewModel.updateFieldValue("breed", pet.breed)
+        formViewModel.updateFieldValue("species", pet.species.displayName)
+        formViewModel.updateFieldValue("gender", pet.gender.displayName)
+        formViewModel.updateFieldValue("age", pet.age.toString())
+        formViewModel.updateFieldValue("weight", pet.weight.toString())
+        formViewModel.updateFieldValue("healthStatus", pet.healthStatus.displayName)
+        formViewModel.updateFieldValue("ownerName", pet.ownerName)
+        formViewModel.updateFieldValue("ownerPhone", pet.ownerPhone)
+        formViewModel.updateFieldValue("healthHistory", pet.healthHistory)
+    }
+
+    LaunchedEffect(updatePetState.isSuccess) {
+        if (updatePetState.isSuccess) {
+            formViewModel.resetForm()
+        }
+    }
+
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true
+        )
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth(0.95f)
+                .fillMaxHeight(0.9f)
+                .padding(16.dp),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(20.dp)
+            ) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.fromHex("#00b942")
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Editar Pet - ${pet.name}",
+                                style = MaterialTheme.typography.titleLarge.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            )
+                            Text(
+                                text = "Atualize as informações do pet",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    color = Color.White.copy(alpha = 0.9f)
+                                )
+                            )
+                        }
+
+                        IconButton(onClick = onDismiss) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Fechar",
+                                tint = Color.White
+                            )
+                        }
+                    }
+                }
+
+                errorMessage?.let { message ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.fromHex("#FFEBEE")
+                        )
+                    ) {
+                        Text(
+                            text = message,
+                            color = Color.fromHex("#C62828"),
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
+                }
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(vertical = 8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.fromHex("#F8F9FA")
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp)
+                    ) {
+                        DynamicForm(
+                            viewModel = formViewModel,
+                            modifier = Modifier.fillMaxSize(),
+                            colorScheme = MaterialTheme.colorScheme.copy(
+                                primary = Color.fromHex(theme.palette.primary),
+                                error = Color.fromHex("#d32f2f")
+                            ),
+                            onSubmitSuccess = { values ->
+                                val species = when (values["species"]) {
+                                    "Cão" -> PetSpecies.DOG
+                                    "Gato" -> PetSpecies.CAT
+                                    "Ave" -> PetSpecies.BIRD
+                                    "Coelho" -> PetSpecies.RABBIT
+                                    else -> PetSpecies.OTHER
+                                }
+
+                                val gender = when (values["gender"]) {
+                                    "Macho" -> PetGender.MALE
+                                    "Fêmea" -> PetGender.FEMALE
+                                    else -> PetGender.MALE
+                                }
+
+                                val healthStatus = when (values["healthStatus"]) {
+                                    "Excelente" -> HealthStatus.EXCELLENT
+                                    "Bom" -> HealthStatus.GOOD
+                                    "Regular" -> HealthStatus.REGULAR
+                                    "Atenção" -> HealthStatus.ATTENTION
+                                    "Crítico" -> HealthStatus.CRITICAL
+                                    else -> HealthStatus.GOOD
+                                }
+
+                                updatePetViewModel.onEvent(
+                                    UpdatePetUiEvent.UpdatePet(
                                         name = values["name"]?.toString() ?: "",
                                         breed = values["breed"]?.toString() ?: "",
                                         species = species,

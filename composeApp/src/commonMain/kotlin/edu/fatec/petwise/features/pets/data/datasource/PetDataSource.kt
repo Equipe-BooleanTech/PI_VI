@@ -1,16 +1,6 @@
 package edu.fatec.petwise.features.pets.data.datasource
 
 import edu.fatec.petwise.features.pets.domain.models.Pet
-import edu.fatec.petwise.features.pets.domain.models.PetFilterOptions
-import kotlinx.coroutines.flow.Flow
-
-interface LocalPetDataSource {
-    fun getAllPets(): Flow<List<Pet>>
-    fun getPetById(id: String): Flow<Pet?>
-    suspend fun insertPet(pet: Pet)
-    suspend fun updatePet(pet: Pet)
-    suspend fun deletePet(id: String)
-}
 
 interface RemotePetDataSource {
     suspend fun getAllPets(): List<Pet>
@@ -18,4 +8,8 @@ interface RemotePetDataSource {
     suspend fun createPet(pet: Pet): Pet
     suspend fun updatePet(pet: Pet): Pet
     suspend fun deletePet(id: String)
+    suspend fun toggleFavorite(id: String): Pet
+    suspend fun updateHealthStatus(id: String, status: edu.fatec.petwise.features.pets.domain.models.HealthStatus, notes: String? = null): Pet
+    suspend fun searchPets(query: String): List<Pet>
+    suspend fun getFavoritePets(): List<Pet>
 }

@@ -4,6 +4,7 @@ import edu.fatec.petwise.core.network.NetworkException
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.random.Random
+import kotlin.reflect.KClass
 
 data class RetryPolicy(
     val maxAttempts: Int = 3,
@@ -11,16 +12,16 @@ data class RetryPolicy(
     val maxDelay: Long = 10000L,
     val backoffMultiplier: Double = 2.0,
     val jitterFactor: Double = 0.2,
-    val retryableExceptions: Set<Class<out NetworkException>> = defaultRetryableExceptions
+    val retryableExceptions: Set<KClass<out NetworkException>> = defaultRetryableExceptions
 ) {
     companion object {
         val defaultRetryableExceptions = setOf(
-            NetworkException.NoConnectivity::class.java,
-            NetworkException.Timeout::class.java,
-            NetworkException.ServerError::class.java,
-            NetworkException.BadGateway::class.java,
-            NetworkException.ServiceUnavailable::class.java,
-            NetworkException.DnsError::class.java
+            NetworkException.NoConnectivity::class,
+            NetworkException.Timeout::class,
+            NetworkException.ServerError::class,
+            NetworkException.BadGateway::class,
+            NetworkException.ServiceUnavailable::class,
+            NetworkException.DnsError::class
         )
 
         val NONE = RetryPolicy(maxAttempts = 1)

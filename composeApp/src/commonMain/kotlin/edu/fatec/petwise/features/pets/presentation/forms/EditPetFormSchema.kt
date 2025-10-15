@@ -3,10 +3,10 @@ package edu.fatec.petwise.features.pets.presentation.forms
 import edu.fatec.petwise.presentation.shared.form.*
 import kotlinx.serialization.json.JsonPrimitive
 
-val addPetFormConfiguration: FormConfiguration = FormConfiguration(
-    id = "add_pet_form",
-    title = "Adicionar Novo Pet",
-    description = "Preencha as informações do pet para adicionar ao sistema.",
+fun createEditPetFormConfiguration(petName: String): FormConfiguration = FormConfiguration(
+    id = "edit_pet_form",
+    title = "Editar Pet - $petName",
+    description = "Atualize as informações do seu pet.",
     layout = FormLayout(
         columns = 1,
         maxWidth = 600,
@@ -111,7 +111,6 @@ val addPetFormConfiguration: FormConfiguration = FormConfiguration(
             label = "Status de Saúde",
             type = FormFieldType.SELECT,
             options = listOf("Excelente", "Bom", "Regular", "Atenção", "Crítico"),
-            default = JsonPrimitive("Bom"),
             validators = listOf(
                 ValidationRule(
                     type = ValidationType.REQUIRED,
@@ -128,7 +127,7 @@ val addPetFormConfiguration: FormConfiguration = FormConfiguration(
         ),
         FormFieldDefinition(
             id = "submit",
-            label = "Adicionar Pet",
+            label = "Salvar Alterações",
             type = FormFieldType.SUBMIT
         )
     ),

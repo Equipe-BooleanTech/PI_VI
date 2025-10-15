@@ -1,10 +1,7 @@
 package edu.fatec.petwise.features.vaccinations.di
 
 import edu.fatec.petwise.core.network.di.NetworkModule
-import edu.fatec.petwise.features.vaccinations.data.datasource.LocalVaccinationDataSource
-import edu.fatec.petwise.features.vaccinations.data.datasource.LocalVaccinationDataSourceImpl
 import edu.fatec.petwise.features.vaccinations.data.datasource.RemoteVaccinationDataSourceImpl
-import edu.fatec.petwise.features.vaccinations.data.repository.SyncStrategy
 import edu.fatec.petwise.features.vaccinations.data.repository.VaccinationRepositoryImpl
 import edu.fatec.petwise.features.vaccinations.domain.repository.VaccinationRepository
 import edu.fatec.petwise.features.vaccinations.domain.usecases.*
@@ -13,23 +10,12 @@ import edu.fatec.petwise.features.vaccinations.presentation.viewmodel.Vaccinatio
 
 object VaccinationDependencyContainer {
 
-    var useApi: Boolean = true
-    var syncStrategy: SyncStrategy = SyncStrategy.CACHE_FIRST
-
-    private val localDataSource: LocalVaccinationDataSource by lazy {
-        LocalVaccinationDataSourceImpl()
-    }
-
-    private val remoteDataSource: RemoteVaccinationDataSourceImpl? by lazy {
-        if (useApi) RemoteVaccinationDataSourceImpl(NetworkModule.vaccinationApiService) else null
+    private val remoteDataSource: RemoteVaccinationDataSourceImpl by lazy {
+        RemoteVaccinationDataSourceImpl(NetworkModule.vaccinationApiService)
     }
 
     private val repository: VaccinationRepository by lazy {
-        VaccinationRepositoryImpl(
-            localDataSource = localDataSource,
-            remoteDataSource = remoteDataSource,
-            syncStrategy = syncStrategy
-        )
+        VaccinationRepositoryImpl(remoteDataSource)
     }
 
     private val getVaccinationsUseCase: GetVaccinationsUseCase by lazy {

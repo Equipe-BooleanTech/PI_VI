@@ -42,7 +42,9 @@ fun DashboardScreen(
     navigationManager: NavigationManager,
     userName: String = "João",
     userType: UserType = UserType.OWNER,
-    dataProvider: DashboardDataProvider = DefaultDashboardDataProvider()
+    dataProvider: DashboardDataProvider = DefaultDashboardDataProvider(),
+    authViewModel: edu.fatec.petwise.features.auth.presentation.viewmodel.AuthViewModel = edu.fatec.petwise.features.auth.di.AuthDependencyContainer.provideAuthViewModel(),
+    getUserProfileUseCase: edu.fatec.petwise.features.auth.domain.usecases.GetUserProfileUseCase = edu.fatec.petwise.features.auth.di.AuthDependencyContainer.provideGetUserProfileUseCase()
 ) {
     val theme = PetWiseTheme.Light
     val scrollState = rememberScrollState()
@@ -156,7 +158,9 @@ fun DashboardScreen(
         MoreMenu(
             isVisible = showMoreMenu,
             navigationManager = navigationManager,
-            onClose = { navigationManager.hideMoreMenu() }
+            onClose = { navigationManager.hideMoreMenu() },
+            authViewModel = authViewModel,
+            getUserProfileUseCase = getUserProfileUseCase
         )
     }
 }

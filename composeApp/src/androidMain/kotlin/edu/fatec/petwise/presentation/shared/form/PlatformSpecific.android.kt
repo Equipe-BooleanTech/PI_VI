@@ -13,12 +13,14 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
+import kotlinx.serialization.json.jsonPrimitive
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -160,7 +162,48 @@ actual fun PlatformDatePicker(
     onValueChange: (String) -> Unit,
     modifier: Modifier
 ) {
-    val datePickerState = androidx.compose.material3.rememberDatePickerState()
+    // Calculate date constraints from validators
+    val maxDate = fieldDefinition.validators.find { it.type == ValidationType.MAX_DATE }
+        ?.value?.jsonPrimitive?.content?.toLongOrNull()
+        ?: Long.MAX_VALUE
+        
+    val minDate = fieldDefinition.validators.find { it.type == ValidationType.MIN_DATE }
+        ?.value?.jsonPrimitive?.content?.toLongOrNull()
+        ?: Long.MIN_VALUE
+
+    // Check if this is a birth date field (should not allow future dates)
+    val isBirthDate = fieldDefinition.id.contains("birth", ignoreCase = true) || 
+                      fieldDefinition.label?.contains("nascimento", ignoreCase = true) == true ||
+                      fieldDefinition.label?.contains("birth", ignoreCase = true) == true
+    
+    // For birth dates, set max date to today
+    val effectiveMaxDate = if (isBirthDate && maxDate == Long.MAX_VALUE) {
+        System.currentTimeMillis()
+    } else {
+        maxDate
+    }
+    
+    val datePickerState = androidx.compose.material3.rememberDatePickerState(
+        yearRange = IntRange(
+            start = java.util.Calendar.getInstance().apply { timeInMillis = minDate }.get(java.util.Calendar.YEAR),
+            endInclusive = java.util.Calendar.getInstance().apply { timeInMillis = effectiveMaxDate }.get(java.util.Calendar.YEAR)
+        ),
+        selectableDates = object : androidx.compose.material3.SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                return utcTimeMillis in minDate..effectiveMaxDate
+            }
+            
+            override fun isSelectableYear(year: Int): Boolean {
+                val calendar = java.util.Calendar.getInstance()
+                calendar.set(year, 0, 1)
+                val yearStart = calendar.timeInMillis
+                calendar.set(year, 11, 31)
+                val yearEnd = calendar.timeInMillis
+                
+                return yearStart <= effectiveMaxDate && yearEnd >= minDate
+            }
+        }
+    )
     
     androidx.compose.material3.DatePickerDialog(
         onDismissRequest = { 
@@ -170,9 +213,12 @@ actual fun PlatformDatePicker(
             androidx.compose.material3.TextButton(
                 onClick = {
                     datePickerState.selectedDateMillis?.let { millis ->
-                        val date = java.util.Date(millis)
-                        val formatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
-                        onValueChange(formatter.format(date))
+                        // Validate selected date against constraints
+                        if (millis in minDate..effectiveMaxDate) {
+                            val date = java.util.Date(millis)
+                            val formatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                            onValueChange(formatter.format(date))
+                        }
                     }
                 }
             ) {

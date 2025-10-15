@@ -34,42 +34,8 @@ class RemoteAuthDataSourceImpl(
         }
     }
 
-    override suspend fun register(userData: Map<String, String>): NetworkResult<AuthResult> {
-        val email = userData["email"]
-        if (email.isNullOrBlank()) {
-            return NetworkResult.Error(
-                NetworkException.ClientError(400, "Email obrigatório")
-            )
-        }
-
-        val password = userData["password"]
-        if (password.isNullOrBlank()) {
-            return NetworkResult.Error(
-                NetworkException.ClientError(400, "Senha obrigatória")
-            )
-        }
-
-        val fullName = userData["fullName"]
-        if (fullName.isNullOrBlank()) {
-            return NetworkResult.Error(
-                NetworkException.ClientError(400, "Nome obrigatório")
-            )
-        }
-
-        val request = RegisterRequest(
-            email = email,
-            password = password,
-            fullName = fullName,
-            userType = userData["userType"] ?: "user",
-            phone = userData["phone"],
-            cpf = userData["cpf"],
-            cnpj = userData["cnpj"],
-            companyName = userData["companyName"],
-            crmv = userData["crmv"],
-            adminCode = userData["adminCode"]
-        )
-
-        return when (val result = authApiService.register(request)) {
+    override suspend fun register(registerRequest: edu.fatec.petwise.core.network.dto.RegisterRequest): NetworkResult<AuthResult> {
+        return when (val result = authApiService.register(registerRequest)) {
             is NetworkResult.Success -> {
                 val response = result.data
                 NetworkResult.Success(
@@ -112,6 +78,10 @@ class RemoteAuthDataSourceImpl(
             is NetworkResult.Error -> result
             is NetworkResult.Loading -> result
         }
+    }
+
+    override suspend fun getUserProfile(): NetworkResult<edu.fatec.petwise.core.network.dto.UserProfileDto> {
+        return authApiService.getUserProfile()
     }
 
     override suspend fun logout(): NetworkResult<Unit> {

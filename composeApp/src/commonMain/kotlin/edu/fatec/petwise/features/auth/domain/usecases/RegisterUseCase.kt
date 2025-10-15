@@ -5,70 +5,57 @@ import edu.fatec.petwise.features.auth.domain.repository.AuthRepository
 class RegisterUseCase(
     private val authRepository: AuthRepository
 ) {
-    suspend fun execute(userData: Map<String, String>): Result<String> {
-        val email = userData["email"]
-        if (email.isNullOrBlank()) {
+    suspend fun execute(registerRequest: edu.fatec.petwise.core.network.dto.RegisterRequest): Result<String> {
+        if (registerRequest.email.isBlank()) {
             return Result.failure(Exception("Email não pode estar vazio"))
         }
 
-        if (!email.contains("@")) {
+        if (!registerRequest.email.contains("@")) {
             return Result.failure(Exception("Email inválido"))
         }
 
-        val password = userData["password"]
-        if (password.isNullOrBlank()) {
+        if (registerRequest.password.isBlank()) {
             return Result.failure(Exception("Senha não pode estar vazia"))
         }
 
-        if (password.length < 8) {
+        if (registerRequest.password.length < 8) {
             return Result.failure(Exception("Senha deve ter pelo menos 8 caracteres"))
         }
 
-        val fullName = userData["fullName"]
-        if (fullName.isNullOrBlank()) {
+        if (registerRequest.fullName.isBlank()) {
             return Result.failure(Exception("Nome não pode estar vazio"))
         }
 
-        val userType = userData["userType"]
-        if (userType.isNullOrBlank()) {
+        if (registerRequest.userType.isBlank()) {
             return Result.failure(Exception("Tipo de usuário é obrigatório"))
         }
 
-        when (userType) {
+        when (registerRequest.userType) {
             "OWNER" -> {
-                val cpf = userData["cpf"]
-                if (cpf.isNullOrBlank()) {
+                if (registerRequest.cpf.isNullOrBlank()) {
                     return Result.failure(Exception("CPF é obrigatório para clientes"))
                 }
             }
             "VETERINARIAN" -> {
-                val crmv = userData["crmv"]
-                if (crmv.isNullOrBlank()) {
+                if (registerRequest.crmv.isNullOrBlank()) {
                     return Result.failure(Exception("CRMV é obrigatório para veterinários"))
-                }
-                val specialization = userData["specialization"]
-                if (specialization.isNullOrBlank()) {
-                    return Result.failure(Exception("Especialização é obrigatória para veterinários"))
                 }
             }
             "PHARMACY" -> {
-                val cnpj = userData["cnpj"]
-                if (cnpj.isNullOrBlank()) {
+                if (registerRequest.cnpj.isNullOrBlank()) {
                     return Result.failure(Exception("CNPJ é obrigatório para farmácias"))
                 }
-                val companyName = userData["companyName"]
-                if (companyName.isNullOrBlank()) {
+                if (registerRequest.companyName.isNullOrBlank()) {
                     return Result.failure(Exception("Nome da empresa é obrigatório para farmácias"))
                 }
             }
         }
 
-        val phone = userData["phone"]
-        if (phone.isNullOrBlank()) {
+        if (registerRequest.phone?.isBlank() != false) {
             return Result.failure(Exception("Telefone é obrigatório"))
         }
 
-        println("Dados do usuário recebidos: $userData")
-        return authRepository.register(userData)
+        return authRepository.register(registerRequest)
     }
+
 }

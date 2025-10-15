@@ -78,20 +78,11 @@ fun PetCard(
                 )
             }
 
-            Box(
+            PetProfileImage(
+                pet = pet,
+                size = 56.dp,
                 modifier = Modifier
-                    .size(56.dp)
-                    .clip(CircleShape)
-                    .background(getSpeciesColor(pet.species)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = getSpeciesIcon(pet.species),
-                    contentDescription = pet.species.displayName,
-                    tint = Color.White,
-                    modifier = Modifier.size(32.dp)
-                )
-            }
+            )
 
             Spacer(modifier = Modifier.width(16.dp))
 
@@ -232,6 +223,22 @@ private fun getSpeciesColor(species: PetSpecies): Color {
         PetSpecies.RABBIT -> Color.fromHex("#9C27B0")
         PetSpecies.OTHER -> Color.fromHex("#607D8B")
     }
+}
+
+@Composable
+fun PetProfileImage(
+    pet: Pet,
+    size: androidx.compose.ui.unit.Dp = 56.dp,
+    modifier: Modifier = Modifier
+) {
+    edu.fatec.petwise.presentation.shared.components.AsyncImage(
+        imageUrl = pet.profileImageUrl,
+        contentDescription = "Imagem de ${pet.name}",
+        fallbackIcon = getSpeciesIcon(pet.species),
+        fallbackColor = getSpeciesColor(pet.species),
+        size = size,
+        modifier = modifier
+    )
 }
 
 @Composable

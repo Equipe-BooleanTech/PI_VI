@@ -140,8 +140,19 @@ fun AuthScreen(
                                     val password = values["password"]?.toString() ?: ""
                                     authViewModel.login(email, password)
                                 } else {
-                                    val userData = values.mapValues { it.value.toString() }
-                                    authViewModel.register(userData)
+                                    val registerRequest = edu.fatec.petwise.core.network.dto.RegisterRequest(
+                                        email = values["email"]?.toString() ?: "",
+                                        password = values["password"]?.toString() ?: "",
+                                        fullName = values["fullName"]?.toString() ?: "",
+                                        userType = values["userType"]?.toString() ?: "",
+                                        phone = values["phone"]?.toString(),
+                                        cpf = values["cpf"]?.toString(),
+                                        cnpj = values["cnpj"]?.toString(),
+                                        companyName = values["companyName"]?.toString(),
+                                        crmv = values["crmv"]?.toString(),
+                                        adminCode = values["adminCode"]?.toString()
+                                    )
+                                    authViewModel.register(registerRequest)
                                 }
                             }
                         )

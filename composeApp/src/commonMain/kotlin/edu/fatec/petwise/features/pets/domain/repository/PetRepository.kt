@@ -3,6 +3,7 @@ package edu.fatec.petwise.features.pets.domain.repository
 import edu.fatec.petwise.features.pets.domain.models.Pet
 import edu.fatec.petwise.features.pets.domain.models.PetFilterOptions
 import kotlinx.coroutines.flow.Flow
+import edu.fatec.petwise.features.pets.domain.models.HealthStatus
 
 interface PetRepository {
     fun getAllPets(): Flow<List<Pet>>
@@ -23,5 +24,5 @@ interface PetRepository {
 
     suspend fun toggleFavorite(id: String): Result<Pet>
 
-    suspend fun updateHealthStatus(id: String, status: edu.fatec.petwise.features.pets.domain.models.HealthStatus): Result<Pet>
+    suspend fun updateHealthStatus(id: String, status: HealthStatus): Result<Pet>
 }

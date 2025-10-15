@@ -2,6 +2,8 @@ package edu.fatec.petwise.features.consultas.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import edu.fatec.petwise.core.data.DataRefreshEvent
+import edu.fatec.petwise.core.data.DataRefreshManager
 import edu.fatec.petwise.features.consultas.domain.models.Consulta
 import edu.fatec.petwise.features.consultas.domain.models.ConsultaFilterOptions
 import edu.fatec.petwise.features.consultas.domain.models.ConsultaStatus
@@ -47,6 +49,19 @@ class ConsultasViewModel(
 
     init {
         loadConsultas()
+        observeDataRefresh()
+    }
+
+    private fun observeDataRefresh() {
+        viewModelScope.launch {
+            DataRefreshManager.refreshEvents.collect { event ->
+                when (event) {
+                    is DataRefreshEvent.ConsultasUpdated -> loadConsultas()
+                    is DataRefreshEvent.AllDataUpdated -> loadConsultas()
+                    else -> {}
+                }
+            }
+        }
     }
 
     fun onEvent(event: ConsultasUiEvent) {

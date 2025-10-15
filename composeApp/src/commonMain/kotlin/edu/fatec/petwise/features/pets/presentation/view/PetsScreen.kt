@@ -18,6 +18,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import edu.fatec.petwise.features.pets.domain.models.*
 import edu.fatec.petwise.features.pets.presentation.components.PetCard
 import edu.fatec.petwise.features.pets.presentation.components.AddPetDialog
+import edu.fatec.petwise.features.pets.presentation.components.EditPetDialog
 import edu.fatec.petwise.features.pets.presentation.components.FilterBottomSheet
 import edu.fatec.petwise.features.pets.presentation.components.PetErrorSnackbar
 import edu.fatec.petwise.features.pets.presentation.forms.addPetFormConfiguration
@@ -31,15 +32,19 @@ import edu.fatec.petwise.presentation.theme.fromHex
 fun PetsScreen() {
     val petsViewModel = remember { PetDependencyContainer.providePetsViewModel() }
     val addPetViewModel = remember { PetDependencyContainer.provideAddPetViewModel() }
+    val updatePetViewModel = remember { PetDependencyContainer.provideUpdatePetViewModel() }
     val theme = PetWiseTheme.Light
     val petsState by petsViewModel.uiState.collectAsState()
     val addPetState by addPetViewModel.uiState.collectAsState()
+    val updatePetState by updatePetViewModel.uiState.collectAsState()
 
     var showSearchBar by remember { mutableStateOf(false) }
     var showFilterSheet by remember { mutableStateOf(false) }
     var selectionMode by remember { mutableStateOf(false) }
     var selectedPetIds by remember { mutableStateOf(setOf<String>()) }
     var showDeleteConfirmation by remember { mutableStateOf(false) }
+    var showEditPetDialog by remember { mutableStateOf(false) }
+    var petToEdit by remember { mutableStateOf<Pet?>(null) }
 
 
 
@@ -48,6 +53,15 @@ fun PetsScreen() {
             petsViewModel.onEvent(PetsUiEvent.HideAddPetDialog)
             petsViewModel.onEvent(PetsUiEvent.LoadPets)
             addPetViewModel.onEvent(AddPetUiEvent.ClearState)
+        }
+    }
+
+    LaunchedEffect(updatePetState.isSuccess) {
+        if (updatePetState.isSuccess) {
+            showEditPetDialog = false
+            petToEdit = null
+            petsViewModel.onEvent(PetsUiEvent.LoadPets)
+            updatePetViewModel.onEvent(UpdatePetUiEvent.ClearState)
         }
     }
 
@@ -116,7 +130,8 @@ fun PetsScreen() {
                             petsViewModel.onEvent(PetsUiEvent.ToggleFavorite(petId))
                         },
                         onEditClick = { pet ->
-
+                            petToEdit = pet
+                            showEditPetDialog = true
                         }
                     )
                 }
@@ -177,6 +192,22 @@ fun PetsScreen() {
             },
             onDismiss = { showDeleteConfirmation = false }
         )
+    }
+
+    petToEdit?.let { pet ->
+        if (showEditPetDialog) {
+            EditPetDialog(
+                pet = pet,
+                updatePetViewModel = updatePetViewModel,
+                isLoading = updatePetState.isLoading,
+                errorMessage = updatePetState.errorMessage,
+                onDismiss = {
+                    showEditPetDialog = false
+                    petToEdit = null
+                    updatePetViewModel.onEvent(UpdatePetUiEvent.ClearState)
+                }
+            )
+        }
     }
 }
 

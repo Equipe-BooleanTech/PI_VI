@@ -29,7 +29,7 @@ object ApiEndpoints {
     fun toggleFavorite(id: String) = "$PETS/$id/favorite"
     fun updateHealth(id: String) = "$PETS/$id/health"
 
-    const val CONSULTAS = "/api/consultas"
+    const val CONSULTAS = "/api/appointments"
     fun getConsulta(id: String) = "$CONSULTAS/$id"
     const val CONSULTAS_SEARCH = "$CONSULTAS/search"
     const val CONSULTAS_UPCOMING = "$CONSULTAS/upcoming"
@@ -44,13 +44,8 @@ object ApiEndpoints {
     fun markVaccinationAsApplied(id: String) = "$VACCINATIONS/$id/apply"
     fun scheduleVaccinationNextDose(id: String) = "$VACCINATIONS/$id/schedule-next"
 
-    const val USER_PROFILE = "/api/user/profile"
-    const val USER_SETTINGS = "/api/user/settings"
-    const val USER_PREFERENCES = "/api/user/preferences"
+    const val USER_PROFILE = "/api/auth/profile"
 
-    const val DASHBOARD_STATS = "/api/dashboard/stats"
-    const val DASHBOARD_ACTIVITIES = "/api/dashboard/activities"
-    const val DASHBOARD_REMINDERS = "/api/dashboard/reminders"
 }
 
 object PetWiseHttpHeaders {

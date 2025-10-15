@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import kotlinx.serialization.json.jsonPrimitive
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -132,7 +133,47 @@ actual fun PlatformDatePicker(
     onValueChange: (String) -> Unit,
     modifier: Modifier
 ) {
-    val datePickerState = rememberDatePickerState()
+    // Calculate date constraints from validators
+    val maxDate = fieldDefinition.validators.find { it.type == ValidationType.MAX_DATE }
+        ?.value?.jsonPrimitive?.content?.toLongOrNull()
+        ?: System.currentTimeMillis() + (365L * 24 * 60 * 60 * 1000 * 10)
+        
+    val minDate = fieldDefinition.validators.find { it.type == ValidationType.MIN_DATE }
+        ?.value?.jsonPrimitive?.content?.toLongOrNull()
+        ?: System.currentTimeMillis() - (365L * 24 * 60 * 60 * 1000 * 100)
+
+    // Check if this is a birth date field (should not allow future dates)
+    val isBirthDate = fieldDefinition.id.contains("birth", ignoreCase = true) || 
+                      fieldDefinition.label?.contains("nascimento", ignoreCase = true) == true ||
+                      fieldDefinition.label?.contains("birth", ignoreCase = true) == true
+    
+    val effectiveMaxDate = if (isBirthDate) {
+        System.currentTimeMillis()
+    } else {
+        maxDate
+    }
+    
+    val datePickerState = rememberDatePickerState(
+        yearRange = IntRange(
+            start = java.util.Calendar.getInstance().apply { timeInMillis = minDate }.get(java.util.Calendar.YEAR),
+            endInclusive = java.util.Calendar.getInstance().apply { timeInMillis = effectiveMaxDate }.get(java.util.Calendar.YEAR)
+        ),
+        selectableDates = object : SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                return utcTimeMillis in minDate..effectiveMaxDate
+            }
+            
+            override fun isSelectableYear(year: Int): Boolean {
+                val calendar = java.util.Calendar.getInstance()
+                calendar.set(year, 0, 1)
+                val yearStart = calendar.timeInMillis
+                calendar.set(year, 11, 31)
+                val yearEnd = calendar.timeInMillis
+                
+                return yearStart <= effectiveMaxDate && yearEnd >= minDate
+            }
+        }
+    )
     
     DatePickerDialog(
         onDismissRequest = { 
@@ -142,9 +183,12 @@ actual fun PlatformDatePicker(
             TextButton(
                 onClick = {
                     datePickerState.selectedDateMillis?.let { millis ->
-                        val date = java.util.Date(millis)
-                        val formatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
-                        onValueChange(formatter.format(date))
+                        // Validate selected date against constraints
+                        if (millis in minDate..effectiveMaxDate) {
+                            val date = java.util.Date(millis)
+                            val formatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                            onValueChange(formatter.format(date))
+                        }
                     }
                 }
             ) {

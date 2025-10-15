@@ -11,10 +11,13 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.utils.io.errors.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerializationException
-import java.net.UnknownHostException
-import javax.net.ssl.SSLException
 
 /**
  * Enhanced network request handler with retry logic, circuit breaker, and comprehensive error handling
@@ -125,27 +128,53 @@ class NetworkRequestHandler(
                         )
                     }
                 }
-                401 -> NetworkResult.Error(NetworkException.Unauthorized())
-                403 -> NetworkResult.Error(NetworkException.Forbidden())
-                404 -> NetworkResult.Error(NetworkException.NotFound())
+                401 -> {
+                    println("NetworkRequestHandler: 401 Unauthorized - Token may be expired or invalid")
+                    NetworkResult.Error(NetworkException.Unauthorized())
+                }
+                403 -> {
+                    println("NetworkRequestHandler: 403 Forbidden - Insufficient permissions")
+                    NetworkResult.Error(NetworkException.Forbidden())
+                }
+                404 -> {
+                    println("NetworkRequestHandler: 404 Not Found - Resource not found")
+                    NetworkResult.Error(NetworkException.NotFound())
+                }
+                408 -> {
+                    println("NetworkRequestHandler: 408 Request Timeout")
+                    NetworkResult.Error(NetworkException.Timeout())
+                }
+                429 -> {
+                    println("NetworkRequestHandler: 429 Too Many Requests - Rate limited")
+                    NetworkResult.Error(
+                        NetworkException.HttpError(
+                            code = 429,
+                            errorBody = "Too many requests - please try again later",
+                            errorResponse = null
+                        )
+                    )
+                }
                 in 400..499 -> {
                     val errorResponse = try {
                         response.body<ApiErrorResponse>()
                     } catch (e: Exception) {
                         null
                     }
+                    val errorBody = response.bodyAsText()
+                    println("NetworkRequestHandler: Client error ${response.status.value} - $errorBody")
                     NetworkResult.Error(
                         NetworkException.HttpError(
                             code = response.status.value,
-                            errorBody = response.bodyAsText(),
+                            errorBody = errorBody,
                             errorResponse = errorResponse
                         )
                     )
                 }
                 in 500..599 -> {
+                    println("NetworkRequestHandler: Server error ${response.status.value} - ${response.status.description}")
                     NetworkResult.Error(
                         NetworkException.ServerError(
-                            message = "Erro do servidor: ${response.status.description}"
+                            message = "Erro do servidor (${response.status.value}): ${response.status.description}"
                         )
                     )
                 }
@@ -180,6 +209,13 @@ class NetworkRequestHandler(
     fun <T> handleException(exception: Exception): NetworkResult<T> {
         return NetworkResult.Error(
             when (exception) {
+                is CancellationException -> {
+                    println("Network request was cancelled (não afeta autenticação): ${exception.message}")
+                    NetworkException.RequestCancelled(
+                        message = "Operação cancelada pelo usuário",
+                        cause = exception
+                    )
+                }
                 is IOException -> NetworkException.NoConnectivity()
                 is HttpRequestTimeoutException -> NetworkException.Timeout()
                 is SerializationException -> NetworkException.SerializationError(cause = exception)
@@ -200,25 +236,91 @@ class NetworkRequestHandler(
         block: suspend () -> NetworkResult<T>
     ): NetworkResult<T> {
         var currentDelay = initialDelay
+        
         repeat(maxAttempts - 1) { attempt ->
-            val result = block()
-            
-            when (result) {
-                is NetworkResult.Success -> return result
-                is NetworkResult.Error -> {
-                    if (!isRetryable(result.exception)) {
+            try {
+                val result = block()
+                
+                when (result) {
+                    is NetworkResult.Success -> {
+                        if (attempt > 0) {
+                            println("NetworkRequestHandler: Request succeeded after ${attempt + 1} attempts")
+                        }
                         return result
                     }
+                    is NetworkResult.Error -> {
+                        if (!isRetryable(result.exception)) {
+                            println("NetworkRequestHandler: Non-retryable error: ${result.exception}")
+                            return result
+                        }
+                        
+                        println("NetworkRequestHandler: Retryable error on attempt ${attempt + 1}: ${result.exception}")
+                        
+                        // Add jitter to prevent thundering herd
+                        val jitter = (0..100).random()
+                        val delayWithJitter = currentDelay + jitter
+                        
+                        println("NetworkRequestHandler: Retrying in ${delayWithJitter}ms (attempt ${attempt + 2}/$maxAttempts)")
+                        delay(delayWithJitter)
+                        currentDelay = (currentDelay * factor).toLong().coerceAtMost(maxDelay)
+                    }
+                    is NetworkResult.Loading -> {
+                        // Continue to retry
+                    }
                 }
-                is NetworkResult.Loading -> {
+            } catch (e: CancellationException) {
+                println("NetworkRequestHandler: Request cancelled during retry attempt ${attempt + 1} - não afeta autenticação")
+                return NetworkResult.Error(
+                    NetworkException.RequestCancelled(
+                        message = "Operação cancelada pelo usuário",
+                        cause = e
+                    )
+                )
+            } catch (e: Exception) {
+                println("NetworkRequestHandler: Unexpected error during retry attempt ${attempt + 1}: ${e.message}")
+                val networkException = when (e) {
+                    is IOException -> NetworkException.NoConnectivity()
+                    is HttpRequestTimeoutException -> NetworkException.Timeout()
+                    else -> NetworkException.Unknown(message = e.message ?: "Erro inesperado", cause = e)
                 }
+                
+                if (!isRetryable(networkException)) {
+                    return NetworkResult.Error(networkException)
+                }
+                
+                // Add jitter for unexpected errors too
+                val jitter = (0..100).random()
+                val delayWithJitter = currentDelay + jitter
+                delay(delayWithJitter)
+                currentDelay = (currentDelay * factor).toLong().coerceAtMost(maxDelay)
             }
-
-            delay(currentDelay)
-            currentDelay = (currentDelay * factor).toLong().coerceAtMost(maxDelay)
         }
 
-        return block()
+        // Final attempt
+        return try {
+            val result = block()
+            when (result) {
+                is NetworkResult.Error -> {
+                    println("NetworkRequestHandler: Final attempt failed: ${result.exception}")
+                }
+                else -> {
+                    println("NetworkRequestHandler: Final attempt succeeded")
+                }
+            }
+            result
+        } catch (e: CancellationException) {
+            println("NetworkRequestHandler: Final request attempt cancelled - mantendo estado de autenticação")
+            NetworkResult.Error(
+                NetworkException.RequestCancelled(
+                    message = "Operação cancelada pelo usuário",
+                    cause = e
+                )
+            )
+        } catch (e: Exception) {
+            println("NetworkRequestHandler: Final attempt failed with exception: ${e.message}")
+            val errorResult = handleException<T>(e)
+            errorResult
+        }
     }
 
     private fun isRetryable(exception: NetworkException): Boolean {
@@ -226,7 +328,10 @@ class NetworkRequestHandler(
             is NetworkException.NoConnectivity -> true
             is NetworkException.Timeout -> true
             is NetworkException.ServerError -> true
-            is NetworkException.HttpError -> exception.code >= 500
+            is NetworkException.RequestCancelled -> false
+            is NetworkException.HttpError -> {
+                exception.code >= 500 || exception.code == 408 || exception.code == 429
+            }
             else -> false
         }
     }
@@ -249,6 +354,7 @@ private fun isRetryable(exception: NetworkException): Boolean {
         is NetworkException.NoConnectivity -> true
         is NetworkException.Timeout -> true
         is NetworkException.ServerError -> true
+        is NetworkException.RequestCancelled -> false
         is NetworkException.HttpError -> exception.code >= 500
         else -> false
     }

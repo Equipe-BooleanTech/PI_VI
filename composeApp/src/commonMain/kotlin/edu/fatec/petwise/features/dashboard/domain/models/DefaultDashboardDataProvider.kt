@@ -541,7 +541,7 @@ class DefaultDashboardDataProvider : DashboardDataProvider {
 
     override fun getSubGreeting(userType: UserType): String {
         return when(userType) {
-            UserType.OWNER -> "Cuidando de 3 pets com carinho"
+            UserType.OWNER -> "Cuidando de 3 pets com carinho (OBS: DASHBOARD COM DADOS DE MOCK, EM INTEGRAÇÃO)"
             UserType.VET -> "5 consultas agendadas hoje"
             UserType.ADMIN -> "Gerenciando 3 clínicas ativas"
             UserType.PHARMACY -> "20 pedidos para processar"

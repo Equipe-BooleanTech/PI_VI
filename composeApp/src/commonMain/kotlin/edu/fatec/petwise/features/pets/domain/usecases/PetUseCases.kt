@@ -38,8 +38,6 @@ class AddPetUseCase(
     private fun validatePet(pet: Pet): Boolean {
         return pet.name.isNotBlank() &&
                pet.breed.isNotBlank() &&
-               pet.ownerName.isNotBlank() &&
-               pet.ownerPhone.isNotBlank() &&
                pet.age > 0 &&
                pet.weight > 0
     }

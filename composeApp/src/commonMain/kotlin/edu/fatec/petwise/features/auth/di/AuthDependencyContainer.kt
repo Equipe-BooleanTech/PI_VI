@@ -6,6 +6,7 @@ import edu.fatec.petwise.features.auth.data.datasource.RemoteAuthDataSourceImpl
 import edu.fatec.petwise.features.auth.data.repository.AuthRepositoryImpl
 import edu.fatec.petwise.features.auth.data.repository.AuthTokenStorage
 import edu.fatec.petwise.features.auth.domain.repository.AuthRepository
+import edu.fatec.petwise.features.auth.domain.usecases.GetUserProfileUseCase
 import edu.fatec.petwise.features.auth.domain.usecases.LoginUseCase
 import edu.fatec.petwise.features.auth.domain.usecases.LogoutUseCase
 import edu.fatec.petwise.features.auth.domain.usecases.RegisterUseCase
@@ -17,20 +18,18 @@ import edu.fatec.petwise.features.auth.presentation.viewmodel.ResetPasswordViewM
 
 object AuthDependencyContainer {
 
-    var useApi: Boolean = true // Desabilitar para usar dados de MOCK
-
     private val _tokenStorage: AuthTokenStorage by lazy {
         AuthTokenStorageImpl()
     }
 
-    private val remoteDataSource: RemoteAuthDataSource? by lazy {
-        if (useApi) RemoteAuthDataSourceImpl(NetworkModule.authApiService) else null
+    private val remoteDataSource: RemoteAuthDataSource by lazy {
+        RemoteAuthDataSourceImpl(NetworkModule.authApiService)
     }
 
     private val authRepository: AuthRepository by lazy {
         AuthRepositoryImpl(
             remoteDataSource = remoteDataSource,
-            tokenStorage = if (useApi) _tokenStorage else null
+            tokenStorage = _tokenStorage
         )
     }
 
@@ -54,6 +53,10 @@ object AuthDependencyContainer {
         LogoutUseCase(authRepository)
     }
 
+    private val getUserProfileUseCase: GetUserProfileUseCase by lazy {
+        GetUserProfileUseCase(authRepository)
+    }
+
     fun provideLoginUseCase(): LoginUseCase = loginUseCase
 
     fun provideRegisterUseCase(): RegisterUseCase = registerUseCase
@@ -63,6 +66,8 @@ object AuthDependencyContainer {
     fun provideResetPasswordUseCase(): ResetPasswordUseCase = resetPasswordUseCase
 
     fun provideLogoutUseCase(): LogoutUseCase = logoutUseCase
+
+    fun provideGetUserProfileUseCase(): GetUserProfileUseCase = getUserProfileUseCase
 
     fun provideAuthViewModel(): AuthViewModel {
         return AuthViewModel(
@@ -83,10 +88,8 @@ object AuthDependencyContainer {
     fun getTokenStorage(): AuthTokenStorage = _tokenStorage
 
     fun syncTokensWithNetworkModule() {
-        if (useApi) {
-            _tokenStorage.getToken()?.let { token ->
-                NetworkModule.setAuthToken(token)
-            }
+        _tokenStorage.getToken()?.let { token ->
+            NetworkModule.setAuthToken(token)
         }
     }
 }
@@ -94,21 +97,55 @@ object AuthDependencyContainer {
 class AuthTokenStorageImpl : AuthTokenStorage {
     private var token: String? = null
     private var userId: String? = null
+    private var tokenExpirationTime: Long = 0
 
     override fun saveToken(token: String) {
+        println("AuthTokenStorage: Saving token: ${token.take(10)}...")
         this.token = token
+        this.tokenExpirationTime = System.currentTimeMillis() + (60 * 60 * 1000) // Default 1 hour
     }
 
-    override fun getToken(): String? = token
+    override fun getToken(): String? {
+        val currentToken = token
+        if (currentToken != null && isTokenExpired()) {
+            println("AuthTokenStorage: Token expired, clearing tokens")
+            clearTokens()
+            return null
+        }
+        
+        println("AuthTokenStorage: Returning token: ${currentToken?.take(10)}... (expires in ${getRemainingTime()}ms)")
+        return currentToken
+    }
 
     override fun saveUserId(userId: String) {
+        println("AuthTokenStorage: Saving userId: $userId")
         this.userId = userId
     }
 
     override fun getUserId(): String? = userId
 
     override fun clearTokens() {
+        println("AuthTokenStorage: Clearing all tokens and user data")
         token = null
         userId = null
+        tokenExpirationTime = 0
+    }
+    
+    private fun isTokenExpired(): Boolean {
+        return tokenExpirationTime > 0 && System.currentTimeMillis() >= tokenExpirationTime
+    }
+    
+    private fun getRemainingTime(): Long {
+        return if (tokenExpirationTime > 0) {
+            (tokenExpirationTime - System.currentTimeMillis()).coerceAtLeast(0)
+        } else {
+            -1
+        }
+    }
+    
+    fun saveTokenWithExpiration(token: String, expiresInSeconds: Long) {
+        println("AuthTokenStorage: Saving token with ${expiresInSeconds}s expiration: ${token.take(10)}...")
+        this.token = token
+        this.tokenExpirationTime = System.currentTimeMillis() + (expiresInSeconds * 1000)
     }
 }

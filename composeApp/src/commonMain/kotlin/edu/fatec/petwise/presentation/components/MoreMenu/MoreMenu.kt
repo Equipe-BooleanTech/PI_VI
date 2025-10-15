@@ -35,6 +35,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,8 +62,27 @@ fun MoreMenu(
     isVisible: Boolean,
     navigationManager: NavigationManager,
     onClose: () -> Unit,
-    currentEmail: String = "cliente@petwise.com"
+    authViewModel: edu.fatec.petwise.features.auth.presentation.viewmodel.AuthViewModel,
+    getUserProfileUseCase: edu.fatec.petwise.features.auth.domain.usecases.GetUserProfileUseCase
 ) {
+    var userProfile by remember { mutableStateOf<edu.fatec.petwise.core.network.dto.UserProfileDto?>(null) }
+    var isLoadingProfile by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isVisible) {
+        if (isVisible && userProfile == null && !isLoadingProfile) {
+            isLoadingProfile = true
+            getUserProfileUseCase.execute().fold(
+                onSuccess = { profile ->
+                    userProfile = profile
+                    isLoadingProfile = false
+                },
+                onFailure = {
+                    isLoadingProfile = false
+                }
+            )
+        }
+    }
+
     AnimatedVisibility(
         visible = isVisible,
         enter = slideInVertically(initialOffsetY = { it }, animationSpec = tween(300)),
@@ -110,13 +134,13 @@ fun MoreMenu(
 
                     Column {
                         Text(
-                            text = "Usuário PetWise",
+                            text = userProfile?.fullName ?: "Carregando...",
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold
                             )
                         )
                         Text(
-                            text = currentEmail,
+                            text = userProfile?.email ?: "carregando...",
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 color = Color.Gray
                             )
@@ -229,6 +253,7 @@ fun MoreMenu(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
+                            authViewModel.logout()
                             navigationManager.navigateTo(NavigationManager.Screen.Auth)
                             onClose()
                         }

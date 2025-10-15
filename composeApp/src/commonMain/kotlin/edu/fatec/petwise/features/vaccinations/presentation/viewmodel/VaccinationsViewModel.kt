@@ -2,6 +2,8 @@ package edu.fatec.petwise.features.vaccinations.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import edu.fatec.petwise.core.data.DataRefreshEvent
+import edu.fatec.petwise.core.data.DataRefreshManager
 import edu.fatec.petwise.features.vaccinations.domain.models.Vaccination
 import edu.fatec.petwise.features.vaccinations.domain.models.VaccinationFilterOptions
 import edu.fatec.petwise.features.vaccinations.domain.usecases.*
@@ -48,6 +50,19 @@ class VaccinationsViewModel(
 
     init {
         loadVaccinations()
+        observeDataRefresh()
+    }
+
+    private fun observeDataRefresh() {
+        viewModelScope.launch {
+            DataRefreshManager.refreshEvents.collect { event ->
+                when (event) {
+                    is DataRefreshEvent.VaccinationsUpdated -> loadVaccinations()
+                    is DataRefreshEvent.AllDataUpdated -> loadVaccinations()
+                    else -> {}
+                }
+            }
+        }
     }
 
     fun onEvent(event: VaccinationsUiEvent) {

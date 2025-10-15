@@ -24,13 +24,42 @@ class ConsultaApiServiceImpl(
     private val networkHandler: NetworkRequestHandler
 ) : ConsultaApiService {
 
-    override suspend fun getAllConsultas(page: Int, pageSize: Int): NetworkResult<ConsultaListResponse> {
+    private suspend fun getConsultasList(
+        endpoint: String,
+        page: Int,
+        pageSize: Int,
+        additionalParams: HttpRequestBuilder.() -> Unit = {}
+    ): NetworkResult<ConsultaListResponse> {
         return networkHandler.executeWithRetry {
-            networkHandler.get<ConsultaListResponse>(ApiEndpoints.CONSULTAS) {
+            val result = networkHandler.get<ConsultaListResponse>(endpoint) {
                 parameter("page", page)
                 parameter("pageSize", pageSize)
+                additionalParams()
+            }
+            
+            when (result) {
+                is NetworkResult.Error -> {
+                    val errorMessage = result.exception.message ?: ""
+                    if (errorMessage.contains("Expected start of the object '{', but had '['")) {
+                        NetworkResult.Success(
+                            ConsultaListResponse(
+                                consultas = emptyList(),
+                                total = 0,
+                                page = page,
+                                pageSize = pageSize
+                            )
+                        )
+                    } else {
+                        result
+                    }
+                }
+                else -> result
             }
         }
+    }
+
+    override suspend fun getAllConsultas(page: Int, pageSize: Int): NetworkResult<ConsultaListResponse> {
+        return getConsultasList(ApiEndpoints.CONSULTAS, page, pageSize)
     }
 
     override suspend fun getConsultaById(id: String): NetworkResult<ConsultaDto> {
@@ -88,31 +117,18 @@ class ConsultaApiServiceImpl(
     }
 
     override suspend fun searchConsultas(query: String, page: Int, pageSize: Int): NetworkResult<ConsultaListResponse> {
-        return networkHandler.executeWithRetry {
-            networkHandler.get<ConsultaListResponse>(ApiEndpoints.CONSULTAS_SEARCH) {
-                parameter("q", query)
-                parameter("page", page)
-                parameter("pageSize", pageSize)
-            }
+        return getConsultasList(ApiEndpoints.CONSULTAS_SEARCH, page, pageSize) {
+            parameter("q", query)
         }
     }
 
     override suspend fun getUpcomingConsultas(page: Int, pageSize: Int): NetworkResult<ConsultaListResponse> {
-        return networkHandler.executeWithRetry {
-            networkHandler.get<ConsultaListResponse>(ApiEndpoints.CONSULTAS_UPCOMING) {
-                parameter("page", page)
-                parameter("pageSize", pageSize)
-            }
-        }
+        return getConsultasList(ApiEndpoints.CONSULTAS_UPCOMING, page, pageSize)
     }
 
     override suspend fun getConsultasByPet(petId: String, page: Int, pageSize: Int): NetworkResult<ConsultaListResponse> {
-        return networkHandler.executeWithRetry {
-            networkHandler.get<ConsultaListResponse>(ApiEndpoints.CONSULTAS) {
-                parameter("petId", petId)
-                parameter("page", page)
-                parameter("pageSize", pageSize)
-            }
+        return getConsultasList(ApiEndpoints.CONSULTAS, page, pageSize) {
+            parameter("petId", petId)
         }
     }
 }

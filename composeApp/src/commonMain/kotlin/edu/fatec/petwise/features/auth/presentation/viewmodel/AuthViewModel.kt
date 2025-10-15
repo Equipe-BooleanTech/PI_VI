@@ -2,6 +2,8 @@ package edu.fatec.petwise.features.auth.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import edu.fatec.petwise.core.data.DataRefreshManager
+import edu.fatec.petwise.core.network.di.NetworkModule
 import edu.fatec.petwise.features.auth.domain.usecases.LoginUseCase
 import edu.fatec.petwise.features.auth.domain.usecases.LogoutUseCase
 import edu.fatec.petwise.features.auth.domain.usecases.RegisterUseCase
@@ -46,14 +48,14 @@ class AuthViewModel(
         }
     }
 
-    fun register(userData: Map<String, String>) {
+    fun register(registerRequest: edu.fatec.petwise.core.network.dto.RegisterRequest) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(
                 isLoading = true,
                 errorMessage = null
             )
 
-            val result = registerUseCase.execute(userData)
+            val result = registerUseCase.execute(registerRequest)
 
             result.fold(
                 onSuccess = { userId ->
@@ -75,8 +77,42 @@ class AuthViewModel(
 
     fun logout() {
         viewModelScope.launch {
-            logoutUseCase.execute()
+            println("AuthViewModel: Iniciando logout")
+            
+            println("AuthViewModel: Cancelando todas as operações de rede em andamento")
+            NetworkModule.cancelAllOperations()
+            
+            try {
+                logoutUseCase.execute()
+                println("AuthViewModel: Logout executado com sucesso")
+            } catch (e: Exception) {
+                println("AuthViewModel: Erro durante logout, mas continuando - ${e.message}")
+            }
+            
+            DataRefreshManager.notifyAllDataUpdated()
             _uiState.value = AuthUiState()
+            println("AuthViewModel: Estado de autenticação limpo")
+            
+        }
+    }
+
+    fun handleSessionExpired(message: String = "Sessão expirada. Faça login novamente.") {
+        println("AuthViewModel: Sessão expirada detectada - redirecionando para login")
+        
+        println("AuthViewModel: Cancelando operações de rede antes do logout automático")
+        NetworkModule.cancelAllOperations()
+        
+        viewModelScope.launch {
+            try {
+                logoutUseCase.execute()
+            } catch (e: Exception) {
+                println("AuthViewModel: Erro durante logout automático - ${e.message}")
+            }
+            
+            _uiState.value = AuthUiState(
+                errorMessage = message
+            )
+            println("AuthViewModel: Usuário redirecionado para tela de login")
         }
     }
 

@@ -199,6 +199,13 @@ sealed class NetworkException(
         override val isRetryable: Boolean = true
     }
 
+    class RequestCancelled(
+        message: String = "Operação cancelada pelo usuário",
+        cause: Throwable? = null
+    ) : NetworkException(message, cause) {
+        override val isRetryable: Boolean = false
+    }
+
     class Unknown(
         message: String = "Erro desconhecido",
         cause: Throwable? = null

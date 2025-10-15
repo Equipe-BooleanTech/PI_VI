@@ -81,6 +81,71 @@ class DefaultValidationEngine(
         allValues: Map<String, Any>
     ): FormError.ValidationError? {
 
+        when (rule.type) {
+            ValidationType.MAX_DATE -> {
+                if (value.isBlank()) return null
+                val maxDateMillis = rule.value?.let {
+                    (it as? JsonPrimitive)?.content?.toLongOrNull()
+                } ?: return null
+                
+                return try {
+                    val dateMillis = parseDate(value)?.time ?: return FormError.ValidationError(
+                        id = "${fieldId}_max_date_${currentTimeMs()}",
+                        message = rule.message ?: "Data inválida",
+                        fieldId = fieldId,
+                        validationType = rule.type
+                    )
+                    if (dateMillis > maxDateMillis) {
+                        FormError.ValidationError(
+                            id = "${fieldId}_max_date_${currentTimeMs()}",
+                            message = rule.message ?: "Data não pode ser no futuro",
+                            fieldId = fieldId,
+                            validationType = rule.type
+                        )
+                    } else null
+                } catch (e: Exception) {
+                    FormError.ValidationError(
+                        id = "${fieldId}_max_date_${currentTimeMs()}",
+                        message = rule.message ?: "Data inválida",
+                        fieldId = fieldId,
+                        validationType = rule.type
+                    )
+                }
+            }
+
+            ValidationType.MIN_DATE -> {
+                if (value.isBlank()) return null
+                val minDateMillis = rule.value?.let {
+                    (it as? JsonPrimitive)?.content?.toLongOrNull()
+                } ?: return null
+                
+                return try {
+                    val dateMillis = parseDate(value)?.time ?: return FormError.ValidationError(
+                        id = "${fieldId}_min_date_${currentTimeMs()}",
+                        message = rule.message ?: "Data inválida",
+                        fieldId = fieldId,
+                        validationType = rule.type
+                    )
+                    if (dateMillis < minDateMillis) {
+                        FormError.ValidationError(
+                            id = "${fieldId}_min_date_${currentTimeMs()}",
+                            message = rule.message ?: "Data muito antiga",
+                            fieldId = fieldId,
+                            validationType = rule.type
+                        )
+                    } else null
+                } catch (e: Exception) {
+                    FormError.ValidationError(
+                        id = "${fieldId}_min_date_${currentTimeMs()}",
+                        message = rule.message ?: "Data inválida",
+                        fieldId = fieldId,
+                        validationType = rule.type
+                    )
+                }
+            }
+            else -> {} 
+        }
+
         val isValid = when (rule.type) {
             ValidationType.REQUIRED -> value.isNotBlank()
 
@@ -168,7 +233,22 @@ class DefaultValidationEngine(
             ValidationType.DATE -> {
                 if (value.isBlank()) return null
                 try {
-                    value.matches(Regex("^\\d{2}/\\d{2}/\\d{4}$"))
+                    value.matches(Regex("^\\d{2}/\\d{2}/\\d{4}$")) ||
+                    value.matches(Regex("^\\d{4}-\\d{2}-\\d{2}$"))
+                } catch (e: Exception) {
+                    false
+                }
+            }
+
+            ValidationType.MAX_DATE, ValidationType.MIN_DATE -> {
+                // These are handled above, should not reach here
+                true
+            }
+
+            ValidationType.DATE_RANGE -> {
+                if (value.isBlank()) return null
+                try {
+                    parseDate(value) != null
                 } catch (e: Exception) {
                     false
                 }
@@ -212,6 +292,22 @@ class DefaultValidationEngine(
 
     private fun validateCNPJ(cnpj: String): Boolean {
        return cnpj.length != 14 || cnpj.all { it == cnpj[0] }
+    }
+
+    private fun parseDate(dateString: String): java.util.Date? {
+        return try {
+            when {
+                dateString.matches(Regex("^\\d{4}-\\d{2}-\\d{2}$")) -> {
+                    java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).parse(dateString)
+                }
+                dateString.matches(Regex("^\\d{2}/\\d{2}/\\d{4}$")) -> {
+                    java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault()).parse(dateString)
+                }
+                else -> null
+            }
+        } catch (e: Exception) {
+            null
+        }
     }
 }
 

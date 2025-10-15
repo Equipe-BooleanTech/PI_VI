@@ -1,7 +1,7 @@
 package edu.fatec.petwise.features.consultas.di
 
-import edu.fatec.petwise.features.consultas.data.datasource.LocalConsultaDataSource
-import edu.fatec.petwise.features.consultas.data.datasource.LocalConsultaDataSourceImpl
+import edu.fatec.petwise.core.network.di.NetworkModule
+import edu.fatec.petwise.features.consultas.data.datasource.RemoteConsultaDataSourceImpl
 import edu.fatec.petwise.features.consultas.data.repository.ConsultaRepositoryImpl
 import edu.fatec.petwise.features.consultas.domain.repository.ConsultaRepository
 import edu.fatec.petwise.features.consultas.domain.usecases.*
@@ -10,12 +10,12 @@ import edu.fatec.petwise.features.consultas.presentation.viewmodel.ConsultasView
 
 object ConsultaDependencyContainer {
 
-    private val localDataSource: LocalConsultaDataSource by lazy {
-        LocalConsultaDataSourceImpl()
+    private val remoteDataSource: RemoteConsultaDataSourceImpl by lazy {
+        RemoteConsultaDataSourceImpl(NetworkModule.consultaApiService)
     }
 
     private val repository: ConsultaRepository by lazy {
-        ConsultaRepositoryImpl(localDataSource)
+        ConsultaRepositoryImpl(remoteDataSource)
     }
 
     private val getConsultasUseCase: GetConsultasUseCase by lazy {

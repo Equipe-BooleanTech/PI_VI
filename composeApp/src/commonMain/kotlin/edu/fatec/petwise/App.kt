@@ -1,8 +1,10 @@
 package edu.fatec.petwise
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
+import edu.fatec.petwise.features.auth.di.AuthDependencyContainer
 import edu.fatec.petwise.features.auth.presentation.AuthScreen
 import edu.fatec.petwise.features.auth.presentation.view.ForgotPasswordScreen
 import edu.fatec.petwise.features.auth.presentation.view.ResetPasswordScreen
@@ -13,6 +15,10 @@ import edu.fatec.petwise.presentation.theme.PetWiseThemeWrapper
 
 @Composable
 fun App() {
+    
+    LaunchedEffect(Unit) {
+        AuthDependencyContainer.syncTokensWithNetworkModule()
+    }
 
     val navigationManager = remember { NavigationManager() }
 

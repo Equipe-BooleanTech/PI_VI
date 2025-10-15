@@ -6,20 +6,22 @@ import edu.fatec.petwise.features.pets.domain.models.Pet
 import edu.fatec.petwise.features.pets.domain.models.PetSpecies
 import edu.fatec.petwise.features.pets.domain.models.PetGender
 import edu.fatec.petwise.features.pets.domain.models.HealthStatus
-import edu.fatec.petwise.features.pets.domain.usecases.AddPetUseCase
+import edu.fatec.petwise.features.pets.domain.usecases.UpdatePetUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-data class AddPetUiState(
+data class UpdatePetUiState(
+    val pet: Pet? = null,
     val isLoading: Boolean = false,
     val isSuccess: Boolean = false,
     val errorMessage: String? = null
 )
 
-sealed class AddPetUiEvent {
-    data class AddPet(
+sealed class UpdatePetUiEvent {
+    data class LoadPet(val pet: Pet) : UpdatePetUiEvent()
+    data class UpdatePet(
         val name: String,
         val breed: String,
         val species: PetSpecies,
@@ -30,30 +32,46 @@ sealed class AddPetUiEvent {
         val ownerName: String,
         val ownerPhone: String,
         val healthHistory: String
-    ) : AddPetUiEvent()
-    object ClearState : AddPetUiEvent()
+    ) : UpdatePetUiEvent()
+    object ClearState : UpdatePetUiEvent()
 }
 
-class AddPetViewModel(
-    private val addPetUseCase: AddPetUseCase
+class UpdatePetViewModel(
+    private val updatePetUseCase: UpdatePetUseCase
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(AddPetUiState())
-    val uiState: StateFlow<AddPetUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(UpdatePetUiState())
+    val uiState: StateFlow<UpdatePetUiState> = _uiState.asStateFlow()
 
-    fun onEvent(event: AddPetUiEvent) {
+    fun onEvent(event: UpdatePetUiEvent) {
         when (event) {
-            is AddPetUiEvent.AddPet -> addPet(event)
-            is AddPetUiEvent.ClearState -> clearState()
+            is UpdatePetUiEvent.LoadPet -> loadPet(event.pet)
+            is UpdatePetUiEvent.UpdatePet -> updatePet(event)
+            is UpdatePetUiEvent.ClearState -> clearState()
         }
     }
 
-    private fun addPet(event: AddPetUiEvent.AddPet) {
+    private fun loadPet(pet: Pet) {
+        println("Carregando pet para edição: ${pet.name}")
+        _uiState.value = _uiState.value.copy(pet = pet)
+    }
+
+    private fun updatePet(event: UpdatePetUiEvent.UpdatePet) {
         viewModelScope.launch {
-            println("Iniciando adição de novo pet: ${event.name}")
+            println("Iniciando atualização do pet...")
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
 
             try {
+                val currentPet = _uiState.value.pet
+                if (currentPet == null) {
+                    println("Erro: Pet não encontrado para atualização")
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        errorMessage = "Pet não encontrado"
+                    )
+                    return@launch
+                }
+
                 val ageInMonths = event.age.toIntOrNull()
                 val weightInKg = event.weight.toFloatOrNull()
 
@@ -75,8 +93,7 @@ class AddPetViewModel(
                     return@launch
                 }
 
-                val pet = Pet(
-                    id = "",
+                val updatedPet = currentPet.copy(
                     name = event.name,
                     breed = event.breed,
                     species = event.species,
@@ -86,34 +103,42 @@ class AddPetViewModel(
                     healthStatus = event.healthStatus,
                     ownerName = event.ownerName,
                     ownerPhone = event.ownerPhone,
-                    healthHistory = event.healthHistory,
-                    isFavorite = false,
-                    nextAppointment = null,
-                    createdAt = "",
-                    updatedAt = ""
+                    healthHistory = event.healthHistory
                 )
 
-                println("Salvando novo pet: nome=${pet.name}, raça=${pet.breed}, tutor=${pet.ownerName}")
+                println("Atualizando pet com dados: nome=${updatedPet.name}, raça=${updatedPet.breed}")
 
-                addPetUseCase(pet).fold(
-                    onSuccess = { addedPet ->
-                        println("Pet adicionado com sucesso: ${addedPet.name} (ID: ${addedPet.id})")
+                updatePetUseCase(updatedPet).fold(
+                    onSuccess = { result ->
+                        println("Pet atualizado com sucesso: ${result.name}")
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
                             isSuccess = true,
-                            errorMessage = null
+                            errorMessage = null,
+                            pet = result
                         )
                     },
                     onFailure = { error ->
-                        println("Erro ao adicionar pet: ${error.message}")
+                        println("Erro ao atualizar pet: ${error.message}")
+                        
+                        val errorMessage = when {
+                            error.message?.contains("Token expirado") == true ||
+                            error.message?.contains("Sessão expirada") == true ||
+                            error.message?.contains("deve estar logado") == true -> {
+                                println("UpdatePetViewModel: Erro de autenticação detectado - ${error.message}")
+                                "Sua sessão expirou. Faça login novamente para atualizar pets."
+                            }
+                            else -> error.message ?: "Erro ao atualizar pet"
+                        }
+                        
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
-                            errorMessage = error.message ?: "Erro ao adicionar pet"
+                            errorMessage = errorMessage
                         )
                     }
                 )
             } catch (e: Exception) {
-                println("Exceção durante adição do pet: ${e.message}")
+                println("Exceção durante atualização do pet: ${e.message}")
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     errorMessage = e.message ?: "Erro desconhecido"
@@ -123,7 +148,7 @@ class AddPetViewModel(
     }
 
     private fun clearState() {
-        println("Limpando estado do AddPetViewModel")
-        _uiState.value = AddPetUiState()
+        println("Limpando estado do UpdatePetViewModel")
+        _uiState.value = UpdatePetUiState()
     }
 }

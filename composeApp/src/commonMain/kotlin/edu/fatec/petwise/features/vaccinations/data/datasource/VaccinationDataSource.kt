@@ -1,17 +1,6 @@
 package edu.fatec.petwise.features.vaccinations.data.datasource
 
 import edu.fatec.petwise.features.vaccinations.domain.models.Vaccination
-import kotlinx.coroutines.flow.Flow
-
-interface LocalVaccinationDataSource {
-    fun getAllVaccinations(): Flow<List<Vaccination>>
-    fun getVaccinationById(id: String): Flow<Vaccination?>
-    fun getVaccinationsByPetId(petId: String): Flow<List<Vaccination>>
-    suspend fun insertVaccination(vaccination: Vaccination)
-    suspend fun updateVaccination(vaccination: Vaccination)
-    suspend fun deleteVaccination(id: String)
-    suspend fun deleteAllVaccinations()
-}
 
 interface RemoteVaccinationDataSource {
     suspend fun getAllVaccinations(): List<Vaccination>
