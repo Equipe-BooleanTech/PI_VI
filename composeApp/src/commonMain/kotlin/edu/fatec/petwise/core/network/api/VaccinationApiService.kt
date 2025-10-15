@@ -24,82 +24,62 @@ class VaccinationApiServiceImpl(
 ) : VaccinationApiService {
 
     override suspend fun getAllVaccinations(page: Int, pageSize: Int): NetworkResult<VaccinationListResponse> {
-        return networkHandler.executeWithRetry {
-            networkHandler.get<VaccinationListResponse>(ApiEndpoints.VACCINATIONS) {
-                parameter("page", page)
-                parameter("pageSize", pageSize)
-            }
+        return networkHandler.get<VaccinationListResponse>(ApiEndpoints.VACCINATIONS) {
+            parameter("page", page)
+            parameter("pageSize", pageSize)
         }
     }
 
     override suspend fun getVaccinationById(id: String): NetworkResult<VaccinationDto> {
-        return networkHandler.executeWithRetry {
-            networkHandler.get<VaccinationDto>(ApiEndpoints.getVaccination(id))
-        }
+        return networkHandler.get<VaccinationDto>(ApiEndpoints.getVaccination(id))
     }
 
     override suspend fun getVaccinationsByPetId(petId: String, page: Int, pageSize: Int): NetworkResult<VaccinationListResponse> {
-        return networkHandler.executeWithRetry {
-            networkHandler.get<VaccinationListResponse>(ApiEndpoints.getVaccinationsByPet(petId)) {
-                parameter("page", page)
-                parameter("pageSize", pageSize)
-            }
+        return networkHandler.get<VaccinationListResponse>(ApiEndpoints.getVaccinationsByPet(petId)) {
+            parameter("page", page)
+            parameter("pageSize", pageSize)
         }
     }
 
     override suspend fun createVaccination(request: CreateVaccinationRequest): NetworkResult<VaccinationDto> {
-        return networkHandler.executeWithRetry(maxAttempts = 1) {
-            networkHandler.post<VaccinationDto, CreateVaccinationRequest>(
-                urlString = ApiEndpoints.VACCINATIONS,
-                body = request
-            )
-        }
+        return networkHandler.post<VaccinationDto, CreateVaccinationRequest>(
+            urlString = ApiEndpoints.VACCINATIONS,
+            body = request
+        )
     }
 
     override suspend fun updateVaccination(id: String, request: UpdateVaccinationRequest): NetworkResult<VaccinationDto> {
-        return networkHandler.executeWithRetry(maxAttempts = 1) {
-            networkHandler.put<VaccinationDto, UpdateVaccinationRequest>(
-                urlString = ApiEndpoints.getVaccination(id),
-                body = request
-            )
-        }
+        return networkHandler.put<VaccinationDto, UpdateVaccinationRequest>(
+            urlString = ApiEndpoints.getVaccination(id),
+            body = request
+        )
     }
 
     override suspend fun deleteVaccination(id: String): NetworkResult<Unit> {
-        return networkHandler.executeWithRetry(maxAttempts = 1) {
-            networkHandler.delete<Unit>(ApiEndpoints.getVaccination(id))
-        }
+        return networkHandler.delete<Unit>(ApiEndpoints.getVaccination(id))
     }
 
     override suspend fun markAsApplied(id: String, request: MarkAsAppliedRequest): NetworkResult<VaccinationDto> {
-        return networkHandler.executeWithRetry(maxAttempts = 1) {
-            networkHandler.post<VaccinationDto, MarkAsAppliedRequest>(
-                urlString = ApiEndpoints.markVaccinationAsApplied(id),
-                body = request
-            )
-        }
+        return networkHandler.post<VaccinationDto, MarkAsAppliedRequest>(
+            urlString = ApiEndpoints.markVaccinationAsApplied(id),
+            body = request
+        )
     }
 
     override suspend fun scheduleNextDose(id: String, request: ScheduleNextDoseRequest): NetworkResult<VaccinationDto> {
-        return networkHandler.executeWithRetry(maxAttempts = 1) {
-            networkHandler.post<VaccinationDto, ScheduleNextDoseRequest>(
-                urlString = ApiEndpoints.scheduleVaccinationNextDose(id),
-                body = request
-            )
-        }
+        return networkHandler.post<VaccinationDto, ScheduleNextDoseRequest>(
+            urlString = ApiEndpoints.scheduleVaccinationNextDose(id),
+            body = request
+        )
     }
 
     override suspend fun getUpcomingVaccinations(days: Int): NetworkResult<VaccinationListResponse> {
-        return networkHandler.executeWithRetry {
-            networkHandler.get<VaccinationListResponse>(ApiEndpoints.VACCINATIONS_UPCOMING) {
-                parameter("days", days)
-            }
+        return networkHandler.get<VaccinationListResponse>(ApiEndpoints.VACCINATIONS_UPCOMING) {
+            parameter("days", days)
         }
     }
 
     override suspend fun getOverdueVaccinations(): NetworkResult<VaccinationListResponse> {
-        return networkHandler.executeWithRetry {
-            networkHandler.get<VaccinationListResponse>(ApiEndpoints.VACCINATIONS_OVERDUE)
-        }
+        return networkHandler.get<VaccinationListResponse>(ApiEndpoints.VACCINATIONS_OVERDUE)
     }
 }

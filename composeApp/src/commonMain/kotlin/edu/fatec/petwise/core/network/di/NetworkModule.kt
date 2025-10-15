@@ -3,22 +3,10 @@ package edu.fatec.petwise.core.network.di
 import edu.fatec.petwise.core.network.*
 import edu.fatec.petwise.core.network.api.*
 import io.ktor.client.*
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 
 object NetworkModule {
 
     private val tokenManager: TokenManager = TokenManagerImpl()
-    
-    private var networkSupervisorJob = SupervisorJob()
-    
-    private var networkScope = CoroutineScope(
-        networkSupervisorJob + Dispatchers.Default + CoroutineName("NetworkModule")
-    )
 
     private fun createHttpClientConfig(): PetWiseHttpClientConfig {
         return PetWiseHttpClientConfig(
@@ -27,8 +15,7 @@ object NetworkModule {
             connectTimeout = NetworkConfig.CONNECT_TIMEOUT,
             socketTimeout = NetworkConfig.SOCKET_TIMEOUT,
             maxRetries = NetworkConfig.MAX_RETRY_ATTEMPTS,
-            authTokenProvider = { tokenManager.getAccessToken() },
-            coroutineScope = networkScope
+            authTokenProvider = { tokenManager.getAccessToken() }
         )
     }
 
@@ -39,18 +26,6 @@ object NetworkModule {
             _httpClient = createDefaultHttpClient(createHttpClientConfig())
         }
         return _httpClient!!
-    }
-
-    private fun recreateHttpClient() {
-        println("NetworkModule: Fechando cliente HTTP existente")
-        _httpClient?.close()
-        _httpClient = null
-        _networkRequestHandler = null
-        
-        println("NetworkModule: Criando novo cliente HTTP com token atualizado")
-        _httpClient = createDefaultHttpClient(createHttpClientConfig())
-        _networkRequestHandler = NetworkRequestHandler(getHttpClient())
-        println("NetworkModule: Novo cliente HTTP criado")
     }
 
     private var _networkRequestHandler: NetworkRequestHandler? = null
@@ -75,40 +50,33 @@ object NetworkModule {
         get() = VaccinationApiServiceImpl(getNetworkRequestHandler())
 
     fun clear() {
-        println("NetworkModule: Cancelando todas as operações de rede em andamento")
-        networkSupervisorJob.cancel()
-        networkSupervisorJob = SupervisorJob()
-        networkScope = CoroutineScope(
-            networkSupervisorJob + Dispatchers.Default + CoroutineName("NetworkModule")
-        )
-        
+        println("NetworkModule: Limpando recursos de rede")
         _httpClient?.close()
         _httpClient = null
         _networkRequestHandler = null
         tokenManager.clearTokens()
-        
-        println("NetworkModule: Todas as operações canceladas e recursos limpos")
+        println("NetworkModule: Recursos limpos")
     }
 
     fun setAuthToken(token: String) {
-        println("NetworkModule: Setting auth token: ${token.take(10)}...")
+        println("NetworkModule: Definindo token de autenticação: ${token.take(10)}...")
         tokenManager.setAccessToken(token)
-        recreateHttpClient()
+        println("NetworkModule: Token atualizado, cliente HTTP reutilizará automaticamente")
     }
     
     fun setAuthTokenWithExpiration(token: String, expiresInSeconds: Long) {
-        println("NetworkModule: Setting auth token with expiration: ${token.take(10)}...")
+        println("NetworkModule: Definindo token de autenticação com expiração: ${token.take(10)}...")
         if (tokenManager is TokenManagerImpl) {
             tokenManager.setTokenWithExpiration(token, expiresInSeconds)
         } else {
             tokenManager.setAccessToken(token)
         }
-        recreateHttpClient()
+        println("NetworkModule: Token atualizado, cliente HTTP reutilizará automaticamente")
     }
 
     fun getAuthToken(): String? {
         val token = tokenManager.getAccessToken()
-        println("NetworkModule: Getting auth token: ${token?.take(10)}...")
+        println("NetworkModule: Obtendo token de autenticação: ${token?.take(10)}...")
         return token
     }
     
@@ -116,29 +84,10 @@ object NetworkModule {
         return tokenManager.getAccessToken() != null
     }
     
-    fun cancelAllOperations() {
-        println("NetworkModule: Forçando cancelamento de todas as operações de rede")
-        networkSupervisorJob.cancel("Logout do usuário - cancelando todas as operações")
-        networkSupervisorJob = SupervisorJob()
-        networkScope = CoroutineScope(
-            networkSupervisorJob + Dispatchers.Default + CoroutineName("NetworkModule")
-        )
-        println("NetworkModule: Scope de rede recriado")
-    }
-    
     fun clearAuthToken() {
-        println("NetworkModule: Clearing auth token")
+        println("NetworkModule: Limpando token de autenticação")
         tokenManager.clearTokens()
-        
-        println("NetworkModule: Cancelando operações em andamento antes de recriar cliente")
-        networkSupervisorJob.cancel()
-        networkSupervisorJob = SupervisorJob()
-        networkScope = CoroutineScope(
-            networkSupervisorJob + Dispatchers.Default + CoroutineName("NetworkModule")
-        )
-        
-        recreateHttpClient()
-        println("NetworkModule: Cliente HTTP recriado com novo scope")
+        println("NetworkModule: Token limpo, requisições subsequentes não terão autenticação")
     }
 }
 
@@ -159,32 +108,31 @@ class TokenManagerImpl : TokenManager {
     override fun getAccessToken(): String? {
         val token = accessToken
         if (token != null && isTokenExpired()) {
-            println("TokenManager: Token expired, clearing tokens")
+            println("TokenManager: Token expirado, limpando tokens")
             clearTokens()
             return null
         }
         
-        println("TokenManager: Returning access token: ${token?.take(10)}... (expires in ${getRemainingTokenTime()}ms)")
+        println("TokenManager: Retornando token de acesso: ${token?.take(10)}... (expira em ${getRemainingTokenTime()}ms)")
         return token
     }
 
     override fun setAccessToken(token: String) {
-        println("TokenManager: Setting access token: ${token.take(10)}...")
+        println("TokenManager: Definindo token de acesso: ${token.take(10)}...")
         accessToken = token
         tokenSetTime = System.currentTimeMillis()
-        // Default to 1 hour expiration if not specified
         tokenExpirationTime = tokenSetTime + (60 * 60 * 1000) 
     }
 
     override fun getRefreshToken(): String? = refreshToken
 
     override fun setRefreshToken(token: String) {
-        println("TokenManager: Setting refresh token: ${token.take(10)}...")
+        println("TokenManager: Definindo token de refresh: ${token.take(10)}...")
         refreshToken = token
     }
 
     override fun clearTokens() {
-        println("TokenManager: Clearing all tokens")
+        println("TokenManager: Limpando todos os tokens")
         accessToken = null
         refreshToken = null
         tokenExpirationTime = 0
@@ -208,7 +156,7 @@ class TokenManagerImpl : TokenManager {
     }
     
     fun setTokenWithExpiration(token: String, expiresInSeconds: Long) {
-        println("TokenManager: Setting access token with ${expiresInSeconds}s expiration: ${token.take(10)}...")
+        println("TokenManager: Definindo token de acesso com expiração de ${expiresInSeconds}s: ${token.take(10)}...")
         accessToken = token
         tokenSetTime = System.currentTimeMillis()
         tokenExpirationTime = tokenSetTime + (expiresInSeconds * 1000)

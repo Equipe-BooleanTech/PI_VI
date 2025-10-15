@@ -16,7 +16,6 @@ class AuthRepositoryImpl(
             println("Repositório: Iniciando login para email '$email' via API")
             when (val result = remoteDataSource.login(email, password)) {
                 is NetworkResult.Success -> {
-                    // Save token with expiration information
                     if (tokenStorage is AuthTokenStorageImpl) {
                         tokenStorage.saveTokenWithExpiration(result.data.token, result.data.expiresIn)
                     } else {
@@ -24,7 +23,6 @@ class AuthRepositoryImpl(
                     }
                     tokenStorage?.saveUserId(result.data.userId)
                     
-                    // Set token in network module with expiration
                     NetworkModule.setAuthTokenWithExpiration(result.data.token, result.data.expiresIn)
                     
                     println("Repositório: Login realizado com sucesso - Usuário: ${result.data.userId}, Token expira em: ${result.data.expiresIn}s")
@@ -159,15 +157,15 @@ class AuthRepositoryImpl(
 
     override suspend fun logout(): Result<Unit> {
         return try {
-            println("Repositório: Realizando logout local (limpeza de tokens e cancelamento de operações)")
+            println("Repositório: Realizando logout local (limpeza de tokens)")
             
             tokenStorage?.clearTokens()
-            NetworkModule.clear()
-            println("Repositório: Logout local realizado com sucesso, tokens limpos e operações canceladas")
+            NetworkModule.clearAuthToken()
+            println("Repositório: Logout local realizado com sucesso, tokens limpos")
             Result.success(Unit)
         } catch (e: Exception) {
             tokenStorage?.clearTokens()
-            NetworkModule.clear()
+            NetworkModule.clearAuthToken()
             println("Repositório: Logout local realizado mesmo com erro - ${e.message}")
             Result.success(Unit)
         }

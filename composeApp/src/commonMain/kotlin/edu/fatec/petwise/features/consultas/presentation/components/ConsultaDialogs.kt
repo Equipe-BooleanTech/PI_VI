@@ -16,31 +16,56 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import edu.fatec.petwise.presentation.shared.form.*
 import edu.fatec.petwise.features.consultas.domain.models.*
-import edu.fatec.petwise.features.consultas.presentation.forms.addConsultaFormConfiguration
+import edu.fatec.petwise.features.consultas.presentation.forms.createAddConsultaFormConfiguration
+import edu.fatec.petwise.features.consultas.presentation.forms.createEditConsultaFormConfiguration
 import edu.fatec.petwise.features.consultas.presentation.viewmodel.AddConsultaViewModel
 import edu.fatec.petwise.features.consultas.presentation.viewmodel.AddConsultaUiEvent
+import edu.fatec.petwise.features.consultas.presentation.viewmodel.UpdateConsultaViewModel
+import edu.fatec.petwise.features.consultas.presentation.viewmodel.UpdateConsultaUiEvent
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.fromHex
+import edu.fatec.petwise.features.pets.di.PetDependencyContainer
+import kotlinx.coroutines.flow.firstOrNull
 
 @Composable
 fun AddConsultaDialog(
     addConsultaViewModel: AddConsultaViewModel,
     isLoading: Boolean,
     errorMessage: String?,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onSuccess: () -> Unit = {}
 ) {
     val theme = PetWiseTheme.Light
     val addConsultaState by addConsultaViewModel.uiState.collectAsState()
+    
+    val petsViewModel = remember { PetDependencyContainer.providePetsViewModel() }
+    val petsState by petsViewModel.uiState.collectAsState()
+    
+    val petOptions = remember(petsState.pets) {
+        petsState.pets.map { pet ->
+            SelectOption(
+                key = pet.id,
+                value = pet.name
+            )
+        }
+    }
 
-    val formConfiguration = addConsultaFormConfiguration
+    val formConfiguration = remember(petOptions) {
+        createAddConsultaFormConfiguration(petOptions)
+    }
 
     val formViewModel = viewModel<DynamicFormViewModel>(key = "add_consulta_form") {
         DynamicFormViewModel(initialConfiguration = formConfiguration)
     }
     
+    LaunchedEffect(petOptions) {
+        formViewModel.updateConfiguration(createAddConsultaFormConfiguration(petOptions))
+    }
+    
     LaunchedEffect(addConsultaState.isSuccess) {
         if (addConsultaState.isSuccess) {
             formViewModel.resetForm()
+            onSuccess()
         }
     }
 
@@ -151,6 +176,10 @@ fun AddConsultaDialog(
                                 error = Color.fromHex("#d32f2f")
                             ),
                             onSubmitSuccess = { values ->
+                                val petId = values["petId"]?.toString() ?: ""
+                                val selectedPet = petsState.pets.find { it.id == petId }
+                                val petName = selectedPet?.name ?: ""
+                                
                                 val consultaType = when (values["consultaType"]) {
                                     "Consulta de Rotina" -> ConsultaType.ROUTINE
                                     "Emergência" -> ConsultaType.EMERGENCY
@@ -165,8 +194,8 @@ fun AddConsultaDialog(
 
                                 addConsultaViewModel.onEvent(
                                     AddConsultaUiEvent.AddConsulta(
-                                        petId = "1",
-                                        petName = values["petName"]?.toString() ?: "",
+                                        petId = petId,
+                                        petName = petName,
                                         veterinarianName = values["veterinarianName"]?.toString() ?: "",
                                         consultaType = consultaType,
                                         consultaDate = values["consultaDate"]?.toString() ?: "",
@@ -176,6 +205,215 @@ fun AddConsultaDialog(
                                         price = values["price"]?.toString() ?: "0",
                                         ownerName = values["ownerName"]?.toString() ?: "",
                                         ownerPhone = values["ownerPhone"]?.toString() ?: ""
+                                    )
+                                )
+                            }
+                        )
+                    }
+                }
+
+                if (isLoading) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = Color.fromHex("#2196F3")
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun EditConsultaDialog(
+    consulta: Consulta,
+    updateConsultaViewModel: UpdateConsultaViewModel,
+    isLoading: Boolean,
+    errorMessage: String?,
+    onDismiss: () -> Unit,
+    onSuccess: () -> Unit = {}
+) {
+    val theme = PetWiseTheme.Light
+    val updateConsultaState by updateConsultaViewModel.uiState.collectAsState()
+    
+    val petsViewModel = remember { PetDependencyContainer.providePetsViewModel() }
+    val petsState by petsViewModel.uiState.collectAsState()
+    
+    val petOptions = remember(petsState.pets) {
+        petsState.pets.map { pet ->
+            SelectOption(
+                key = pet.id,
+                value = pet.name
+            )
+        }
+    }
+
+    val formConfiguration = remember(consulta, petOptions) {
+        createEditConsultaFormConfiguration(consulta, petOptions)
+    }
+
+    val formViewModel = viewModel<DynamicFormViewModel>(key = "edit_consulta_form_${consulta.id}") {
+        DynamicFormViewModel(initialConfiguration = formConfiguration)
+    }
+    
+    LaunchedEffect(consulta, petOptions) {
+        formViewModel.resetForm()
+        formViewModel.updateConfiguration(createEditConsultaFormConfiguration(consulta, petOptions))
+    }
+    
+    LaunchedEffect(updateConsultaState.isSuccess) {
+        if (updateConsultaState.isSuccess) {
+            formViewModel.resetForm()
+            onSuccess()
+        }
+    }
+
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true
+        )
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth(0.95f)
+                .fillMaxHeight(0.9f)
+                .padding(16.dp),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(20.dp)
+            ) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.fromHex("#2196F3")
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Editar Consulta",
+                                style = MaterialTheme.typography.titleLarge.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            )
+                            Text(
+                                text = "Atualize as informações da consulta",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    color = Color.White.copy(alpha = 0.9f)
+                                )
+                            )
+                        }
+
+                        IconButton(onClick = onDismiss) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Fechar",
+                                tint = Color.White
+                            )
+                        }
+                    }
+                }
+
+                errorMessage?.let { message ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.fromHex("#FFEBEE")
+                        )
+                    ) {
+                        Text(
+                            text = message,
+                            color = Color.fromHex("#C62828"),
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
+                }
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(vertical = 8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.fromHex("#F8F9FA")
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp)
+                    ) {
+                        DynamicForm(
+                            viewModel = formViewModel,
+                            modifier = Modifier.fillMaxSize(),
+                            colorScheme = MaterialTheme.colorScheme.copy(
+                                primary = Color.fromHex("#2196F3"),
+                                error = Color.fromHex("#d32f2f")
+                            ),
+                            onSubmitSuccess = { values ->
+                                val petId = values["petId"]?.toString() ?: consulta.petId
+                                val selectedPet = petsState.pets.find { it.id == petId }
+                                val petName = selectedPet?.name ?: consulta.petName
+                                
+                                val consultaType = when (values["consultaType"]) {
+                                    "Consulta de Rotina" -> ConsultaType.ROUTINE
+                                    "Emergência" -> ConsultaType.EMERGENCY
+                                    "Retorno" -> ConsultaType.FOLLOW_UP
+                                    "Vacinação" -> ConsultaType.VACCINATION
+                                    "Cirurgia" -> ConsultaType.SURGERY
+                                    "Exame" -> ConsultaType.EXAM
+                                    "Odontologia" -> ConsultaType.DENTAL
+                                    "Estética" -> ConsultaType.GROOMING
+                                    else -> ConsultaType.OTHER
+                                }
+
+                                updateConsultaViewModel.onEvent(
+                                    UpdateConsultaUiEvent.UpdateConsulta(
+                                        id = consulta.id,
+                                        petId = petId,
+                                        petName = petName,
+                                        veterinarianName = values["veterinarianName"]?.toString() ?: consulta.veterinarianName,
+                                        consultaType = consultaType,
+                                        consultaDate = values["consultaDate"]?.toString() ?: consulta.consultaDate,
+                                        consultaTime = values["consultaTime"]?.toString() ?: consulta.consultaTime,
+                                        symptoms = values["symptoms"]?.toString() ?: consulta.symptoms,
+                                        diagnosis = values["diagnosis"]?.toString() ?: consulta.diagnosis,
+                                        treatment = values["treatment"]?.toString() ?: consulta.treatment,
+                                        prescriptions = values["prescriptions"]?.toString() ?: consulta.prescriptions,
+                                        notes = values["notes"]?.toString() ?: consulta.notes,
+                                        nextAppointment = values["nextAppointment"]?.toString(),
+                                        price = values["price"]?.toString() ?: consulta.price.toString(),
+                                        ownerName = values["ownerName"]?.toString() ?: consulta.ownerName,
+                                        ownerPhone = values["ownerPhone"]?.toString() ?: consulta.ownerPhone
                                     )
                                 )
                             }

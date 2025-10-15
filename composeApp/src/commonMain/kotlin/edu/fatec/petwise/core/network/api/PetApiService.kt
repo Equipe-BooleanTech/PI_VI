@@ -23,120 +23,102 @@ class PetApiServiceImpl(
 ) : PetApiService {
 
     override suspend fun getAllPets(page: Int, pageSize: Int): NetworkResult<PetListResponse> {
-        return networkHandler.executeWithRetry {
-            when (val result = networkHandler.get<List<PetDto>>(ApiEndpoints.PETS) {
-                parameter("page", page)
-                parameter("pageSize", pageSize)
-            }) {
-                is NetworkResult.Success -> {
-                    NetworkResult.Success(
-                        PetListResponse(
-                            pets = result.data,
-                            total = result.data.size,
-                            page = page,
-                            pageSize = pageSize
-                        )
+        return when (val result = networkHandler.get<List<PetDto>>(ApiEndpoints.PETS) {
+            parameter("page", page)
+            parameter("pageSize", pageSize)
+        }) {
+            is NetworkResult.Success -> {
+                NetworkResult.Success(
+                    PetListResponse(
+                        pets = result.data,
+                        total = result.data.size,
+                        page = page,
+                        pageSize = pageSize
                     )
-                }
-                is NetworkResult.Error -> result
-                is NetworkResult.Loading -> result
+                )
             }
+            is NetworkResult.Error -> result
+            is NetworkResult.Loading -> result
         }
     }
 
     override suspend fun getPetById(id: String): NetworkResult<PetDto> {
-        return networkHandler.executeWithRetry {
-            networkHandler.get<PetDto>(ApiEndpoints.getPet(id))
-        }
+        return networkHandler.get<PetDto>(ApiEndpoints.getPet(id))
     }
 
     override suspend fun createPet(request: CreatePetRequest): NetworkResult<PetDto> {
-        return networkHandler.executeWithRetry(maxAttempts = 1) {
-            networkHandler.post<PetDto, CreatePetRequest>(
-                urlString = ApiEndpoints.PETS,
-                body = request
-            )
-        }
+        return networkHandler.post<PetDto, CreatePetRequest>(
+            urlString = ApiEndpoints.PETS,
+            body = request
+        )
     }
 
     override suspend fun updatePet(id: String, request: UpdatePetRequest): NetworkResult<PetDto> {
-        return networkHandler.executeWithRetry(maxAttempts = 1) {
-            networkHandler.put<PetDto, UpdatePetRequest>(
-                urlString = ApiEndpoints.getPet(id),
-                body = request
-            )
-        }
+        return networkHandler.put<PetDto, UpdatePetRequest>(
+            urlString = ApiEndpoints.getPet(id),
+            body = request
+        )
     }
 
     override suspend fun deletePet(id: String): NetworkResult<Unit> {
-        return networkHandler.executeWithRetry(maxAttempts = 1) {
-            networkHandler.delete<Unit>(ApiEndpoints.getPet(id))
-        }
+        return networkHandler.delete<Unit>(ApiEndpoints.getPet(id))
     }
 
     override suspend fun toggleFavorite(id: String): NetworkResult<ToggleFavoriteResponse> {
-        return networkHandler.executeWithRetry(maxAttempts = 1) {
-            networkHandler.post<ToggleFavoriteResponse, Unit>(
-                urlString = ApiEndpoints.toggleFavorite(id),
-                body = Unit
-            )
-        }
+        return networkHandler.post<ToggleFavoriteResponse, Unit>(
+            urlString = ApiEndpoints.toggleFavorite(id),
+            body = Unit
+        )
     }
 
     override suspend fun updateHealthStatus(
         id: String,
         request: UpdateHealthStatusRequest
     ): NetworkResult<PetDto> {
-        return networkHandler.executeWithRetry(maxAttempts = 1) {
-            networkHandler.patch<PetDto, UpdateHealthStatusRequest>(
-                urlString = ApiEndpoints.updateHealth(id),
-                body = request
-            )
-        }
+        return networkHandler.patch<PetDto, UpdateHealthStatusRequest>(
+            urlString = ApiEndpoints.updateHealth(id),
+            body = request
+        )
     }
 
     override suspend fun searchPets(query: String, page: Int, pageSize: Int): NetworkResult<PetListResponse> {
-        return networkHandler.executeWithRetry {
-            when (val result = networkHandler.get<List<PetDto>>(ApiEndpoints.PETS_SEARCH) {
-                parameter("q", query)
-                parameter("page", page)
-                parameter("pageSize", pageSize)
-            }) {
-                is NetworkResult.Success -> {
-                    NetworkResult.Success(
-                        PetListResponse(
-                            pets = result.data,
-                            total = result.data.size,
-                            page = page,
-                            pageSize = pageSize
-                        )
+        return when (val result = networkHandler.get<List<PetDto>>(ApiEndpoints.PETS_SEARCH) {
+            parameter("q", query)
+            parameter("page", page)
+            parameter("pageSize", pageSize)
+        }) {
+            is NetworkResult.Success -> {
+                NetworkResult.Success(
+                    PetListResponse(
+                        pets = result.data,
+                        total = result.data.size,
+                        page = page,
+                        pageSize = pageSize
                     )
-                }
-                is NetworkResult.Error -> result
-                is NetworkResult.Loading -> result
+                )
             }
+            is NetworkResult.Error -> result
+            is NetworkResult.Loading -> result
         }
     }
 
     override suspend fun getFavoritePets(page: Int, pageSize: Int): NetworkResult<PetListResponse> {
-        return networkHandler.executeWithRetry {
-            when (val result = networkHandler.get<List<PetDto>>(ApiEndpoints.PETS_FAVORITES) {
-                parameter("page", page)
-                parameter("pageSize", pageSize)
-            }) {
-                is NetworkResult.Success -> {
-                    NetworkResult.Success(
-                        PetListResponse(
-                            pets = result.data,
-                            total = result.data.size,
-                            page = page,
-                            pageSize = pageSize
-                        )
+        return when (val result = networkHandler.get<List<PetDto>>(ApiEndpoints.PETS_FAVORITES) {
+            parameter("page", page)
+            parameter("pageSize", pageSize)
+        }) {
+            is NetworkResult.Success -> {
+                NetworkResult.Success(
+                    PetListResponse(
+                        pets = result.data,
+                        total = result.data.size,
+                        page = page,
+                        pageSize = pageSize
                     )
-                }
-                is NetworkResult.Error -> result
-                is NetworkResult.Loading -> result
+                )
             }
+            is NetworkResult.Error -> result
+            is NetworkResult.Loading -> result
         }
     }
 }

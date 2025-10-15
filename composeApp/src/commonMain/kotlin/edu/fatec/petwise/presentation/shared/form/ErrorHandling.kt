@@ -132,17 +132,8 @@ sealed class ErrorHandlingResult {
 class DefaultErrorHandler : ErrorHandler {
 
     override suspend fun handleError(error: FormError): ErrorHandlingResult {
-        return when (error) {
-            is FormError.NetworkError -> ErrorHandlingResult.Retry(delayMs = 2000)
-            is FormError.ApiError -> {
-                if (error.retryable) {
-                    ErrorHandlingResult.Retry(delayMs = 1000)
-                } else {
-                    ErrorHandlingResult.ShowMessage(error.message)
-                }
-            }
-            else -> ErrorHandlingResult.ShowMessage(error.message)
-        }
+        // Removed retry logic to prevent exhaustive API calls
+        return ErrorHandlingResult.ShowMessage(error.message)
     }
 
     override fun canHandle(error: FormError): Boolean = true

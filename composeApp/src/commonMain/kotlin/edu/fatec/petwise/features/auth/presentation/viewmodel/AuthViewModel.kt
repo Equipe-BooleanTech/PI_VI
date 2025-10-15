@@ -79,9 +79,6 @@ class AuthViewModel(
         viewModelScope.launch {
             println("AuthViewModel: Iniciando logout")
             
-            println("AuthViewModel: Cancelando todas as operações de rede em andamento")
-            NetworkModule.cancelAllOperations()
-            
             try {
                 logoutUseCase.execute()
                 println("AuthViewModel: Logout executado com sucesso")
@@ -98,9 +95,6 @@ class AuthViewModel(
 
     fun handleSessionExpired(message: String = "Sessão expirada. Faça login novamente.") {
         println("AuthViewModel: Sessão expirada detectada - redirecionando para login")
-        
-        println("AuthViewModel: Cancelando operações de rede antes do logout automático")
-        NetworkModule.cancelAllOperations()
         
         viewModelScope.launch {
             try {

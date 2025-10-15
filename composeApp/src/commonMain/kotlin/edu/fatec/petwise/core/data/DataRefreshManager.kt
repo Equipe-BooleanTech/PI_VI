@@ -42,7 +42,7 @@ object DataRefreshManager {
     fun notifyAllDataUpdated() {
         val emitted = _refreshEvents.tryEmit(DataRefreshEvent.AllDataUpdated)
         if (!emitted) {
-            println("DataRefreshManager: Falha ao emitir evento AllDataUpdated")
+            println("DataRefreshManager: Nenhum observador ativo para AllDataUpdated (normal durante logout)")
         }
     }
 

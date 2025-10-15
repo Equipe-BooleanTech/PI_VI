@@ -115,10 +115,10 @@ fun ConsultaDto.toDomain(): Consulta = Consulta(
     petId = petId,
     petName = petName,
     veterinarianName = veterinarianName,
-    consultaType = ConsultaType.valueOf(consultaType),
+    consultaType = mapStringToConsultaType(consultaType),
     consultaDate = consultaDate,
     consultaTime = consultaTime,
-    status = ConsultaStatus.valueOf(status),
+    status = mapStringToConsultaStatus(status),
     symptoms = symptoms,
     diagnosis = diagnosis,
     treatment = treatment,
@@ -132,3 +132,37 @@ fun ConsultaDto.toDomain(): Consulta = Consulta(
     createdAt = createdAt,
     updatedAt = updatedAt
 )
+
+private fun mapStringToConsultaType(value: String): ConsultaType {
+    return try {
+        ConsultaType.valueOf(value.uppercase())
+    } catch (e: IllegalArgumentException) {
+        when (value) {
+            "Consulta de Rotina" -> ConsultaType.ROUTINE
+            "Emergência" -> ConsultaType.EMERGENCY
+            "Retorno" -> ConsultaType.FOLLOW_UP
+            "Vacinação" -> ConsultaType.VACCINATION
+            "Cirurgia" -> ConsultaType.SURGERY
+            "Exame" -> ConsultaType.EXAM
+            "Odontologia" -> ConsultaType.DENTAL
+            "Estética" -> ConsultaType.GROOMING
+            "Outro" -> ConsultaType.OTHER
+            else -> ConsultaType.OTHER
+        }
+    }
+}
+
+private fun mapStringToConsultaStatus(value: String): ConsultaStatus {
+    return try {
+        ConsultaStatus.valueOf(value.uppercase())
+    } catch (e: IllegalArgumentException) {
+        when (value) {
+            "Agendada" -> ConsultaStatus.SCHEDULED
+            "Em Andamento" -> ConsultaStatus.IN_PROGRESS
+            "Concluída" -> ConsultaStatus.COMPLETED
+            "Cancelada" -> ConsultaStatus.CANCELLED
+            "Remarcada" -> ConsultaStatus.RESCHEDULED
+            else -> ConsultaStatus.SCHEDULED
+        }
+    }
+}

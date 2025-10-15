@@ -31,7 +31,8 @@ fun AddPetDialog(
     addPetViewModel: AddPetViewModel,
     isLoading: Boolean,
     errorMessage: String?,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onSuccess: () -> Unit = {}
 ) {
     val theme = PetWiseTheme.Light
     val addPetState by addPetViewModel.uiState.collectAsState()
@@ -45,6 +46,7 @@ fun AddPetDialog(
     LaunchedEffect(addPetState.isSuccess) {
         if (addPetState.isSuccess) {
             formViewModel.resetForm()
+            onSuccess()
         }
     }
 
@@ -220,35 +222,30 @@ fun EditPetDialog(
     updatePetViewModel: UpdatePetViewModel,
     isLoading: Boolean,
     errorMessage: String?,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onSuccess: () -> Unit = {}
 ) {
     val theme = PetWiseTheme.Light
     val updatePetState by updatePetViewModel.uiState.collectAsState()
 
-    val formConfiguration = createEditPetFormConfiguration(pet.name)
+    val formConfiguration = remember(pet) {
+        createEditPetFormConfiguration(pet)
+    }
 
     val formViewModel = viewModel<DynamicFormViewModel>(key = "edit_pet_form_${pet.id}") {
         DynamicFormViewModel(initialConfiguration = formConfiguration)
     }
 
     LaunchedEffect(pet) {
+        formViewModel.resetForm()
+        formViewModel.updateConfiguration(createEditPetFormConfiguration(pet))
         updatePetViewModel.onEvent(UpdatePetUiEvent.LoadPet(pet))
-        
-        formViewModel.updateFieldValue("name", pet.name)
-        formViewModel.updateFieldValue("breed", pet.breed)
-        formViewModel.updateFieldValue("species", pet.species.displayName)
-        formViewModel.updateFieldValue("gender", pet.gender.displayName)
-        formViewModel.updateFieldValue("age", pet.age.toString())
-        formViewModel.updateFieldValue("weight", pet.weight.toString())
-        formViewModel.updateFieldValue("healthStatus", pet.healthStatus.displayName)
-        formViewModel.updateFieldValue("ownerName", pet.ownerName)
-        formViewModel.updateFieldValue("ownerPhone", pet.ownerPhone)
-        formViewModel.updateFieldValue("healthHistory", pet.healthHistory)
     }
 
     LaunchedEffect(updatePetState.isSuccess) {
         if (updatePetState.isSuccess) {
             formViewModel.resetForm()
+            onSuccess()
         }
     }
 

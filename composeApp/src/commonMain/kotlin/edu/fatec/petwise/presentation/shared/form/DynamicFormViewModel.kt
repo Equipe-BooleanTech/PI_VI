@@ -174,20 +174,63 @@ class DynamicFormViewModel(
             val fieldDefinition = currentState.configuration.fields.find { it.id == fieldId }
             val oldValue = fieldState.value
 
-            val displayValue = if (fieldDefinition?.type == FormFieldType.SELECT) {
-                // Try selectOptions first
-                fieldDefinition.selectOptions?.find { it.key == newValue }?.value
-                    ?: fieldDefinition.options?.find { it == newValue }
-                    ?: newValue?.toString() ?: ""
-            } else {
-                newValue?.toString() ?: ""
+            // Properly handle the value based on field type
+            val processedValue: Any? = when (fieldDefinition?.type) {
+                FormFieldType.CHECKBOX, FormFieldType.SWITCH -> {
+                    // Boolean fields should preserve boolean type
+                    when (newValue) {
+                        is Boolean -> newValue
+                        is String -> newValue.toBoolean()
+                        else -> false
+                    }
+                }
+                FormFieldType.NUMBER -> {
+                    // Number fields should preserve numeric type
+                    when (newValue) {
+                        is Number -> newValue
+                        is String -> newValue.toIntOrNull() ?: newValue
+                        else -> newValue
+                    }
+                }
+                FormFieldType.DECIMAL -> {
+                    // Decimal fields should preserve numeric type
+                    when (newValue) {
+                        is Number -> newValue
+                        is String -> newValue.toDoubleOrNull() ?: newValue
+                        else -> newValue
+                    }
+                }
+                FormFieldType.SELECT, FormFieldType.RADIO, FormFieldType.SEGMENTED_CONTROL -> {
+                    // Select fields: preserve the key value as-is
+                    newValue
+                }
+                else -> {
+                    // Text fields and others: convert to string
+                    newValue?.toString() ?: ""
+                }
+            }
+
+            val displayValue = when (fieldDefinition?.type) {
+                FormFieldType.SELECT -> {
+                    // Try selectOptions first
+                    fieldDefinition.selectOptions?.find { it.key == newValue }?.value
+                        ?: fieldDefinition.options?.find { it == newValue }
+                        ?: newValue?.toString() ?: ""
+                }
+                FormFieldType.CHECKBOX, FormFieldType.SWITCH -> {
+                    // Boolean fields display as string for UI
+                    processedValue?.toString() ?: "false"
+                }
+                else -> {
+                    processedValue?.toString() ?: ""
+                }
             }
 
             val updatedFieldState = fieldState.copy(
-                value = newValue,
+                value = processedValue,
                 displayValue = displayValue,
                 isTouched = if (isUserInput) true else fieldState.isTouched,
-                isDirty = oldValue != newValue
+                isDirty = oldValue != processedValue
             )
 
             val updatedStates = currentState.fieldStates.toMutableMap()
@@ -205,11 +248,11 @@ class DynamicFormViewModel(
                     formId = currentState.id,
                     fieldId = fieldId,
                     oldValue = oldValue,
-                    newValue = newValue
+                    newValue = processedValue
                 )
             )
 
-            fieldCallbacks?.onFieldChanged(fieldId, oldValue, newValue)
+            fieldCallbacks?.onFieldChanged(fieldId, oldValue, processedValue)
 
             when (currentState.configuration.validationBehavior) {
                 ValidationBehavior.ON_CHANGE -> validateField(fieldId)
@@ -685,7 +728,8 @@ class DynamicFormViewModel(
 
         when (handlingResult) {
             is ErrorHandlingResult.Retry -> {
-                delay(handlingResult.delayMs)
+                // Retry logic disabled to prevent exhaustive API calls
+                // If needed in the future, implement with proper backoff and max attempts
             }
             is ErrorHandlingResult.ShowMessage -> {
                 val currentErrorState = _state.value.errors
@@ -725,8 +769,54 @@ class DynamicFormViewModel(
 
     fun updateConfiguration(newConfiguration: FormConfiguration) {
         formScope.launch {
+            val currentFieldStates = _state.value.fieldStates
+            
             _state.value = _state.value.copy(configuration = newConfiguration)
-            initializeForm()
+            
+            val newFieldStates = newConfiguration.fields
+                .filter { it.type != FormFieldType.SUBMIT }
+                .associate { field ->
+                    val existingState = currentFieldStates[field.id]
+                    val defaultValue = field.default?.jsonPrimitive?.content ?: ""
+                    
+                    val valueToUse = if (existingState != null && existingState.isDirty) {
+                        existingState.value
+                    } else {
+                        defaultValue
+                    }
+                    
+                    val displayValueToUse = if (existingState != null && existingState.isDirty) {
+                        existingState.displayValue
+                    } else {
+                        defaultValue
+                    }
+                    
+                    field.id to FieldState(
+                        id = field.id,
+                        value = valueToUse,
+                        displayValue = displayValueToUse,
+                        isVisible = field.visibility == null,
+                        isEnabled = true,
+                        isTouched = existingState?.isTouched ?: false,
+                        isDirty = existingState?.isDirty ?: false
+                    )
+                }
+            
+            _state.value = _state.value.copy(fieldStates = newFieldStates)
+            
+            lifecycleCallbacks?.onFormInitialized(
+                _state.value.id,
+                _state.value.configuration
+            )
+
+            emitEvent(
+                FormEvent.FormConfigurationChanged(
+                    formId = _state.value.id,
+                    newConfiguration = newConfiguration
+                )
+            )
+
+            recomputeVisibilityAndValidation()
         }
     }
 

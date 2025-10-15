@@ -27,6 +27,7 @@ import edu.fatec.petwise.presentation.theme.fromHex
 fun ConsultaCard(
     consulta: Consulta,
     onClick: (Consulta) -> Unit,
+    onEditClick: ((Consulta) -> Unit)? = null,
     onStatusChange: ((String) -> Unit)? = null,
     onMarkAsPaid: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier,
@@ -200,6 +201,24 @@ fun ConsultaCard(
                         horizontalAlignment = Alignment.End,
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            onEditClick?.let { editClick ->
+                                IconButton(
+                                    onClick = { editClick(consulta) },
+                                    modifier = Modifier.size(36.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Edit,
+                                        contentDescription = "Editar",
+                                        tint = Color.fromHex(theme.palette.primary),
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+                        }
+                        
                         Text(
                             text = formatDate(consulta.consultaDate),
                             style = MaterialTheme.typography.bodySmall.copy(
@@ -215,7 +234,7 @@ fun ConsultaCard(
                         )
                         if (consulta.price > 0) {
                             Text(
-                                text = "R${consulta.price}",
+                                text = "R$${consulta.price}",
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     fontWeight = FontWeight.Bold,
                                     color = if (consulta.isPaid) 

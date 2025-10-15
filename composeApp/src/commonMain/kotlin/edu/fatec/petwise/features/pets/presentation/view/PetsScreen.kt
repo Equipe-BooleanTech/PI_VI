@@ -164,6 +164,10 @@ fun PetsScreen() {
             onDismiss = {
                 petsViewModel.onEvent(PetsUiEvent.HideAddPetDialog)
                 addPetViewModel.onEvent(AddPetUiEvent.ClearState)
+            },
+            onSuccess = {
+                // Refresh the pets list after successful add
+                petsViewModel.onEvent(PetsUiEvent.LoadPets)
             }
         )
     }
@@ -189,6 +193,8 @@ fun PetsScreen() {
                 selectedPetIds = setOf()
                 selectionMode = false
                 showDeleteConfirmation = false
+                // Refresh the pets list after delete
+                petsViewModel.onEvent(PetsUiEvent.LoadPets)
             },
             onDismiss = { showDeleteConfirmation = false }
         )
@@ -205,6 +211,10 @@ fun PetsScreen() {
                     showEditPetDialog = false
                     petToEdit = null
                     updatePetViewModel.onEvent(UpdatePetUiEvent.ClearState)
+                },
+                onSuccess = {
+                    // Refresh the pets list after successful update
+                    petsViewModel.onEvent(PetsUiEvent.LoadPets)
                 }
             )
         }

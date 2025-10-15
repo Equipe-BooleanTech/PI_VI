@@ -126,38 +126,37 @@ class PetsViewModel(
             return
         }
 
-        viewModelScope.launch {
-            try {
-                getPetsUseCase.searchPets(query).collect { pets ->
-                    println("Busca concluída: ${pets.size} pets encontrados para '$query'")
-                    _uiState.value = _uiState.value.copy(
-                        filteredPets = pets,
-                        errorMessage = null
-                    )
-                }
-            } catch (e: Exception) {
-                println("Erro na busca de pets: ${e.message}")
-                _uiState.value = _uiState.value.copy(
-                    errorMessage = "Erro ao buscar pets: ${e.message}"
-                )
-            }
+        val petsFiltrados = _uiState.value.pets.filter { pet ->
+            pet.name.contains(query, ignoreCase = true) ||
+            pet.breed.contains(query, ignoreCase = true) ||
+            pet.ownerName.contains(query, ignoreCase = true)
         }
+        
+        println("Busca concluída: ${petsFiltrados.size} pets encontrados para '$query'")
+        _uiState.value = _uiState.value.copy(
+            filteredPets = petsFiltrados,
+            errorMessage = null
+        )
     }
 
     private fun filterPets(options: PetFilterOptions) {
         _uiState.value = _uiState.value.copy(filterOptions = options)
 
-        viewModelScope.launch {
-            try {
-                getPetsUseCase.filterPets(options).collect { pets ->
-                    _uiState.value = _uiState.value.copy(filteredPets = pets)
-                }
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    errorMessage = e.message ?: "Erro ao filtrar pets"
-                )
-            }
+        // Filtrar localmente ao invés de chamar API
+        val petsFiltrados = _uiState.value.pets.filter { pet ->
+            val speciesMatch = options.species?.let { pet.species == it } ?: true
+            val healthMatch = options.healthStatus?.let { pet.healthStatus == it } ?: true
+            val favoriteMatch = if (options.favoritesOnly) pet.isFavorite else true
+            val searchMatch = if (options.searchQuery.isNotBlank()) {
+                pet.name.contains(options.searchQuery, ignoreCase = true) ||
+                pet.breed.contains(options.searchQuery, ignoreCase = true) ||
+                pet.ownerName.contains(options.searchQuery, ignoreCase = true)
+            } else true
+
+            speciesMatch && healthMatch && favoriteMatch && searchMatch
         }
+        
+        _uiState.value = _uiState.value.copy(filteredPets = petsFiltrados)
     }
 
     private fun toggleFavorite(petId: String) {
@@ -167,6 +166,8 @@ class PetsViewModel(
                 toggleFavoriteUseCase(petId).fold(
                     onSuccess = { updatedPet ->
                         println("Status de favorito alterado com sucesso para pet: ${updatedPet.name}")
+                        // Reload pets after successful favorite toggle
+                        loadPets()
                     },
                     onFailure = { error ->
                         println("Erro ao alterar favorito: ${error.message}")
@@ -189,14 +190,19 @@ class PetsViewModel(
             try {
                 updateHealthStatusUseCase(petId, status).fold(
                     onSuccess = { updatedPet ->
+                        println("Status de saúde atualizado com sucesso para pet: ${updatedPet.name}")
+                        // Reload pets after successful health status update
+                        loadPets()
                     },
                     onFailure = { error ->
+                        println("Erro ao atualizar status de saúde: ${error.message}")
                         _uiState.value = _uiState.value.copy(
                             errorMessage = error.message ?: "Erro ao atualizar status"
                         )
                     }
                 )
             } catch (e: Exception) {
+                println("Exceção ao atualizar status de saúde: ${e.message}")
                 _uiState.value = _uiState.value.copy(
                     errorMessage = e.message ?: "Erro ao atualizar status"
                 )
@@ -215,6 +221,8 @@ class PetsViewModel(
                 deletePetUseCase(petId).fold(
                     onSuccess = {
                         println("Pet excluído com sucesso: $petId")
+                        // Reload pets after successful delete
+                        loadPets()
                     },
                     onFailure = { error ->
                         println("Erro ao excluir pet: ${error.message}")

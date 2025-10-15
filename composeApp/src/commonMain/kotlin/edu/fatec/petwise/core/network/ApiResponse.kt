@@ -34,8 +34,11 @@ data class PaginationMetadata(
 data class ApiErrorResponse(
     val message: String,
     val code: String? = null,
+    val error: String? = null,
     val errors: Map<String, List<String>>? = null,
-    val timestamp: Long? = null,
+    val validationErrors: Map<String, List<String>>? = null,
+    val timestamp: String? = null,
+    val status: Int? = null,
     val path: String? = null,
     val requestId: String? = null,
     val details: Map<String, String>? = null

@@ -25,21 +25,34 @@ import androidx.compose.ui.text.font.FontWeight
 fun ConsultasScreen() {
     val consultasViewModel = remember { ConsultaDependencyContainer.provideConsultasViewModel() }
     val addConsultaViewModel = remember { ConsultaDependencyContainer.provideAddConsultaViewModel() }
+    val updateConsultaViewModel = remember { ConsultaDependencyContainer.provideUpdateConsultaViewModel() }
     val theme = PetWiseTheme.Light
     val consultasState by consultasViewModel.uiState.collectAsState()
     val addConsultaState by addConsultaViewModel.uiState.collectAsState()
+    val updateConsultaState by updateConsultaViewModel.uiState.collectAsState()
 
     var showSearchBar by remember { mutableStateOf(false) }
     var showFilterSheet by remember { mutableStateOf(false) }
     var selectionMode by remember { mutableStateOf(false) }
     var selectedConsultaIds by remember { mutableStateOf(setOf<String>()) }
     var showDeleteConfirmation by remember { mutableStateOf(false) }
+    var showEditConsultaDialog by remember { mutableStateOf(false) }
+    var consultaToEdit by remember { mutableStateOf<Consulta?>(null) }
 
     LaunchedEffect(addConsultaState.isSuccess) {
         if (addConsultaState.isSuccess) {
             consultasViewModel.onEvent(ConsultasUiEvent.HideAddConsultaDialog)
             consultasViewModel.onEvent(ConsultasUiEvent.LoadConsultas)
             addConsultaViewModel.onEvent(AddConsultaUiEvent.ClearState)
+        }
+    }
+
+    LaunchedEffect(updateConsultaState.isSuccess) {
+        if (updateConsultaState.isSuccess) {
+            showEditConsultaDialog = false
+            consultaToEdit = null
+            consultasViewModel.onEvent(ConsultasUiEvent.LoadConsultas)
+            updateConsultaViewModel.onEvent(UpdateConsultaUiEvent.ClearState)
         }
     }
 
@@ -104,6 +117,10 @@ fun ConsultasScreen() {
                                 consultasViewModel.onEvent(ConsultasUiEvent.SelectConsulta(consulta))
                             }
                         },
+                        onEditClick = { consulta ->
+                            consultaToEdit = consulta
+                            showEditConsultaDialog = true
+                        },
                         onStatusChange = { consultaId ->
                         },
                         onMarkAsPaid = { consultaId ->
@@ -139,6 +156,26 @@ fun ConsultasScreen() {
             onDismiss = {
                 consultasViewModel.onEvent(ConsultasUiEvent.HideAddConsultaDialog)
                 addConsultaViewModel.onEvent(AddConsultaUiEvent.ClearState)
+            },
+            onSuccess = {
+                consultasViewModel.onEvent(ConsultasUiEvent.LoadConsultas)
+            }
+        )
+    }
+
+    if (showEditConsultaDialog && consultaToEdit != null) {
+        EditConsultaDialog(
+            consulta = consultaToEdit!!,
+            updateConsultaViewModel = updateConsultaViewModel,
+            isLoading = updateConsultaState.isLoading,
+            errorMessage = updateConsultaState.errorMessage,
+            onDismiss = {
+                showEditConsultaDialog = false
+                consultaToEdit = null
+                updateConsultaViewModel.onEvent(UpdateConsultaUiEvent.ClearState)
+            },
+            onSuccess = {
+                consultasViewModel.onEvent(ConsultasUiEvent.LoadConsultas)
             }
         )
     }
@@ -164,6 +201,8 @@ fun ConsultasScreen() {
                 selectedConsultaIds = setOf()
                 selectionMode = false
                 showDeleteConfirmation = false
+                // Refresh the consultas list after delete
+                consultasViewModel.onEvent(ConsultasUiEvent.LoadConsultas)
             },
             onDismiss = { showDeleteConfirmation = false }
         )
@@ -230,7 +269,7 @@ private fun ConsultasHeader(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
-                                contentDescription = "Excluir selecionados",
+                                contentDescription = "Cancelar consultas selecionadas",
                                 tint = Color.White
                             )
                         }
@@ -304,12 +343,12 @@ private fun ConsultasHeader(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = "Excluir",
+                        contentDescription = "Cancelar",
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Excluir Selecionados ($selectedCount)",
+                        text = "Cancelar Selecionadas ($selectedCount)",
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontWeight = FontWeight.SemiBold
                         )
@@ -454,6 +493,7 @@ private fun ConsultasListContent(
     selectionMode: Boolean,
     selectedConsultaIds: Set<String>,
     onConsultaClick: (Consulta) -> Unit,
+    onEditClick: (Consulta) -> Unit,
     onStatusChange: ((String) -> Unit)? = null,
     onMarkAsPaid: ((String) -> Unit)? = null
 ) {
@@ -468,6 +508,7 @@ private fun ConsultasListContent(
                 selectionMode = selectionMode,
                 isSelected = selectedConsultaIds.contains(consulta.id),
                 onClick = onConsultaClick,
+                onEditClick = onEditClick,
                 onStatusChange = onStatusChange,
                 onMarkAsPaid = onMarkAsPaid
             )
@@ -497,7 +538,7 @@ private fun DeleteConfirmationDialog(
         },
         title = {
             Text(
-                text = "Confirmar Exclusão",
+                text = "Confirmar Cancelamento",
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold,
                     color = Color.fromHex(theme.palette.textPrimary)
@@ -506,7 +547,7 @@ private fun DeleteConfirmationDialog(
         },
         text = {
             Text(
-                text = "Tem certeza que deseja excluir ${if (consultaCount == 1) "esta consulta" else "estas $consultaCount consultas"}? Esta ação não pode ser desfeita.",
+                text = "Tem certeza que deseja cancelar ${if (consultaCount == 1) "esta consulta" else "estas $consultaCount consultas"}? O status será alterado para \"Cancelada\".",
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = Color.fromHex(theme.palette.textSecondary)
                 )
@@ -520,7 +561,7 @@ private fun DeleteConfirmationDialog(
                 ),
                 shape = RoundedCornerShape(8.dp)
             ) {
-                Text("Excluir", color = Color.White)
+                Text("Cancelar Consulta${if (consultaCount > 1) "s" else ""}", color = Color.White)
             }
         },
         dismissButton = {

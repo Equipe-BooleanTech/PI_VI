@@ -85,9 +85,11 @@ class ConsultasViewModel(
 
             try {
                 getConsultasUseCase().collect { consultas ->
+                    val consultasAtivas = consultas.filter { it.status != ConsultaStatus.CANCELLED }
+                    
                     _uiState.value = _uiState.value.copy(
-                        consultas = consultas,
-                        filteredConsultas = consultas,
+                        consultas = consultasAtivas,
+                        filteredConsultas = consultasAtivas,
                         isLoading = false,
                         errorMessage = null
                     )
@@ -109,36 +111,39 @@ class ConsultasViewModel(
             return
         }
 
-        viewModelScope.launch {
-            try {
-                getConsultasUseCase.searchConsultas(query).collect { consultas ->
-                    _uiState.value = _uiState.value.copy(
-                        filteredConsultas = consultas,
-                        errorMessage = null
-                    )
-                }
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    errorMessage = "Erro ao buscar consultas: ${e.message}"
-                )
-            }
+        // Filtrar localmente ao invés de chamar API
+        val consultasFiltradas = _uiState.value.consultas.filter { consulta ->
+            consulta.petName.contains(query, ignoreCase = true) ||
+            consulta.veterinarianName.contains(query, ignoreCase = true) ||
+            consulta.symptoms.contains(query, ignoreCase = true) ||
+            consulta.diagnosis.contains(query, ignoreCase = true) ||
+            consulta.ownerName.contains(query, ignoreCase = true)
         }
+        
+        _uiState.value = _uiState.value.copy(
+            filteredConsultas = consultasFiltradas,
+            errorMessage = null
+        )
     }
 
     private fun filterConsultas(options: ConsultaFilterOptions) {
         _uiState.value = _uiState.value.copy(filterOptions = options)
 
-        viewModelScope.launch {
-            try {
-                getConsultasUseCase.filterConsultas(options).collect { consultas ->
-                    _uiState.value = _uiState.value.copy(filteredConsultas = consultas)
-                }
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    errorMessage = e.message ?: "Erro ao filtrar consultas"
-                )
-            }
+        // Filtrar localmente ao invés de chamar API
+        val consultasFiltradas = _uiState.value.consultas.filter { consulta ->
+            val typeMatch = options.consultaType?.let { consulta.consultaType == it } ?: true
+            val statusMatch = options.status?.let { consulta.status == it } ?: true
+            val petMatch = options.petId?.let { consulta.petId == it } ?: true
+            val searchMatch = if (options.searchQuery.isNotBlank()) {
+                consulta.petName.contains(options.searchQuery, ignoreCase = true) ||
+                consulta.veterinarianName.contains(options.searchQuery, ignoreCase = true) ||
+                consulta.ownerName.contains(options.searchQuery, ignoreCase = true)
+            } else true
+
+            typeMatch && statusMatch && petMatch && searchMatch
         }
+        
+        _uiState.value = _uiState.value.copy(filteredConsultas = consultasFiltradas)
     }
 
     private fun updateConsultaStatus(consultaId: String, status: ConsultaStatus) {
@@ -146,14 +151,19 @@ class ConsultasViewModel(
             try {
                 updateConsultaStatusUseCase(consultaId, status).fold(
                     onSuccess = { updatedConsulta ->
+                        println("Status da consulta atualizado com sucesso: $consultaId -> $status")
+                        // Reload consultas after successful status update
+                        loadConsultas()
                     },
                     onFailure = { error ->
+                        println("Erro ao atualizar status da consulta: ${error.message}")
                         _uiState.value = _uiState.value.copy(
                             errorMessage = error.message ?: "Erro ao atualizar status"
                         )
                     }
                 )
             } catch (e: Exception) {
+                println("Exceção ao atualizar status da consulta: ${e.message}")
                 _uiState.value = _uiState.value.copy(
                     errorMessage = e.message ?: "Erro ao atualizar status"
                 )
@@ -170,14 +180,19 @@ class ConsultasViewModel(
             try {
                 deleteConsultaUseCase(consultaId).fold(
                     onSuccess = {
+                        println("Consulta excluída com sucesso: $consultaId")
+                        // Reload consultas after successful delete
+                        loadConsultas()
                     },
                     onFailure = { error ->
+                        println("Erro ao excluir consulta: ${error.message}")
                         _uiState.value = _uiState.value.copy(
                             errorMessage = error.message ?: "Erro ao deletar consulta"
                         )
                     }
                 )
             } catch (e: Exception) {
+                println("Exceção durante exclusão da consulta: ${e.message}")
                 _uiState.value = _uiState.value.copy(
                     errorMessage = e.message ?: "Erro ao deletar consulta"
                 )
@@ -190,14 +205,19 @@ class ConsultasViewModel(
             try {
                 markConsultaAsPaidUseCase(consultaId).fold(
                     onSuccess = { updatedConsulta ->
+                        println("Consulta marcada como paga com sucesso: $consultaId")
+                        // Reload consultas after successful payment marking
+                        loadConsultas()
                     },
                     onFailure = { error ->
+                        println("Erro ao marcar consulta como paga: ${error.message}")
                         _uiState.value = _uiState.value.copy(
                             errorMessage = error.message ?: "Erro ao marcar como pago"
                         )
                     }
                 )
             } catch (e: Exception) {
+                println("Exceção ao marcar consulta como paga: ${e.message}")
                 _uiState.value = _uiState.value.copy(
                     errorMessage = e.message ?: "Erro ao marcar como pago"
                 )

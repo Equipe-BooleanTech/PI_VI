@@ -1,11 +1,12 @@
 package edu.fatec.petwise.features.pets.presentation.forms
 
 import edu.fatec.petwise.presentation.shared.form.*
+import edu.fatec.petwise.features.pets.domain.models.Pet
 import kotlinx.serialization.json.JsonPrimitive
 
-fun createEditPetFormConfiguration(petName: String): FormConfiguration = FormConfiguration(
+fun createEditPetFormConfiguration(pet: Pet): FormConfiguration = FormConfiguration(
     id = "edit_pet_form",
-    title = "Editar Pet - $petName",
+    title = "Editar Pet - ${pet.name}",
     description = "Atualize as informações do seu pet.",
     layout = FormLayout(
         columns = 1,
@@ -19,6 +20,7 @@ fun createEditPetFormConfiguration(petName: String): FormConfiguration = FormCon
             label = "Nome",
             type = FormFieldType.TEXT,
             placeholder = "Nome do pet",
+            default = JsonPrimitive(pet.name),
             validators = listOf(
                 ValidationRule(
                     type = ValidationType.REQUIRED,
@@ -37,6 +39,7 @@ fun createEditPetFormConfiguration(petName: String): FormConfiguration = FormCon
             label = "Raça",
             type = FormFieldType.TEXT,
             placeholder = "Raça do pet",
+            default = JsonPrimitive(pet.breed),
             validators = listOf(
                 ValidationRule(
                     type = ValidationType.REQUIRED,
@@ -55,6 +58,7 @@ fun createEditPetFormConfiguration(petName: String): FormConfiguration = FormCon
             label = "Espécie",
             type = FormFieldType.SELECT,
             options = listOf("Cão", "Gato", "Ave", "Coelho", "Outro"),
+            default = JsonPrimitive(pet.species.displayName),
             validators = listOf(
                 ValidationRule(
                     type = ValidationType.REQUIRED,
@@ -67,6 +71,7 @@ fun createEditPetFormConfiguration(petName: String): FormConfiguration = FormCon
             label = "Sexo",
             type = FormFieldType.SEGMENTED_CONTROL,
             options = listOf("Macho", "Fêmea"),
+            default = JsonPrimitive(pet.gender.displayName),
             validators = listOf(
                 ValidationRule(
                     type = ValidationType.REQUIRED,
@@ -79,6 +84,7 @@ fun createEditPetFormConfiguration(petName: String): FormConfiguration = FormCon
             label = "Idade (anos)",
             type = FormFieldType.NUMBER,
             placeholder = "Ex: 2",
+            default = JsonPrimitive(pet.age),
             validators = listOf(
                 ValidationRule(
                     type = ValidationType.REQUIRED,
@@ -95,6 +101,7 @@ fun createEditPetFormConfiguration(petName: String): FormConfiguration = FormCon
             label = "Peso (kg)",
             type = FormFieldType.DECIMAL,
             placeholder = "Ex: 15.5",
+            default = JsonPrimitive(pet.weight),
             validators = listOf(
                 ValidationRule(
                     type = ValidationType.REQUIRED,
@@ -111,6 +118,7 @@ fun createEditPetFormConfiguration(petName: String): FormConfiguration = FormCon
             label = "Status de Saúde",
             type = FormFieldType.SELECT,
             options = listOf("Excelente", "Bom", "Regular", "Atenção", "Crítico"),
+            default = JsonPrimitive(pet.healthStatus.displayName),
             validators = listOf(
                 ValidationRule(
                     type = ValidationType.REQUIRED,
@@ -123,6 +131,7 @@ fun createEditPetFormConfiguration(petName: String): FormConfiguration = FormCon
             label = "Histórico de Saúde",
             type = FormFieldType.TEXTAREA,
             placeholder = "Descreva o histórico de saúde do pet...",
+            default = JsonPrimitive(pet.healthHistory),
             validators = emptyList()
         ),
         FormFieldDefinition(

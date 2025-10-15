@@ -79,8 +79,15 @@ class RemoteConsultaDataSourceImpl(
 
     override suspend fun deleteConsulta(id: String) {
         when (val result = consultaApiService.deleteConsulta(id)) {
-            is NetworkResult.Success -> Unit
-            is NetworkResult.Error -> throw result.exception
+            is NetworkResult.Success -> {
+                val cancelledConsulta = result.data
+                println("Consulta ${id} cancelada com sucesso via API DELETE. Novo status: ${cancelledConsulta.status}")
+            }
+            is NetworkResult.Error -> {
+                val errorMessage = result.exception.message ?: "Erro ao excluir consulta"
+                println("Erro ao deletar consulta ${id}: $errorMessage")
+                throw Exception(errorMessage)
+            }
             is NetworkResult.Loading -> throw IllegalStateException("Requisição em andamento")
         }
     }

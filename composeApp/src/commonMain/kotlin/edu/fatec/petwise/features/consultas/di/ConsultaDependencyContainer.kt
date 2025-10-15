@@ -7,6 +7,7 @@ import edu.fatec.petwise.features.consultas.domain.repository.ConsultaRepository
 import edu.fatec.petwise.features.consultas.domain.usecases.*
 import edu.fatec.petwise.features.consultas.presentation.viewmodel.AddConsultaViewModel
 import edu.fatec.petwise.features.consultas.presentation.viewmodel.ConsultasViewModel
+import edu.fatec.petwise.features.consultas.presentation.viewmodel.UpdateConsultaViewModel
 
 object ConsultaDependencyContainer {
 
@@ -65,7 +66,15 @@ object ConsultaDependencyContainer {
         )
     }
 
+    private val updateConsultaViewModel: UpdateConsultaViewModel by lazy {
+        UpdateConsultaViewModel(
+            updateConsultaUseCase = updateConsultaUseCase
+        )
+    }
+
     fun provideConsultasViewModel(): ConsultasViewModel = consultasViewModel
 
     fun provideAddConsultaViewModel(): AddConsultaViewModel = addConsultaViewModel
+
+    fun provideUpdateConsultaViewModel(): UpdateConsultaViewModel = updateConsultaViewModel
 }
