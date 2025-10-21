@@ -157,21 +157,28 @@ class AuthRepositoryImpl(
 
     override suspend fun logout(): Result<Unit> {
         return try {
-            println("Repositório: Realizando logout local (limpeza de tokens)")
-            
-            tokenStorage?.clearTokens()
-            NetworkModule.clearAuthToken()
-            println("Repositório: Logout local realizado com sucesso, tokens limpos")
-            Result.success(Unit)
+           when (val result = remoteDataSource.logout()) {
+                is NetworkResult.Success -> {
+                    tokenStorage?.clearTokens()
+                    NetworkModule.clearAuthToken()
+                    println("Repositório: Logout realizado com sucesso")
+                    Result.success(Unit)
+                }
+                is NetworkResult.Error -> {
+                    println("Repositório: Erro no logout - ${result.exception.message}")
+                    Result.failure(Exception(result.exception.message ?: "Erro ao realizar logout"))
+                }
+                is NetworkResult.Loading -> {
+                    println("Repositório: Logout em andamento...")
+                    Result.failure(Exception("Logout em andamento"))
+                }
+            }
         } catch (e: Exception) {
-            tokenStorage?.clearTokens()
-            NetworkModule.clearAuthToken()
-            println("Repositório: Logout local realizado mesmo com erro - ${e.message}")
-            Result.success(Unit)
-        }
+            println("Repositório: Falha inesperada no logout - ${e.message}")
+            Result.failure(e)
     }
 }
-
+}
 interface AuthTokenStorage {
     fun saveToken(token: String)
     fun getToken(): String?

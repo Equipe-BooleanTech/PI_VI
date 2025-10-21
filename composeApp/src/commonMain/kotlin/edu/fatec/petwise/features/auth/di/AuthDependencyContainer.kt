@@ -1,6 +1,7 @@
 package edu.fatec.petwise.features.auth.di
 
 import edu.fatec.petwise.core.network.di.NetworkModule
+import kotlinx.datetime.Clock
 import edu.fatec.petwise.features.auth.data.datasource.RemoteAuthDataSource
 import edu.fatec.petwise.features.auth.data.datasource.RemoteAuthDataSourceImpl
 import edu.fatec.petwise.features.auth.data.repository.AuthRepositoryImpl
@@ -102,7 +103,7 @@ class AuthTokenStorageImpl : AuthTokenStorage {
     override fun saveToken(token: String) {
         println("AuthTokenStorage: Saving token: ${token.take(10)}...")
         this.token = token
-        this.tokenExpirationTime = System.currentTimeMillis() + (60 * 60 * 1000) // Default 1 hour
+        this.tokenExpirationTime = currentTimeMs() + (60 * 60 * 1000) // Default 1 hour
     }
 
     override fun getToken(): String? {
@@ -132,12 +133,12 @@ class AuthTokenStorageImpl : AuthTokenStorage {
     }
     
     private fun isTokenExpired(): Boolean {
-        return tokenExpirationTime > 0 && System.currentTimeMillis() >= tokenExpirationTime
+        return tokenExpirationTime > 0 && currentTimeMs() >= tokenExpirationTime
     }
     
     private fun getRemainingTime(): Long {
         return if (tokenExpirationTime > 0) {
-            (tokenExpirationTime - System.currentTimeMillis()).coerceAtLeast(0)
+            (tokenExpirationTime - currentTimeMs()).coerceAtLeast(0)
         } else {
             -1
         }
@@ -146,6 +147,8 @@ class AuthTokenStorageImpl : AuthTokenStorage {
     fun saveTokenWithExpiration(token: String, expiresInSeconds: Long) {
         println("AuthTokenStorage: Saving token with ${expiresInSeconds}s expiration: ${token.take(10)}...")
         this.token = token
-        this.tokenExpirationTime = System.currentTimeMillis() + (expiresInSeconds * 1000)
+        this.tokenExpirationTime = currentTimeMs() + (expiresInSeconds * 1000)
     }
 }
+
+private fun currentTimeMs(): Long = Clock.System.now().toEpochMilliseconds()

@@ -4,6 +4,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
 
 /**
  * Engine de validação para formulários, suportando várias regras de validação
@@ -89,7 +93,7 @@ class DefaultValidationEngine(
                 } ?: return null
                 
                 return try {
-                    val dateMillis = parseDate(value)?.time ?: return FormError.ValidationError(
+                    val dateMillis = parseDateToEpochMillis(value) ?: return FormError.ValidationError(
                         id = "${fieldId}_max_date_${currentTimeMs()}",
                         message = rule.message ?: "Data inválida",
                         fieldId = fieldId,
@@ -120,7 +124,7 @@ class DefaultValidationEngine(
                 } ?: return null
                 
                 return try {
-                    val dateMillis = parseDate(value)?.time ?: return FormError.ValidationError(
+                    val dateMillis = parseDateToEpochMillis(value) ?: return FormError.ValidationError(
                         id = "${fieldId}_min_date_${currentTimeMs()}",
                         message = rule.message ?: "Data inválida",
                         fieldId = fieldId,
@@ -241,14 +245,13 @@ class DefaultValidationEngine(
             }
 
             ValidationType.MAX_DATE, ValidationType.MIN_DATE -> {
-                // These are handled above, should not reach here
                 true
             }
 
             ValidationType.DATE_RANGE -> {
                 if (value.isBlank()) return null
                 try {
-                    parseDate(value) != null
+                    parseDateToEpochMillis(value) != null
                 } catch (e: Exception) {
                     false
                 }
@@ -294,21 +297,35 @@ class DefaultValidationEngine(
        return cnpj.length != 14 || cnpj.all { it == cnpj[0] }
     }
 
-    private fun parseDate(dateString: String): java.util.Date? {
+    // Parse supported date formats and return epoch millis in system default timezone
+    private fun parseDateToEpochMillis(dateString: String): Long? {
         return try {
             when {
                 dateString.matches(Regex("^\\d{4}-\\d{2}-\\d{2}$")) -> {
-                    java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).parse(dateString)
+                    // yyyy-MM-dd
+                    val local = LocalDate.parse(dateString)
+                    val instant = local.atStartOfDayIn(TimeZone.currentSystemDefault())
+                    instant.toEpochMilliseconds()
                 }
                 dateString.matches(Regex("^\\d{2}/\\d{2}/\\d{4}$")) -> {
-                    java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault()).parse(dateString)
+                    // dd/MM/yyyy -> convert to LocalDate
+                    val parts = dateString.split('/')
+                    if (parts.size != 3) return null
+                    val day = parts[0].toIntOrNull() ?: return null
+                    val month = parts[1].toIntOrNull() ?: return null
+                    val year = parts[2].toIntOrNull() ?: return null
+                    val local = LocalDate(year, month, day)
+                    val instant = local.atStartOfDayIn(TimeZone.currentSystemDefault())
+                    instant.toEpochMilliseconds()
                 }
                 else -> null
             }
-        } catch (e: Exception) {
+        } catch (t: Throwable) {
             null
         }
     }
+
+    private fun currentTimeMs(): Long = Clock.System.now().toEpochMilliseconds()
 }
 
 class DefaultFormEventDispatcher : FormEventDispatcher {

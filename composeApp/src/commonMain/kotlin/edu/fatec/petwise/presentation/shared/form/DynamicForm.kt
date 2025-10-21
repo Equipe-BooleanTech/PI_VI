@@ -263,16 +263,6 @@ private fun DynamicFormContent(
                 
                 val isFormValid = allRequiredFieldsValid && !hasFieldErrors && allVisibleFieldsValidated
                 
-                println("=== Validação do Formulário ===")
-                println("Campos obrigatórios válidos: $allRequiredFieldsValid")
-                println("Tem erros nos campos: $hasFieldErrors")
-                println("Todos os campos visíveis validados: $allVisibleFieldsValidated")
-                println("Formulário válido: $isFormValid")
-                println("Campos obrigatórios visíveis: ${visibleRequiredFields.map { "${it.id}: ${state.fieldStates[it.id]?.value}" }}")
-                println("Estados dos campos visíveis: ${state.fieldStates.filter { it.value.isVisible }.map { 
-                    "${it.key}: valor='${it.value.value}', erro=${it.value.errors.isEmpty()}, tocado=${it.value.isTouched}" 
-                }}")
-                
                 val fieldsWithErrors = state.fieldStates.values.filter { 
                     it.isVisible && it.errors.isNotEmpty() && it.isTouched
                 }

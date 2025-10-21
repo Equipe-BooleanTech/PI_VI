@@ -111,7 +111,7 @@ class ConsultasViewModel(
             return
         }
 
-        // Filtrar localmente ao invés de chamar API
+        // Filtra localmente ao invés de chamar API
         val consultasFiltradas = _uiState.value.consultas.filter { consulta ->
             consulta.petName.contains(query, ignoreCase = true) ||
             consulta.veterinarianName.contains(query, ignoreCase = true) ||
@@ -129,7 +129,7 @@ class ConsultasViewModel(
     private fun filterConsultas(options: ConsultaFilterOptions) {
         _uiState.value = _uiState.value.copy(filterOptions = options)
 
-        // Filtrar localmente ao invés de chamar API
+        // Filtra localmente ao invés de chamar API
         val consultasFiltradas = _uiState.value.consultas.filter { consulta ->
             val typeMatch = options.consultaType?.let { consulta.consultaType == it } ?: true
             val statusMatch = options.status?.let { consulta.status == it } ?: true
@@ -152,7 +152,6 @@ class ConsultasViewModel(
                 updateConsultaStatusUseCase(consultaId, status).fold(
                     onSuccess = { updatedConsulta ->
                         println("Status da consulta atualizado com sucesso: $consultaId -> $status")
-                        // Reload consultas after successful status update
                         loadConsultas()
                     },
                     onFailure = { error ->

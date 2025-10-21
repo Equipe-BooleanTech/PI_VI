@@ -3,6 +3,8 @@ package edu.fatec.petwise.core.network.di
 import edu.fatec.petwise.core.network.*
 import edu.fatec.petwise.core.network.api.*
 import io.ktor.client.*
+import kotlinx.datetime.Clock
+
 
 object NetworkModule {
 
@@ -120,8 +122,8 @@ class TokenManagerImpl : TokenManager {
     override fun setAccessToken(token: String) {
         println("TokenManager: Definindo token de acesso: ${token.take(10)}...")
         accessToken = token
-        tokenSetTime = System.currentTimeMillis()
-        tokenExpirationTime = tokenSetTime + (60 * 60 * 1000) 
+        tokenSetTime = currentTimeMs()
+        tokenExpirationTime = tokenSetTime + (60 * 60 * 1000)
     }
 
     override fun getRefreshToken(): String? = refreshToken
@@ -141,7 +143,7 @@ class TokenManagerImpl : TokenManager {
     
     private fun isTokenExpired(): Boolean {
         return if (tokenExpirationTime > 0) {
-            System.currentTimeMillis() >= tokenExpirationTime
+            currentTimeMs() >= tokenExpirationTime
         } else {
             false
         }
@@ -149,7 +151,7 @@ class TokenManagerImpl : TokenManager {
     
     private fun getRemainingTokenTime(): Long {
         return if (tokenExpirationTime > 0) {
-            (tokenExpirationTime - System.currentTimeMillis()).coerceAtLeast(0)
+            (tokenExpirationTime - currentTimeMs()).coerceAtLeast(0)
         } else {
             -1
         }
@@ -158,7 +160,9 @@ class TokenManagerImpl : TokenManager {
     fun setTokenWithExpiration(token: String, expiresInSeconds: Long) {
         println("TokenManager: Definindo token de acesso com expiração de ${expiresInSeconds}s: ${token.take(10)}...")
         accessToken = token
-        tokenSetTime = System.currentTimeMillis()
+        tokenSetTime = currentTimeMs()
         tokenExpirationTime = tokenSetTime + (expiresInSeconds * 1000)
     }
 }
+
+private fun currentTimeMs(): Long = Clock.System.now().toEpochMilliseconds()
