@@ -45,8 +45,14 @@ fun AuthScreen(
     val authUiState by authViewModel.uiState.collectAsState()
     val theme = PetWiseTheme.Light
 
+    LaunchedEffect(selectedTab) {
+        println("AuthScreen: Tab changed to $selectedTab, clearing previous errors")
+        authViewModel.clearError()
+    }
+
     LaunchedEffect(authUiState.isAuthenticated) {
         if (authUiState.isAuthenticated) {
+            println("AuthScreen: User authenticated, navigating to Dashboard")
             navigationManager.navigateTo(NavigationManager.Screen.Dashboard)
         }
     }
@@ -116,15 +122,40 @@ fun AuthScreen(
 
                     Spacer(Modifier.height(24.dp))
 
-                    authUiState.errorMessage?.let { errorMsg ->
-                        Text(
-                            text = errorMsg,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodyMedium,
+                    authUiState.successMessage?.let { successMsg ->
+                        Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(bottom = 16.dp)
-                        )
+                                .padding(bottom = 16.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color.fromHex("#4CAF50").copy(alpha = 0.1f)
+                            )
+                        ) {
+                            Text(
+                                text = successMsg,
+                                color = Color.fromHex("#2E7D32"),
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(12.dp)
+                            )
+                        }
+                    }
+
+                    authUiState.errorMessage?.let { errorMsg ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.1f)
+                            )
+                        ) {
+                            Text(
+                                text = errorMsg,
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(12.dp)
+                            )
+                        }
                     }
 
                     key(formConfiguration.id) {

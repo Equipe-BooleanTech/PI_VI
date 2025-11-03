@@ -41,8 +41,6 @@ class RemoteConsultaDataSourceImpl(
             consultaDate = consulta.consultaDate,
             consultaTime = consulta.consultaTime,
             symptoms = consulta.symptoms,
-            ownerName = consulta.ownerName,
-            ownerPhone = consulta.ownerPhone,
             notes = consulta.notes
         )
 

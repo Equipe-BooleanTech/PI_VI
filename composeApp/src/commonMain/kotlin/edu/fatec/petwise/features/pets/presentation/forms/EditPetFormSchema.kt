@@ -54,32 +54,6 @@ fun createEditPetFormConfiguration(pet: Pet): FormConfiguration = FormConfigurat
             formatting = FieldFormatting(capitalize = true)
         ),
         FormFieldDefinition(
-            id = "species",
-            label = "Espécie",
-            type = FormFieldType.SELECT,
-            options = listOf("Cão", "Gato", "Ave", "Coelho", "Outro"),
-            default = JsonPrimitive(pet.species.displayName),
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Selecione a espécie"
-                )
-            )
-        ),
-        FormFieldDefinition(
-            id = "gender",
-            label = "Sexo",
-            type = FormFieldType.SEGMENTED_CONTROL,
-            options = listOf("Macho", "Fêmea"),
-            default = JsonPrimitive(pet.gender.displayName),
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Selecione o sexo"
-                )
-            )
-        ),
-        FormFieldDefinition(
             id = "age",
             label = "Idade (anos)",
             type = FormFieldType.NUMBER,
@@ -110,19 +84,6 @@ fun createEditPetFormConfiguration(pet: Pet): FormConfiguration = FormConfigurat
                 ValidationRule(
                     type = ValidationType.DECIMAL,
                     message = "Digite um peso válido (ex: 15 ou 15.5)"
-                )
-            )
-        ),
-        FormFieldDefinition(
-            id = "healthStatus",
-            label = "Status de Saúde",
-            type = FormFieldType.SELECT,
-            options = listOf("Excelente", "Bom", "Regular", "Atenção", "Crítico"),
-            default = JsonPrimitive(pet.healthStatus.displayName),
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Selecione o status de saúde"
                 )
             )
         ),

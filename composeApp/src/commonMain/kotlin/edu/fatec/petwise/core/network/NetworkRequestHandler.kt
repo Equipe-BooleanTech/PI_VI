@@ -86,11 +86,19 @@ class NetworkRequestHandler(
                         val data: T = response.body()
                         NetworkResult.Success(data)
                     } catch (e: SerializationException) {
+                        val bodyText = try { response.bodyAsText() } catch (ex: Exception) { "Unable to read body" }
+                        println("Ktor: RESPONSE: ${response.status}")
+                        println("METHOD: ${response.request.method}")
+                        println("FROM: ${response.request.url}")
+                        println("BODY Content-Type: ${response.contentType()}")
+                        println("BODY START")
+                        println(bodyText)
+                        println("BODY END")
                         println("Erro de serialização na resposta 200: ${e.message}")
-                        println("Response body: ${response.bodyAsText()}")
+                        println("Expected type: ${T::class.simpleName}")
                         NetworkResult.Error(
                             NetworkException.SerializationError(
-                                message = "Falha ao processar resposta do servidor: ${e.message}",
+                                message = "Erro ao processar resposta: ${e.message ?: "Formato de dados inválido"}",
                                 cause = e
                             )
                         )

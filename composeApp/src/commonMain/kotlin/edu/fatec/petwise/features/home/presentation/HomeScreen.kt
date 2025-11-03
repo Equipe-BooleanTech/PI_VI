@@ -13,7 +13,6 @@ fun HomeScreen(
 ) {
     DashboardScreen(
         navigationManager = navigationManager,
-        userName = "João",
         userType = UserType.OWNER
     )
 }

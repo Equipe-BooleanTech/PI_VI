@@ -1,9 +1,20 @@
 package edu.fatec.petwise.presentation.shared.form
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
@@ -64,7 +75,59 @@ actual fun PlatformDatePicker(
     onValueChange: (String) -> Unit,
     modifier: Modifier
 ) {
-    androidx.compose.material3.Text(text = "WASM Date Picker - ${fieldState.displayValue}", modifier = modifier)
+    var showDialog by remember { mutableStateOf(true) }
+    var selectedDate by remember { 
+        mutableStateOf(fieldState.displayValue.ifEmpty { 
+            val today = kotlinx.datetime.Clock.System.now()
+            val instant = today.toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault())
+            "${instant.year}-${instant.monthNumber.toString().padStart(2, '0')}-${instant.dayOfMonth.toString().padStart(2, '0')}"
+        })
+    }
+    
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { 
+                showDialog = false
+                onValueChange(fieldState.displayValue)
+            },
+            title = {
+                Text(fieldDefinition.label ?: "Selecione a Data")
+            },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = selectedDate,
+                        onValueChange = { selectedDate = it },
+                        label = { Text("Data (YYYY-MM-DD)") },
+                        placeholder = { Text("2024-01-01") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (selectedDate.matches(Regex("\\d{4}-\\d{2}-\\d{2}"))) {
+                            onValueChange(selectedDate)
+                            showDialog = false
+                        }
+                    }
+                ) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { 
+                        showDialog = false
+                        onValueChange(fieldState.displayValue)
+                    }
+                ) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
 }
 
 @Composable
@@ -74,7 +137,55 @@ actual fun PlatformTimePicker(
     onValueChange: (String) -> Unit,
     modifier: Modifier
 ) {
-    androidx.compose.material3.Text(text = "WASM Time Picker - ${fieldState.displayValue}", modifier = modifier)
+    var showDialog by remember { mutableStateOf(true) }
+    var selectedTime by remember { 
+        mutableStateOf(fieldState.displayValue.ifEmpty { "12:00" })
+    }
+    
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { 
+                showDialog = false
+                onValueChange(fieldState.displayValue)
+            },
+            title = {
+                Text(fieldDefinition.label ?: "Selecione o Horário")
+            },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = selectedTime,
+                        onValueChange = { selectedTime = it },
+                        label = { Text("Horário (HH:MM)") },
+                        placeholder = { Text("14:30") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (selectedTime.matches(Regex("\\d{2}:\\d{2}"))) {
+                            onValueChange(selectedTime)
+                            showDialog = false
+                        }
+                    }
+                ) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { 
+                        showDialog = false
+                        onValueChange(fieldState.displayValue)
+                    }
+                ) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
 }
 
 @Composable

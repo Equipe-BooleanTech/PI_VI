@@ -41,7 +41,7 @@ class DefaultDashboardDataProvider : DashboardDataProvider {
                     route = "reminders"
                 )
             )
-            UserType.VET -> listOf(
+            UserType.ADMIN -> listOf(
                 StatusCardData(
                     id = "appointments",
                     title = "Consultas Hoje",
@@ -75,7 +75,7 @@ class DefaultDashboardDataProvider : DashboardDataProvider {
                     route = "messages"
                 )
             )
-            UserType.ADMIN -> listOf(
+            UserType.VETERINARIAN -> listOf(
                 StatusCardData(
                     id = "users",
                     title = "Usuários",
@@ -178,7 +178,7 @@ class DefaultDashboardDataProvider : DashboardDataProvider {
                     background = "#FFC107"
                 )
             )
-            UserType.VET -> listOf(
+            UserType.VETERINARIAN -> listOf(
                 QuickActionData(
                     id = "schedule",
                     title = "Agenda",
@@ -302,7 +302,7 @@ class DefaultDashboardDataProvider : DashboardDataProvider {
                     route = "pets/detail/1/health"
                 )
             )
-            UserType.VET -> listOf(
+            UserType.VETERINARIAN -> listOf(
                 RecentActivityData(
                     id = "appointment1",
                     title = "Consulta Realizada",
@@ -436,7 +436,7 @@ class DefaultDashboardDataProvider : DashboardDataProvider {
                     route = "reminders/detail/4"
                 )
             )
-            UserType.VET -> listOf(
+            UserType.VETERINARIAN -> listOf(
                 ReminderData(
                     id = "appointment1",
                     title = "Consulta - Max",
@@ -539,10 +539,18 @@ class DefaultDashboardDataProvider : DashboardDataProvider {
         return "Olá, $userName! 👋"
     }
 
-    override fun getSubGreeting(userType: UserType): String {
+    override fun getSubGreeting(userType: UserType, petCount: Int): String {
         return when(userType) {
-            UserType.OWNER -> "Cuidando de 3 pets com carinho (OBS: DASHBOARD COM DADOS DE MOCK, EM INTEGRAÇÃO)"
-            UserType.VET -> "5 consultas agendadas hoje"
+            UserType.OWNER -> {
+                if (petCount == 0) {
+                    "Adicione seu primeiro pet para começar"
+                } else if (petCount == 1) {
+                    "Cuidando de 1 pet com carinho"
+                } else {
+                    "Cuidando de $petCount pets com carinho"
+                }
+            }
+            UserType.VETERINARIAN -> "5 consultas agendadas hoje"
             UserType.ADMIN -> "Gerenciando 3 clínicas ativas"
             UserType.PHARMACY -> "20 pedidos para processar"
         }

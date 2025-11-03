@@ -59,7 +59,7 @@ data class UpdatePetRequest(
 @Serializable
 data class PetListResponse(
     val pets: List<PetDto>,
-    val total: Int,
+    var total: Int,
     val page: Int,
     val pageSize: Int
 )

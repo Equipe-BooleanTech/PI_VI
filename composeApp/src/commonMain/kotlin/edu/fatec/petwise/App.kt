@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
+import edu.fatec.petwise.core.session.SessionResetManager
 import edu.fatec.petwise.features.auth.di.AuthDependencyContainer
 import edu.fatec.petwise.features.auth.presentation.AuthScreen
 import edu.fatec.petwise.features.auth.presentation.view.ForgotPasswordScreen
@@ -20,9 +21,16 @@ fun App() {
         AuthDependencyContainer.syncTokensWithNetworkModule()
     }
 
+    val authViewModel = remember { AuthDependencyContainer.provideAuthViewModel() }
     val navigationManager = remember { NavigationManager() }
 
     val currentScreen = navigationManager.currentScreen.collectAsState()
+
+    LaunchedEffect(authViewModel) {
+        authViewModel.onLogoutComplete = {
+            SessionResetManager.resetNavigation(navigationManager)
+        }
+    }
 
     PetWiseThemeWrapper(theme = PetWiseTheme.Light) {
 
@@ -41,7 +49,6 @@ fun App() {
                 ResetPasswordScreen(navigationManager, screen.token)
             }
             is NavigationManager.Screen.Splash -> {
-
                 AuthScreen(navigationManager)
             }
         }

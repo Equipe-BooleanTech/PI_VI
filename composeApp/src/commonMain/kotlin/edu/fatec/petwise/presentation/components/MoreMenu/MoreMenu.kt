@@ -16,8 +16,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.HealthAndSafety
@@ -65,11 +67,12 @@ fun MoreMenu(
     authViewModel: edu.fatec.petwise.features.auth.presentation.viewmodel.AuthViewModel,
     getUserProfileUseCase: edu.fatec.petwise.features.auth.domain.usecases.GetUserProfileUseCase
 ) {
-    var userProfile by remember { mutableStateOf<edu.fatec.petwise.core.network.dto.UserProfileDto?>(null) }
-    var isLoadingProfile by remember { mutableStateOf(false) }
+    var userProfile by remember(isVisible) { mutableStateOf<edu.fatec.petwise.core.network.dto.UserProfileDto?>(null) }
+    var isLoadingProfile by remember(isVisible) { mutableStateOf(false) }
 
     LaunchedEffect(isVisible) {
-        if (isVisible && userProfile == null && !isLoadingProfile) {
+        if (isVisible) {
+            userProfile = null
             isLoadingProfile = true
             getUserProfileUseCase.execute().fold(
                 onSuccess = { profile ->
@@ -109,7 +112,8 @@ fun MoreMenu(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 24.dp, start = 24.dp, end = 24.dp)
+                    .verticalScroll(rememberScrollState())
+                    .padding(top = 24.dp, start = 24.dp, end = 24.dp, bottom = 24.dp)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,

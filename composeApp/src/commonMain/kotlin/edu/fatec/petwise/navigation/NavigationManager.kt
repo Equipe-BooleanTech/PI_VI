@@ -33,6 +33,12 @@ class NavigationManager {
         _showMoreMenu.value = false
     }
 
+    fun reset() {
+        _currentScreen.value = Screen.Auth
+        _currentTabScreen.value = TabScreen.Home
+        _showMoreMenu.value = false
+    }
+
     sealed class Screen {
         object Splash : Screen()
         object Auth : Screen()

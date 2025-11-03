@@ -21,15 +21,12 @@ sealed class AddConsultaUiEvent {
     data class AddConsulta(
         val petId: String,
         val petName: String,
-        val veterinarianName: String,
         val consultaType: ConsultaType,
         val consultaDate: String,
         val consultaTime: String,
         val symptoms: String,
         val notes: String,
-        val price: String,
-        val ownerName: String,
-        val ownerPhone: String
+        val price: String
     ) : AddConsultaUiEvent()
     object ClearState : AddConsultaUiEvent()
 }
@@ -67,7 +64,7 @@ class AddConsultaViewModel(
                     id = "",
                     petId = event.petId,
                     petName = event.petName,
-                    veterinarianName = event.veterinarianName,
+                    veterinarianName = "",
                     consultaType = event.consultaType,
                     consultaDate = event.consultaDate,
                     consultaTime = event.consultaTime,
@@ -80,8 +77,6 @@ class AddConsultaViewModel(
                     nextAppointment = null,
                     price = priceValue,
                     isPaid = false,
-                    ownerName = event.ownerName,
-                    ownerPhone = event.ownerPhone,
                     createdAt = "",
                     updatedAt = ""
                 )

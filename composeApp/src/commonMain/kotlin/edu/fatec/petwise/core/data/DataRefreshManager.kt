@@ -1,8 +1,11 @@
 package edu.fatec.petwise.core.data
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.launch
 
 sealed class DataRefreshEvent {
     object PetsUpdated : DataRefreshEvent()
@@ -15,8 +18,10 @@ sealed class DataRefreshEvent {
 }
 
 object DataRefreshManager {
-    private val _refreshEvents = MutableSharedFlow<DataRefreshEvent>()
+    private val _refreshEvents = MutableSharedFlow<DataRefreshEvent>(replay = 1)
     val refreshEvents: SharedFlow<DataRefreshEvent> = _refreshEvents.asSharedFlow()
+    
+    private val scope = CoroutineScope(Dispatchers.Default)
 
     fun notifyPetsUpdated() {
         val emitted = _refreshEvents.tryEmit(DataRefreshEvent.PetsUpdated)
@@ -40,9 +45,10 @@ object DataRefreshManager {
     }
 
     fun notifyAllDataUpdated() {
-        val emitted = _refreshEvents.tryEmit(DataRefreshEvent.AllDataUpdated)
-        if (!emitted) {
-            println("DataRefreshManager: Nenhum observador ativo para AllDataUpdated (normal durante logout)")
+        println("DataRefreshManager: Emitindo evento AllDataUpdated")
+        scope.launch {
+            _refreshEvents.emit(DataRefreshEvent.AllDataUpdated)
+            println("DataRefreshManager: AllDataUpdated emitido com sucesso")
         }
     }
 

@@ -25,6 +25,7 @@ object NetworkModule {
     
     private fun getHttpClient(): HttpClient {
         if (_httpClient == null) {
+            println("NetworkModule: Criando novo HttpClient")
             _httpClient = createDefaultHttpClient(createHttpClientConfig())
         }
         return _httpClient!!
@@ -34,6 +35,7 @@ object NetworkModule {
     
     private fun getNetworkRequestHandler(): NetworkRequestHandler {
         if (_networkRequestHandler == null) {
+            println("NetworkModule: Criando NetworkRequestHandler")
             _networkRequestHandler = NetworkRequestHandler(getHttpClient())
         }
         return _networkRequestHandler!!
@@ -88,8 +90,11 @@ object NetworkModule {
     
     fun clearAuthToken() {
         println("NetworkModule: Limpando token de autenticação")
+        
         tokenManager.clearTokens()
-        println("NetworkModule: Token limpo, requisições subsequentes não terão autenticação")
+                
+        println("NetworkModule: Token limpo - requisições subsequentes não terão autenticação")
+        println("NetworkModule: HttpClient mantido ativo para prevenir JobCancellationException")
     }
 }
 

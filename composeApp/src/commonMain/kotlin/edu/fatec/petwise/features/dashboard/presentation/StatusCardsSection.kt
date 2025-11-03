@@ -1,6 +1,5 @@
 package edu.fatec.petwise.features.dashboard.presentation
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,19 +19,143 @@ import edu.fatec.petwise.presentation.theme.fromHex
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import edu.fatec.petwise.features.dashboard.domain.models.DashboardDataProvider
 import edu.fatec.petwise.features.dashboard.domain.models.UserType
 import edu.fatec.petwise.features.dashboard.presentation.components.StatusCard
+import edu.fatec.petwise.features.dashboard.domain.models.StatusCardData
 
 @Composable
 fun StatusCardsSection(
     userType: UserType,
-    dataProvider: DashboardDataProvider,
+    petCount: Int,
+    consultasCount: Int,
+    vacinasCount: Int,
     onCardClick: (String) -> Unit
 ) {
-    val statusCards = dataProvider.getStatusCards(userType).take(4)
+    val theme = PetWiseTheme.Light
 
-    val theme =PetWiseTheme.Light
+    // Create status cards with real data
+    val statusCards = when (userType) {
+        UserType.OWNER -> listOf(
+            StatusCardData(
+                title = "Pets",
+                value = petCount.toString(),
+                icon = "pets",
+                route = "pets",
+                color = "#00b942"
+            ),
+            StatusCardData(
+                title = "Consultas",
+                value = consultasCount.toString(),
+                icon = "event",
+                route = "appointments",
+                color = "#2196F3"
+            ),
+            StatusCardData(
+                title = "Vacinas",
+                value = vacinasCount.toString(),
+                icon = "vaccines",
+                route = "vaccines",
+                color = "#FF9800"
+            ),
+            StatusCardData(
+                title = "Lembretes",
+                value = "0", // TODO: Add medication count when available
+                icon = "notifications",
+                route = "reminders",
+                color = "#9C27B0"
+            )
+        )
+        UserType.VETERINARIAN -> listOf(
+            StatusCardData(
+                title = "Pacientes",
+                value = petCount.toString(),
+                icon = "pets",
+                route = "pets",
+                color = "#00b942"
+            ),
+            StatusCardData(
+                title = "Consultas Hoje",
+                value = consultasCount.toString(),
+                icon = "event",
+                route = "appointments",
+                color = "#2196F3"
+            ),
+            StatusCardData(
+                title = "Vacinas Agendadas",
+                value = vacinasCount.toString(),
+                icon = "vaccines",
+                route = "vaccines",
+                color = "#FF9800"
+            ),
+            StatusCardData(
+                title = "Pendências",
+                value = "0", // TODO: Add pending tasks when available
+                icon = "pending",
+                route = "reminders",
+                color = "#F44336"
+            )
+        )
+        UserType.ADMIN -> listOf(
+            StatusCardData(
+                title = "Total Pets",
+                value = petCount.toString(),
+                icon = "pets",
+                route = "pets",
+                color = "#00b942"
+            ),
+            StatusCardData(
+                title = "Consultas Ativas",
+                value = consultasCount.toString(),
+                icon = "event",
+                route = "appointments",
+                color = "#2196F3"
+            ),
+            StatusCardData(
+                title = "Vacinas Aplicadas",
+                value = vacinasCount.toString(),
+                icon = "vaccines",
+                route = "vaccines",
+                color = "#FF9800"
+            ),
+            StatusCardData(
+                title = "Usuários Ativos",
+                value = "0", // TODO: Add user count when available
+                icon = "people",
+                route = "users",
+                color = "#607D8B"
+            )
+        )
+        UserType.PHARMACY -> listOf(
+            StatusCardData(
+                title = "Pedidos Pendentes",
+                value = "0",
+                icon = "shopping_cart",
+                route = "orders",
+                color = "#2196F3"
+            ),
+            StatusCardData(
+                title = "Produtos",
+                value = "0",
+                icon = "inventory",
+                route = "products",
+                color = "#00b942"
+            ),
+            StatusCardData(
+                title = "Clientes",
+                value = "0",
+                icon = "people",
+                route = "clients",
+                color = "#FF9800"
+            ),
+            StatusCardData(
+                title = "Receitas",
+                value = "0",
+                icon = "receipt",
+                route = "prescriptions",
+                color = "#9C27B0"
+            )
+        )
+    }
 
     Column(
         modifier = Modifier.fillMaxWidth()

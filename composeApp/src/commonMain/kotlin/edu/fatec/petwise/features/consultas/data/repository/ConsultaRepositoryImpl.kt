@@ -75,8 +75,7 @@ class ConsultaRepositoryImpl(
                 val petMatch = options.petId?.let { consulta.petId == it } ?: true
                 val searchMatch = if (options.searchQuery.isNotBlank()) {
                     consulta.petName.contains(options.searchQuery, ignoreCase = true) ||
-                    consulta.veterinarianName.contains(options.searchQuery, ignoreCase = true) ||
-                    consulta.ownerName.contains(options.searchQuery, ignoreCase = true)
+                    consulta.veterinarianName.contains(options.searchQuery, ignoreCase = true)
                 } else true
 
                 typeMatch && statusMatch && petMatch && searchMatch

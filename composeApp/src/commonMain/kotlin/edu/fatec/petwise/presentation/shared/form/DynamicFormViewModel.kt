@@ -126,11 +126,41 @@ class DynamicFormViewModel(
         val initialStates = initialConfiguration.fields
             .filter { it.type != FormFieldType.SUBMIT }
             .associate { field ->
-                val defaultValue = field.default?.jsonPrimitive?.content ?: ""
+                val defaultRawValue = field.default?.jsonPrimitive?.content ?: ""
+                
+                val defaultValue: Any? = when (field.type) {
+                    FormFieldType.CHECKBOX, FormFieldType.SWITCH -> {
+                        defaultRawValue.toBooleanStrictOrNull() ?: false
+                    }
+                    FormFieldType.NUMBER -> {
+                        defaultRawValue.toIntOrNull() ?: defaultRawValue
+                    }
+                    FormFieldType.DECIMAL -> {
+                        defaultRawValue.toDoubleOrNull() ?: defaultRawValue
+                    }
+                    FormFieldType.SELECT, FormFieldType.RADIO, FormFieldType.SEGMENTED_CONTROL -> {
+                        defaultRawValue
+                    }
+                    FormFieldType.DATE, FormFieldType.TIME, FormFieldType.DATETIME -> {
+                        // Converter para string
+                        defaultRawValue
+                    }
+                    else -> defaultRawValue
+                }
+                
+                val displayValue = when (field.type) {
+                    FormFieldType.SELECT -> {
+                        field.selectOptions?.find { it.key == defaultValue }?.value
+                            ?: field.options?.find { it == defaultValue }
+                            ?: defaultValue?.toString() ?: ""
+                    }
+                    else -> defaultValue?.toString() ?: ""
+                }
+                
                 field.id to FieldState(
                     id = field.id,
                     value = defaultValue,
-                    displayValue = defaultValue,
+                    displayValue = displayValue,
                     isVisible = field.visibility == null,
                     isEnabled = true
                 )
@@ -174,10 +204,9 @@ class DynamicFormViewModel(
             val fieldDefinition = currentState.configuration.fields.find { it.id == fieldId }
             val oldValue = fieldState.value
 
-            // Properly handle the value based on field type
             val processedValue: Any? = when (fieldDefinition?.type) {
                 FormFieldType.CHECKBOX, FormFieldType.SWITCH -> {
-                    // Boolean fields should preserve boolean type
+
                     when (newValue) {
                         is Boolean -> newValue
                         is String -> newValue.toBoolean()
@@ -185,7 +214,6 @@ class DynamicFormViewModel(
                     }
                 }
                 FormFieldType.NUMBER -> {
-                    // Number fields should preserve numeric type
                     when (newValue) {
                         is Number -> newValue
                         is String -> newValue.toIntOrNull() ?: newValue
@@ -193,7 +221,6 @@ class DynamicFormViewModel(
                     }
                 }
                 FormFieldType.DECIMAL -> {
-                    // Decimal fields should preserve numeric type
                     when (newValue) {
                         is Number -> newValue
                         is String -> newValue.toDoubleOrNull() ?: newValue
@@ -201,24 +228,23 @@ class DynamicFormViewModel(
                     }
                 }
                 FormFieldType.SELECT, FormFieldType.RADIO, FormFieldType.SEGMENTED_CONTROL -> {
-                    // Select fields: preserve the key value as-is
                     newValue
                 }
+                FormFieldType.DATE, FormFieldType.TIME, FormFieldType.DATETIME -> {
+                    newValue?.toString() ?: ""
+                }
                 else -> {
-                    // Text fields and others: convert to string
                     newValue?.toString() ?: ""
                 }
             }
 
             val displayValue = when (fieldDefinition?.type) {
                 FormFieldType.SELECT -> {
-                    // Try selectOptions first
-                    fieldDefinition.selectOptions?.find { it.key == newValue }?.value
-                        ?: fieldDefinition.options?.find { it == newValue }
-                        ?: newValue?.toString() ?: ""
+                    fieldDefinition.selectOptions?.find { it.key == processedValue }?.value
+                        ?: fieldDefinition.options?.find { it == processedValue }
+                        ?: processedValue?.toString() ?: ""
                 }
                 FormFieldType.CHECKBOX, FormFieldType.SWITCH -> {
-                    // Boolean fields display as string for UI
                     processedValue?.toString() ?: "false"
                 }
                 else -> {
@@ -728,8 +754,7 @@ class DynamicFormViewModel(
 
         when (handlingResult) {
             is ErrorHandlingResult.Retry -> {
-                // Retry logic disabled to prevent exhaustive API calls
-                // If needed in the future, implement with proper backoff and max attempts
+               
             }
             is ErrorHandlingResult.ShowMessage -> {
                 val currentErrorState = _state.value.errors

@@ -29,7 +29,7 @@ import edu.fatec.petwise.presentation.theme.fromHex
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PetsScreen() {
+fun PetsScreen(navigationKey: Any? = null) {
     val petsViewModel = remember { PetDependencyContainer.providePetsViewModel() }
     val addPetViewModel = remember { PetDependencyContainer.provideAddPetViewModel() }
     val updatePetViewModel = remember { PetDependencyContainer.provideUpdatePetViewModel() }
@@ -46,7 +46,10 @@ fun PetsScreen() {
     var showEditPetDialog by remember { mutableStateOf(false) }
     var petToEdit by remember { mutableStateOf<Pet?>(null) }
 
-
+    LaunchedEffect(navigationKey) {
+        println("PetsScreen: Recarregando pets - navigationKey: $navigationKey")
+        petsViewModel.onEvent(PetsUiEvent.LoadPets)
+    }
 
     LaunchedEffect(addPetState.isSuccess) {
         if (addPetState.isSuccess) {
@@ -166,7 +169,6 @@ fun PetsScreen() {
                 addPetViewModel.onEvent(AddPetUiEvent.ClearState)
             },
             onSuccess = {
-                // Refresh the pets list after successful add
                 petsViewModel.onEvent(PetsUiEvent.LoadPets)
             }
         )
@@ -193,7 +195,6 @@ fun PetsScreen() {
                 selectedPetIds = setOf()
                 selectionMode = false
                 showDeleteConfirmation = false
-                // Refresh the pets list after delete
                 petsViewModel.onEvent(PetsUiEvent.LoadPets)
             },
             onDismiss = { showDeleteConfirmation = false }
@@ -213,7 +214,6 @@ fun PetsScreen() {
                     updatePetViewModel.onEvent(UpdatePetUiEvent.ClearState)
                 },
                 onSuccess = {
-                    // Refresh the pets list after successful update
                     petsViewModel.onEvent(PetsUiEvent.LoadPets)
                 }
             )

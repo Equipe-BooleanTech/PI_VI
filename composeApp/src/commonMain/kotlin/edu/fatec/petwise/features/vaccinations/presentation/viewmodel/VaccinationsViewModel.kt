@@ -49,7 +49,6 @@ class VaccinationsViewModel(
     val uiState: StateFlow<VaccinationsUiState> = _uiState.asStateFlow()
 
     init {
-        loadVaccinations()
         observeDataRefresh()
     }
 
@@ -58,13 +57,15 @@ class VaccinationsViewModel(
             DataRefreshManager.refreshEvents.collect { event ->
                 when (event) {
                     is DataRefreshEvent.VaccinationsUpdated -> loadVaccinations()
-                    is DataRefreshEvent.AllDataUpdated -> loadVaccinations()
+                    is DataRefreshEvent.AllDataUpdated -> {
+                        _uiState.value = VaccinationsUiState()
+                        println("VaccinationsViewModel: Estado limpo após logout")
+                    }
                     else -> {}
                 }
             }
         }
     }
-
     fun onEvent(event: VaccinationsUiEvent) {
         when (event) {
             is VaccinationsUiEvent.LoadVaccinations -> loadVaccinations()

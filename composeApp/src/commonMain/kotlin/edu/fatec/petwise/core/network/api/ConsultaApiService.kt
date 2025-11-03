@@ -24,20 +24,9 @@ class ConsultaApiServiceImpl(
 ) : ConsultaApiService {
 
     override suspend fun getAllConsultas(page: Int, pageSize: Int): NetworkResult<ConsultaListResponse> {
-        return when (val result = networkHandler.get<List<ConsultaDto>>(ApiEndpoints.CONSULTAS) {
+        return networkHandler.get<ConsultaListResponse>(ApiEndpoints.CONSULTAS) {
             parameter("page", page)
             parameter("pageSize", pageSize)
-        }) {
-            is NetworkResult.Success -> NetworkResult.Success(
-                ConsultaListResponse(
-                    consultas = result.data,
-                    total = result.data.size,
-                    page = page,
-                    pageSize = pageSize
-                )
-            )
-            is NetworkResult.Error -> result
-            is NetworkResult.Loading -> result
         }
     }
 

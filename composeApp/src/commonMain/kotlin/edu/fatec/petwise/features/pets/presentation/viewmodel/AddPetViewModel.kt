@@ -27,8 +27,6 @@ sealed class AddPetUiEvent {
         val age: String,
         val weight: String,
         val healthStatus: HealthStatus,
-        val ownerName: String,
-        val ownerPhone: String,
         val healthHistory: String
     ) : AddPetUiEvent()
     object ClearState : AddPetUiEvent()
@@ -84,8 +82,8 @@ class AddPetViewModel(
                     age = ageInMonths,
                     weight = weightInKg,
                     healthStatus = event.healthStatus,
-                    ownerName = event.ownerName,
-                    ownerPhone = event.ownerPhone,
+                    ownerName = "",
+                    ownerPhone = "",
                     healthHistory = event.healthHistory,
                     isFavorite = false,
                     nextAppointment = null,
@@ -93,7 +91,7 @@ class AddPetViewModel(
                     updatedAt = ""
                 )
 
-                println("Salvando novo pet: nome=${pet.name}, raça=${pet.breed}, tutor=${pet.ownerName}")
+                println("Salvando novo pet: nome=${pet.name}, raça=${pet.breed}")
 
                 addPetUseCase(pet).fold(
                     onSuccess = { addedPet ->

@@ -41,6 +41,11 @@ fun AddConsultaDialog(
     val petsViewModel = remember { PetDependencyContainer.providePetsViewModel() }
     val petsState by petsViewModel.uiState.collectAsState()
     
+    // Trigger pets loading when dialog opens
+    LaunchedEffect(Unit) {
+        petsViewModel.onEvent(edu.fatec.petwise.features.pets.presentation.viewmodel.PetsUiEvent.LoadPets)
+    }
+    
     val petOptions = remember(petsState.pets) {
         petsState.pets.map { pet ->
             SelectOption(
@@ -196,15 +201,12 @@ fun AddConsultaDialog(
                                     AddConsultaUiEvent.AddConsulta(
                                         petId = petId,
                                         petName = petName,
-                                        veterinarianName = values["veterinarianName"]?.toString() ?: "",
                                         consultaType = consultaType,
                                         consultaDate = values["consultaDate"]?.toString() ?: "",
                                         consultaTime = values["consultaTime"]?.toString() ?: "",
                                         symptoms = values["symptoms"]?.toString() ?: "",
                                         notes = values["notes"]?.toString() ?: "",
                                         price = values["price"]?.toString() ?: "0",
-                                        ownerName = values["ownerName"]?.toString() ?: "",
-                                        ownerPhone = values["ownerPhone"]?.toString() ?: ""
                                     )
                                 )
                             }
@@ -243,6 +245,11 @@ fun EditConsultaDialog(
     
     val petsViewModel = remember { PetDependencyContainer.providePetsViewModel() }
     val petsState by petsViewModel.uiState.collectAsState()
+    
+    // Trigger pets loading when dialog opens
+    LaunchedEffect(Unit) {
+        petsViewModel.onEvent(edu.fatec.petwise.features.pets.presentation.viewmodel.PetsUiEvent.LoadPets)
+    }
     
     val petOptions = remember(petsState.pets) {
         petsState.pets.map { pet ->
@@ -412,8 +419,6 @@ fun EditConsultaDialog(
                                         notes = values["notes"]?.toString() ?: consulta.notes,
                                         nextAppointment = values["nextAppointment"]?.toString(),
                                         price = values["price"]?.toString() ?: consulta.price.toString(),
-                                        ownerName = values["ownerName"]?.toString() ?: consulta.ownerName,
-                                        ownerPhone = values["ownerPhone"]?.toString() ?: consulta.ownerPhone
                                     )
                                 )
                             }

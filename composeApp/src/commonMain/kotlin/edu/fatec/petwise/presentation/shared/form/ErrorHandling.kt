@@ -132,7 +132,6 @@ sealed class ErrorHandlingResult {
 class DefaultErrorHandler : ErrorHandler {
 
     override suspend fun handleError(error: FormError): ErrorHandlingResult {
-        // Removed retry logic to prevent exhaustive API calls
         return ErrorHandlingResult.ShowMessage(error.message)
     }
 

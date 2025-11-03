@@ -22,7 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ConsultasScreen() {
+fun ConsultasScreen(navigationKey: Any? = null) {
     val consultasViewModel = remember { ConsultaDependencyContainer.provideConsultasViewModel() }
     val addConsultaViewModel = remember { ConsultaDependencyContainer.provideAddConsultaViewModel() }
     val updateConsultaViewModel = remember { ConsultaDependencyContainer.provideUpdateConsultaViewModel() }
@@ -38,6 +38,11 @@ fun ConsultasScreen() {
     var showDeleteConfirmation by remember { mutableStateOf(false) }
     var showEditConsultaDialog by remember { mutableStateOf(false) }
     var consultaToEdit by remember { mutableStateOf<Consulta?>(null) }
+
+    LaunchedEffect(navigationKey) {
+        println("ConsultasScreen: Recarregando consultas - navigationKey: $navigationKey")
+        consultasViewModel.onEvent(ConsultasUiEvent.LoadConsultas)
+    }
 
     LaunchedEffect(addConsultaState.isSuccess) {
         if (addConsultaState.isSuccess) {
@@ -201,7 +206,6 @@ fun ConsultasScreen() {
                 selectedConsultaIds = setOf()
                 selectionMode = false
                 showDeleteConfirmation = false
-                // Refresh the consultas list after delete
                 consultasViewModel.onEvent(ConsultasUiEvent.LoadConsultas)
             },
             onDismiss = { showDeleteConfirmation = false }

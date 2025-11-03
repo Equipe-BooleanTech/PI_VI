@@ -29,24 +29,6 @@ fun createAddConsultaFormConfiguration(petOptions: List<SelectOption> = emptyLis
             )
         ),
         FormFieldDefinition(
-            id = "veterinarianName",
-            label = "Veterinário(a)",
-            type = FormFieldType.TEXT,
-            placeholder = "Nome do veterinário",
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Nome do veterinário é obrigatório"
-                ),
-                ValidationRule(
-                    type = ValidationType.MIN_LENGTH,
-                    value = JsonPrimitive(3),
-                    message = "Nome deve ter pelo menos 3 caracteres"
-                )
-            ),
-            formatting = FieldFormatting(capitalize = true)
-        ),
-        FormFieldDefinition(
             id = "consultaType",
             label = "Tipo de Consulta",
             type = FormFieldType.SELECT,
@@ -71,7 +53,7 @@ fun createAddConsultaFormConfiguration(petOptions: List<SelectOption> = emptyLis
         FormFieldDefinition(
             id = "consultaDate",
             label = "Data da Consulta",
-            type = FormFieldType.DATE,
+            type = FormFieldType.TEXT,
             placeholder = "DD/MM/YYYY",
             validators = listOf(
                 ValidationRule(
@@ -87,7 +69,7 @@ fun createAddConsultaFormConfiguration(petOptions: List<SelectOption> = emptyLis
         FormFieldDefinition(
             id = "consultaTime",
             label = "Horário",
-            type = FormFieldType.TIME,
+            type = FormFieldType.TEXT,
             placeholder = "HH:MM",
             validators = listOf(
                 ValidationRule(
@@ -107,41 +89,6 @@ fun createAddConsultaFormConfiguration(petOptions: List<SelectOption> = emptyLis
                     message = "Descrição dos sintomas é obrigatória"
                 )
             )
-        ),
-        FormFieldDefinition(
-            id = "ownerName",
-            label = "Nome do Tutor",
-            type = FormFieldType.TEXT,
-            placeholder = "Nome completo",
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Nome do tutor é obrigatório"
-                ),
-                ValidationRule(
-                    type = ValidationType.MIN_LENGTH,
-                    value = JsonPrimitive(3),
-                    message = "Nome deve ter pelo menos 3 caracteres"
-                )
-            ),
-            formatting = FieldFormatting(capitalize = true)
-        ),
-        FormFieldDefinition(
-            id = "ownerPhone",
-            label = "Telefone do Tutor",
-            type = FormFieldType.PHONE,
-            placeholder = "(11) 99999-9999",
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Telefone é obrigatório"
-                ),
-                ValidationRule(
-                    type = ValidationType.PHONE,
-                    message = "Formato de telefone inválido"
-                )
-            ),
-            formatting = FieldFormatting(mask = "(##) #####-####")
         ),
         FormFieldDefinition(
             id = "price",
@@ -197,65 +144,9 @@ fun createEditConsultaFormConfiguration(consulta: Consulta, petOptions: List<Sel
     ),
     fields = listOf(
         FormFieldDefinition(
-            id = "petId",
-            label = "Pet",
-            type = FormFieldType.SELECT,
-            placeholder = "Escolha um pet",
-            selectOptions = petOptions,
-            default = JsonPrimitive(consulta.petId),
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Selecione um pet"
-                )
-            )
-        ),
-        FormFieldDefinition(
-            id = "veterinarianName",
-            label = "Veterinário(a)",
-            type = FormFieldType.TEXT,
-            placeholder = "Nome do veterinário",
-            default = JsonPrimitive(consulta.veterinarianName),
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Nome do veterinário é obrigatório"
-                ),
-                ValidationRule(
-                    type = ValidationType.MIN_LENGTH,
-                    value = JsonPrimitive(3),
-                    message = "Nome deve ter pelo menos 3 caracteres"
-                )
-            ),
-            formatting = FieldFormatting(capitalize = true)
-        ),
-        FormFieldDefinition(
-            id = "consultaType",
-            label = "Tipo de Consulta",
-            type = FormFieldType.SELECT,
-            options = listOf(
-                "Consulta de Rotina",
-                "Emergência",
-                "Retorno",
-                "Vacinação",
-                "Cirurgia",
-                "Exame",
-                "Odontologia",
-                "Estética",
-                "Outro"
-            ),
-            default = JsonPrimitive(consulta.consultaType.displayName),
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Selecione o tipo de consulta"
-                )
-            )
-        ),
-        FormFieldDefinition(
             id = "consultaDate",
             label = "Data da Consulta",
-            type = FormFieldType.DATE,
+            type = FormFieldType.TEXT,
             placeholder = "DD/MM/YYYY",
             default = JsonPrimitive(consulta.consultaDate),
             validators = listOf(
@@ -272,7 +163,7 @@ fun createEditConsultaFormConfiguration(consulta: Consulta, petOptions: List<Sel
         FormFieldDefinition(
             id = "consultaTime",
             label = "Horário",
-            type = FormFieldType.TIME,
+            type = FormFieldType.TEXT,
             placeholder = "HH:MM",
             default = JsonPrimitive(consulta.consultaTime),
             validators = listOf(
@@ -296,30 +187,6 @@ fun createEditConsultaFormConfiguration(consulta: Consulta, petOptions: List<Sel
             )
         ),
         FormFieldDefinition(
-            id = "diagnosis",
-            label = "Diagnóstico",
-            type = FormFieldType.TEXTAREA,
-            placeholder = "Diagnóstico médico...",
-            default = JsonPrimitive(consulta.diagnosis),
-            validators = emptyList()
-        ),
-        FormFieldDefinition(
-            id = "treatment",
-            label = "Tratamento",
-            type = FormFieldType.TEXTAREA,
-            placeholder = "Tratamento prescrito...",
-            default = JsonPrimitive(consulta.treatment),
-            validators = emptyList()
-        ),
-        FormFieldDefinition(
-            id = "prescriptions",
-            label = "Prescrições",
-            type = FormFieldType.TEXTAREA,
-            placeholder = "Medicamentos e dosagens...",
-            default = JsonPrimitive(consulta.prescriptions),
-            validators = emptyList()
-        ),
-        FormFieldDefinition(
             id = "price",
             label = "Valor da Consulta (R$)",
             type = FormFieldType.DECIMAL,
@@ -335,14 +202,6 @@ fun createEditConsultaFormConfiguration(consulta: Consulta, petOptions: List<Sel
                     message = "Digite um valor válido (ex: 150 ou 150.50)"
                 )
             )
-        ),
-        FormFieldDefinition(
-            id = "nextAppointment",
-            label = "Próxima Consulta",
-            type = FormFieldType.DATE,
-            placeholder = "DD/MM/YYYY",
-            default = consulta.nextAppointment?.let { JsonPrimitive(it) },
-            validators = emptyList()
         ),
         FormFieldDefinition(
             id = "notes",

@@ -48,7 +48,6 @@ class ConsultasViewModel(
     val uiState: StateFlow<ConsultasUiState> = _uiState.asStateFlow()
 
     init {
-        loadConsultas()
         observeDataRefresh()
     }
 
@@ -57,7 +56,10 @@ class ConsultasViewModel(
             DataRefreshManager.refreshEvents.collect { event ->
                 when (event) {
                     is DataRefreshEvent.ConsultasUpdated -> loadConsultas()
-                    is DataRefreshEvent.AllDataUpdated -> loadConsultas()
+                    is DataRefreshEvent.AllDataUpdated -> {
+                        println("ConsultasViewModel: Limpando estado após logout")
+                        _uiState.value = ConsultasUiState()
+                    }
                     else -> {}
                 }
             }
@@ -111,13 +113,11 @@ class ConsultasViewModel(
             return
         }
 
-        // Filtra localmente ao invés de chamar API
         val consultasFiltradas = _uiState.value.consultas.filter { consulta ->
             consulta.petName.contains(query, ignoreCase = true) ||
             consulta.veterinarianName.contains(query, ignoreCase = true) ||
             consulta.symptoms.contains(query, ignoreCase = true) ||
-            consulta.diagnosis.contains(query, ignoreCase = true) ||
-            consulta.ownerName.contains(query, ignoreCase = true)
+            consulta.diagnosis.contains(query, ignoreCase = true)
         }
         
         _uiState.value = _uiState.value.copy(
@@ -129,15 +129,13 @@ class ConsultasViewModel(
     private fun filterConsultas(options: ConsultaFilterOptions) {
         _uiState.value = _uiState.value.copy(filterOptions = options)
 
-        // Filtra localmente ao invés de chamar API
         val consultasFiltradas = _uiState.value.consultas.filter { consulta ->
             val typeMatch = options.consultaType?.let { consulta.consultaType == it } ?: true
             val statusMatch = options.status?.let { consulta.status == it } ?: true
             val petMatch = options.petId?.let { consulta.petId == it } ?: true
             val searchMatch = if (options.searchQuery.isNotBlank()) {
                 consulta.petName.contains(options.searchQuery, ignoreCase = true) ||
-                consulta.veterinarianName.contains(options.searchQuery, ignoreCase = true) ||
-                consulta.ownerName.contains(options.searchQuery, ignoreCase = true)
+                consulta.veterinarianName.contains(options.searchQuery, ignoreCase = true)
             } else true
 
             typeMatch && statusMatch && petMatch && searchMatch
@@ -180,7 +178,6 @@ class ConsultasViewModel(
                 deleteConsultaUseCase(consultaId).fold(
                     onSuccess = {
                         println("Consulta excluída com sucesso: $consultaId")
-                        // Reload consultas after successful delete
                         loadConsultas()
                     },
                     onFailure = { error ->
@@ -205,7 +202,6 @@ class ConsultasViewModel(
                 markConsultaAsPaidUseCase(consultaId).fold(
                     onSuccess = { updatedConsulta ->
                         println("Consulta marcada como paga com sucesso: $consultaId")
-                        // Reload consultas after successful payment marking
                         loadConsultas()
                     },
                     onFailure = { error ->

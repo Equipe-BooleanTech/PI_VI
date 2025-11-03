@@ -49,21 +49,23 @@ class PetsViewModel(
     val uiState: StateFlow<PetsUiState> = _uiState.asStateFlow()
 
     init {
-        loadPets()
         observeDataRefresh()
     }
 
     private fun observeDataRefresh() {
-        viewModelScope.launch {
-            DataRefreshManager.refreshEvents.collect { event ->
-                when (event) {
-                    is DataRefreshEvent.PetsUpdated -> loadPets()
-                    is DataRefreshEvent.AllDataUpdated -> loadPets()
-                    else -> {}
+    viewModelScope.launch {
+        DataRefreshManager.refreshEvents.collect { event ->
+            when (event) {
+                is DataRefreshEvent.PetsUpdated -> loadPets()
+                is DataRefreshEvent.AllDataUpdated -> {
+                    _uiState.value = PetsUiState()
+                    println("PetsViewModel: Estado limpo após logout")
                 }
+                else -> {}
             }
         }
     }
+}
 
     fun onEvent(event: PetsUiEvent) {
         when (event) {
@@ -142,7 +144,6 @@ class PetsViewModel(
     private fun filterPets(options: PetFilterOptions) {
         _uiState.value = _uiState.value.copy(filterOptions = options)
 
-        // Filtrar localmente ao invés de chamar API
         val petsFiltrados = _uiState.value.pets.filter { pet ->
             val speciesMatch = options.species?.let { pet.species == it } ?: true
             val healthMatch = options.healthStatus?.let { pet.healthStatus == it } ?: true
@@ -166,7 +167,6 @@ class PetsViewModel(
                 toggleFavoriteUseCase(petId).fold(
                     onSuccess = { updatedPet ->
                         println("Status de favorito alterado com sucesso para pet: ${updatedPet.name}")
-                        // Reload pets after successful favorite toggle
                         loadPets()
                     },
                     onFailure = { error ->
@@ -191,7 +191,6 @@ class PetsViewModel(
                 updateHealthStatusUseCase(petId, status).fold(
                     onSuccess = { updatedPet ->
                         println("Status de saúde atualizado com sucesso para pet: ${updatedPet.name}")
-                        // Reload pets after successful health status update
                         loadPets()
                     },
                     onFailure = { error ->
@@ -221,7 +220,6 @@ class PetsViewModel(
                 deletePetUseCase(petId).fold(
                     onSuccess = {
                         println("Pet excluído com sucesso: $petId")
-                        // Reload pets after successful delete
                         loadPets()
                     },
                     onFailure = { error ->

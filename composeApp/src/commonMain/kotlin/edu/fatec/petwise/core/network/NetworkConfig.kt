@@ -36,9 +36,9 @@ object ApiEndpoints {
     fun updateStatus(id: String) = "$CONSULTAS/$id/status"
     fun cancelConsulta(id: String) = "$CONSULTAS/$id/cancel"
 
-    const val VACCINATIONS = "/api/vaccinations"
+    const val VACCINATIONS = "/api/vaccines"
     fun getVaccination(id: String) = "$VACCINATIONS/$id"
-    fun getVaccinationsByPet(petId: String) = "/api/pets/$petId/vaccinations"
+    fun getVaccinationsByPet(petId: String) = "/api/pets/$petId/vaccines"
     const val VACCINATIONS_UPCOMING = "$VACCINATIONS/upcoming"
     const val VACCINATIONS_OVERDUE = "$VACCINATIONS/overdue"
     fun markVaccinationAsApplied(id: String) = "$VACCINATIONS/$id/apply"

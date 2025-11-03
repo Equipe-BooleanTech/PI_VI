@@ -6,7 +6,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 
 enum class UserType {
     OWNER,
-    VET,
+    VETERINARIAN,
     ADMIN,
     PHARMACY
 }
@@ -31,13 +31,17 @@ enum class PriorityLevel(val displayName: String, val color: String) {
 }
 
 data class StatusCardData(
-    val id: String,
+    val id: String = "",
     val title: String,
-    val count: Int,
-    val icon: ImageVector,
-    val iconBackground: String,
+    val value: String = "0",
+    val count: Int = 0, 
+    val icon: Any,
+    val iconBackground: String = "",
+    val color: String = "", 
     val route: String
-)
+) {
+    fun getCountValue(): Int = value.toIntOrNull() ?: count
+}
 
 data class QuickActionData(
     val id: String,
@@ -74,5 +78,5 @@ interface DashboardDataProvider {
     fun getRecentActivities(userType: UserType): List<RecentActivityData>
     fun getReminders(userType: UserType): List<ReminderData>
     fun getGreeting(userType: UserType, userName: String): String
-    fun getSubGreeting(userType: UserType): String
+    fun getSubGreeting(userType: UserType, petCount: Int = 0): String
 }

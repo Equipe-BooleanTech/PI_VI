@@ -14,8 +14,11 @@ class AuthRepositoryImpl(
     override suspend fun login(email: String, password: String): Result<String> {
         return try {
             println("Repositório: Iniciando login para email '$email' via API")
+            
             when (val result = remoteDataSource.login(email, password)) {
                 is NetworkResult.Success -> {
+                    println("Repositório: Login API bem-sucedido - salvando tokens")
+                    
                     if (tokenStorage is AuthTokenStorageImpl) {
                         tokenStorage.saveTokenWithExpiration(result.data.token, result.data.expiresIn)
                     } else {
@@ -26,7 +29,8 @@ class AuthRepositoryImpl(
                     NetworkModule.setAuthTokenWithExpiration(result.data.token, result.data.expiresIn)
                     
                     println("Repositório: Login realizado com sucesso - Usuário: ${result.data.userId}, Token expira em: ${result.data.expiresIn}s")
-                    Result.success("Login realizado com sucesso")
+                    
+                    Result.success(result.data.userId)
                 }
                 is NetworkResult.Error -> {
                     println("Repositório: Erro no login - ${result.exception.message}")
@@ -39,6 +43,7 @@ class AuthRepositoryImpl(
             }
         } catch (e: Exception) {
             println("Repositório: Falha inesperada no login - ${e.message}")
+            e.printStackTrace()
             Result.failure(e)
         }
     }
@@ -48,10 +53,8 @@ class AuthRepositoryImpl(
             println("Repositório: Iniciando registro para email '${registerRequest.email}' via API")
             when (val result = remoteDataSource.register(registerRequest)) {
                 is NetworkResult.Success -> {
-                    tokenStorage?.saveToken(result.data.token)
-                    tokenStorage?.saveUserId(result.data.userId)
-                    NetworkModule.setAuthToken(result.data.token)
                     println("Repositório: Registro realizado com sucesso - Usuário: ${result.data.userId}")
+                    println("Repositório: Token NÃO salvo - usuário deve fazer login")
                     Result.success(result.data.userId)
                 }
                 is NetworkResult.Error -> {
@@ -126,9 +129,9 @@ class AuthRepositoryImpl(
                 is NetworkResult.Error -> {
                     when (result.exception) {
                         is edu.fatec.petwise.core.network.NetworkException.Unauthorized -> {
-                            println("Repositório: Token inválido ao buscar perfil - limpando tokens localmente")
+                            println("Repositório: Token inválido ao buscar perfil - limpando tokens e cliente HTTP")
                             tokenStorage?.clearTokens()
-                            NetworkModule.clearAuthToken()
+                            NetworkModule.clear()
                             Result.failure(Exception("Token expirado - faça login novamente"))
                         }
                         is kotlinx.coroutines.CancellationException -> {
@@ -157,27 +160,48 @@ class AuthRepositoryImpl(
 
     override suspend fun logout(): Result<Unit> {
         return try {
-           when (val result = remoteDataSource.logout()) {
+            println("Repositório: Iniciando logout - chamando API")
+            
+            val apiResult = try {
+                remoteDataSource.logout()
+            } catch (e: Exception) {
+                println("Repositório: Erro ao chamar API de logout (continuando limpeza local) - ${e.message}")
+                null
+            }
+            
+            println("Repositório: Limpando tokens locais e resetando cliente HTTP")
+            tokenStorage?.clearTokens()
+            
+            NetworkModule.clear()
+            
+            println("Repositório: Tokens limpos - logout concluído")
+            
+            when (apiResult) {
                 is NetworkResult.Success -> {
-                    tokenStorage?.clearTokens()
-                    NetworkModule.clearAuthToken()
-                    println("Repositório: Logout realizado com sucesso")
+                    println("Repositório: Logout realizado com sucesso (API + Local)")
                     Result.success(Unit)
                 }
                 is NetworkResult.Error -> {
-                    println("Repositório: Erro no logout - ${result.exception.message}")
-                    Result.failure(Exception(result.exception.message ?: "Erro ao realizar logout"))
+                    println("Repositório: API retornou erro mas tokens locais foram limpos - ${apiResult.exception.message}")
+                    Result.success(Unit)
                 }
-                is NetworkResult.Loading -> {
-                    println("Repositório: Logout em andamento...")
-                    Result.failure(Exception("Logout em andamento"))
+                else -> {
+                    println("Repositório: API não respondeu mas tokens locais foram limpos")
+                    Result.success(Unit)
                 }
             }
         } catch (e: Exception) {
-            println("Repositório: Falha inesperada no logout - ${e.message}")
-            Result.failure(e)
+            println("Repositório: Falha inesperada no logout, forçando limpeza local - ${e.message}")
+            try {
+                tokenStorage?.clearTokens()
+                NetworkModule.clear()
+                Result.success(Unit)
+            } catch (cleanupError: Exception) {
+                println("Repositório: Erro crítico ao limpar tokens - ${cleanupError.message}")
+                Result.failure(cleanupError)
+            }
+        }
     }
-}
 }
 interface AuthTokenStorage {
     fun saveToken(token: String)

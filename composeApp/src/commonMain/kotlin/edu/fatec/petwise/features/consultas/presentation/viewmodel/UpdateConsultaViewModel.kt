@@ -32,8 +32,6 @@ sealed class UpdateConsultaUiEvent {
         val notes: String,
         val nextAppointment: String?,
         val price: String,
-        val ownerName: String,
-        val ownerPhone: String
     ) : UpdateConsultaUiEvent()
     object ClearState : UpdateConsultaUiEvent()
 }
@@ -65,7 +63,7 @@ class UpdateConsultaViewModel(
                     consultaType = event.consultaType,
                     consultaDate = event.consultaDate,
                     consultaTime = event.consultaTime,
-                    status = edu.fatec.petwise.features.consultas.domain.models.ConsultaStatus.SCHEDULED, // Keep existing status
+                    status = edu.fatec.petwise.features.consultas.domain.models.ConsultaStatus.SCHEDULED,
                     symptoms = event.symptoms,
                     diagnosis = event.diagnosis,
                     treatment = event.treatment,
@@ -73,11 +71,9 @@ class UpdateConsultaViewModel(
                     notes = event.notes,
                     nextAppointment = event.nextAppointment,
                     price = event.price.toFloatOrNull() ?: 0f,
-                    isPaid = false, // Keep existing isPaid
-                    ownerName = event.ownerName,
-                    ownerPhone = event.ownerPhone,
-                    createdAt = "", // Will be filled by API
-                    updatedAt = "" // Will be filled by API
+                    isPaid = false,
+                    createdAt = "", 
+                    updatedAt = "" 
                 )
 
                 updateConsultaUseCase(consulta).fold(
