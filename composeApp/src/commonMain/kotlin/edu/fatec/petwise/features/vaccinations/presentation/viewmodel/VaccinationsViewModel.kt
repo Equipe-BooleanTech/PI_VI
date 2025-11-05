@@ -59,6 +59,10 @@ class VaccinationsViewModel(
                 when (event) {
                     is DataRefreshEvent.VaccinationsUpdated -> loadVaccinations()
                     is DataRefreshEvent.AllDataUpdated -> loadVaccinations()
+                    is DataRefreshEvent.UserLoggedOut -> {
+                        println("VaccinationsViewModel: Usuário deslogou — limpando estado")
+                        _uiState.value = VaccinationsUiState()
+                    }
                     else -> {}
                 }
             }

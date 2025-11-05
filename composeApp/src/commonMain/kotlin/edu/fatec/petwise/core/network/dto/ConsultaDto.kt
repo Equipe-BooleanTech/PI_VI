@@ -1,6 +1,7 @@
 package edu.fatec.petwise.core.network.dto
 
 import edu.fatec.petwise.features.consultas.domain.models.Consulta
+import kotlinx.serialization.SerialName
 import edu.fatec.petwise.features.consultas.domain.models.ConsultaType
 import edu.fatec.petwise.features.consultas.domain.models.ConsultaStatus
 import kotlinx.serialization.Serializable
@@ -10,11 +11,11 @@ import kotlinx.serialization.Serializable
 data class ConsultaDto(
     val id: String,
     val petId: String,
-    val petName: String,
-    val veterinarianName: String,
-    val consultaType: String,
-    val consultaDate: String,
-    val consultaTime: String,
+    @SerialName("petName") val petName: String,
+    @SerialName("veterinarianName") val veterinarianName: String,
+    @SerialName("consultaType") val consultaType: String,
+    @SerialName("consultaDate") val consultaDate: String,
+    @SerialName("consultaTime") val consultaTime: String,
     val status: String,
     val symptoms: String = "",
     val diagnosis: String = "",
@@ -32,33 +33,37 @@ data class ConsultaDto(
 
 @Serializable
 data class CreateConsultaRequest(
-    val petId: String,
-    val petName: String,
-    val veterinarianName: String,
-    val consultaType: String,
-    val consultaDate: String,
-    val consultaTime: String,
-    val symptoms: String = "",
-    val ownerName: String,
-    val ownerPhone: String,
-    val notes: String = ""
+    @SerialName("petId") val petId: String,
+    // keep for compatibility
+    @SerialName("petName") val petName: String,
+    @SerialName("veterinarianName") val veterinarianName: String,
+    // backend expects a single datetime and a veterinaryId; expose optional fields
+    @SerialName("appointmentDatetime") val appointmentDatetime: String? = null,
+    @SerialName("veterinaryId") val veterinaryId: String? = null,
+    @SerialName("consultaType") val consultaType: String,
+    @SerialName("consultaDate") val consultaDate: String,
+    @SerialName("consultaTime") val consultaTime: String,
+    @SerialName("symptoms") val symptoms: String = "",
+    @SerialName("ownerName") val ownerName: String,
+    @SerialName("ownerPhone") val ownerPhone: String,
+    @SerialName("notes") val notes: String = ""
 )
 
 @Serializable
 data class UpdateConsultaRequest(
-    val veterinarianName: String? = null,
-    val consultaType: String? = null,
-    val consultaDate: String? = null,
-    val consultaTime: String? = null,
-    val status: String? = null,
-    val symptoms: String? = null,
-    val diagnosis: String? = null,
-    val treatment: String? = null,
-    val prescriptions: String? = null,
-    val notes: String? = null,
-    val nextAppointment: String? = null,
-    val price: Float? = null,
-    val isPaid: Boolean? = null
+    @SerialName("veterinarianName") val veterinarianName: String? = null,
+    @SerialName("consultaType") val consultaType: String? = null,
+    @SerialName("consultaDate") val consultaDate: String? = null,
+    @SerialName("consultaTime") val consultaTime: String? = null,
+    @SerialName("status") val status: String? = null,
+    @SerialName("symptoms") val symptoms: String? = null,
+    @SerialName("diagnosis") val diagnosis: String? = null,
+    @SerialName("treatment") val treatment: String? = null,
+    @SerialName("prescriptions") val prescriptions: String? = null,
+    @SerialName("notes") val notes: String? = null,
+    @SerialName("nextAppointment") val nextAppointment: String? = null,
+    @SerialName("price") val price: Float? = null,
+    @SerialName("isPaid") val isPaid: Boolean? = null
 )
 
 @Serializable

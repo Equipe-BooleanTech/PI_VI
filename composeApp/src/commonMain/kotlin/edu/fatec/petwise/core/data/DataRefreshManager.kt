@@ -8,6 +8,7 @@ sealed class DataRefreshEvent {
     object PetsUpdated : DataRefreshEvent()
     object ConsultasUpdated : DataRefreshEvent()
     object VaccinationsUpdated : DataRefreshEvent()
+    object UserLoggedOut : DataRefreshEvent()
     object AllDataUpdated : DataRefreshEvent()
     data class PetUpdated(val petId: String) : DataRefreshEvent()
     data class ConsultaUpdated(val consultaId: String) : DataRefreshEvent()
@@ -43,6 +44,13 @@ object DataRefreshManager {
         val emitted = _refreshEvents.tryEmit(DataRefreshEvent.AllDataUpdated)
         if (!emitted) {
             println("DataRefreshManager: Nenhum observador ativo para AllDataUpdated (normal durante logout)")
+        }
+    }
+
+    fun notifyUserLoggedOut() {
+        val emitted = _refreshEvents.tryEmit(DataRefreshEvent.UserLoggedOut)
+        if (!emitted) {
+            println("DataRefreshManager: Nenhum observador ativo para UserLoggedOut (normal durante logout)")
         }
     }
 

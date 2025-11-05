@@ -86,6 +86,9 @@ class AuthViewModel(
                 println("AuthViewModel: Erro durante logout, mas continuando - ${e.message}")
             }
             
+            // Notify app that user logged out so feature viewmodels can clear their UI state
+            DataRefreshManager.notifyUserLoggedOut()
+            // Also ask for data refresh in case some screens prefer reload behavior
             DataRefreshManager.notifyAllDataUpdated()
             _uiState.value = AuthUiState()
             println("AuthViewModel: Estado de autenticação limpo")

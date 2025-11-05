@@ -26,6 +26,13 @@ import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.fromHex
 import edu.fatec.petwise.features.pets.di.PetDependencyContainer
 import kotlinx.coroutines.flow.firstOrNull
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.OutlinedTextField
 
 @Composable
 fun AddConsultaDialog(
@@ -448,6 +455,13 @@ fun FilterConsultasBottomSheet(
     val theme = PetWiseTheme.Light
     var selectedType by remember { mutableStateOf(currentFilter.consultaType) }
     var selectedStatus by remember { mutableStateOf(currentFilter.status) }
+    // Pet selector + date range (follow pets filter pattern)
+    val petsViewModel = remember { PetDependencyContainer.providePetsViewModel() }
+    val petsState by petsViewModel.uiState.collectAsState()
+    var selectedPetId by remember { mutableStateOf(currentFilter.petId) }
+    var startDate by remember { mutableStateOf(currentFilter.dateRange?.startDate ?: "") }
+    var endDate by remember { mutableStateOf(currentFilter.dateRange?.endDate ?: "") }
+    var expandedPetDropdown by remember { mutableStateOf(false) }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -466,6 +480,7 @@ fun FilterConsultasBottomSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp)
+                .verticalScroll(rememberScrollState())
         ) {
             Card(
                 modifier = Modifier
@@ -594,6 +609,100 @@ fun FilterConsultasBottomSheet(
                 }
             }
 
+            // Pet selector (reuses available pets list)
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        text = "Pet",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Medium,
+                            color = Color.fromHex(theme.palette.textPrimary)
+                        ),
+                        modifier = Modifier.padding(bottom = 12.dp)
+                    )
+
+                    ExposedDropdownMenuBox(
+                        expanded = expandedPetDropdown,
+                        onExpandedChange = { expandedPetDropdown = !expandedPetDropdown }
+                    ) {
+                        OutlinedTextField(
+                            value = petsState.pets.find { it.id == selectedPetId }?.name ?: "Todos",
+                            onValueChange = {},
+                            readOnly = true,
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedPetDropdown) },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        ExposedDropdownMenu(
+                            expanded = expandedPetDropdown,
+                            onDismissRequest = { expandedPetDropdown = false }
+                        ) {
+                            DropdownMenuItem(text = { Text("Todos") }, onClick = {
+                                selectedPetId = null
+                                expandedPetDropdown = false
+                            })
+
+                            petsState.pets.forEach { pet ->
+                                DropdownMenuItem(text = { Text(pet.name) }, onClick = {
+                                    selectedPetId = pet.id
+                                    expandedPetDropdown = false
+                                })
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Date range card (simple text inputs)
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 24.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Intervalo de Data",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Medium,
+                            color = Color.fromHex(theme.palette.textPrimary)
+                        ),
+                        modifier = Modifier.padding(bottom = 12.dp)
+                    )
+
+                    OutlinedTextField(
+                        value = startDate,
+                        onValueChange = { startDate = it },
+                        label = { Text("Data início (yyyy-MM-dd)") },
+                        placeholder = { Text("2025-01-01") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    OutlinedTextField(
+                        value = endDate,
+                        onValueChange = { endDate = it },
+                        label = { Text("Data fim (yyyy-MM-dd)") },
+                        placeholder = { Text("2025-12-31") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -602,6 +711,9 @@ fun FilterConsultasBottomSheet(
                     onClick = {
                         selectedType = null
                         selectedStatus = null
+                        selectedPetId = null
+                        startDate = ""
+                        endDate = ""
                         onFilterApply(ConsultaFilterOptions())
                     },
                     modifier = Modifier.weight(1f)
@@ -611,10 +723,16 @@ fun FilterConsultasBottomSheet(
 
                 Button(
                     onClick = {
+                        val dateRange = if (startDate.isNotBlank() && endDate.isNotBlank()) {
+                            DateRange(startDate, endDate)
+                        } else null
+
                         onFilterApply(
                             ConsultaFilterOptions(
                                 consultaType = selectedType,
-                                status = selectedStatus
+                                status = selectedStatus,
+                                petId = selectedPetId,
+                                dateRange = dateRange
                             )
                         )
                     },

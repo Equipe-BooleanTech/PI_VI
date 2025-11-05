@@ -4,56 +4,59 @@ import edu.fatec.petwise.features.pets.domain.models.Pet
 import edu.fatec.petwise.features.pets.domain.models.PetSpecies
 import edu.fatec.petwise.features.pets.domain.models.PetGender
 import edu.fatec.petwise.features.pets.domain.models.HealthStatus
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class PetDto(
-    val id: String,
-    val name: String,
-    val breed: String,
-    val species: String,
-    val gender: String,
-    val age: Int,
-    val weight: Float,
-    val healthStatus: String,
-    val ownerName: String,
-    val ownerPhone: String,
-    val healthHistory: String = "",
-    val profileImageUrl: String? = null,
-    val isFavorite: Boolean = false,
-    val nextAppointment: String? = null,
-    val createdAt: String,
-    val updatedAt: String
+    @SerialName("id") val id: String,
+    @SerialName("nome") val name: String,
+    @SerialName("raca") val breed: String,
+    @SerialName("especie") val species: String,
+    @SerialName("sexo") val gender: String,
+    // backend does not provide numeric age; keep as Int for domain usage if available
+    @SerialName("idade") val age: Int,
+    @SerialName("peso") val weight: Float,
+    @SerialName("healthStatus") val healthStatus: String,
+    // owner info is not part of backend CreatePetRequest, may be ignored by backend if present
+    @SerialName("ownerName") val ownerName: String,
+    @SerialName("ownerPhone") val ownerPhone: String,
+    @SerialName("observacoes") val healthHistory: String = "",
+    @SerialName("fotoUrl") val profileImageUrl: String? = null,
+    @SerialName("isFavorite") val isFavorite: Boolean = false,
+    @SerialName("nextAppointment") val nextAppointment: String? = null,
+    @SerialName("createdAt") val createdAt: String,
+    @SerialName("updatedAt") val updatedAt: String
 )
 
 @Serializable
 data class CreatePetRequest(
-    val name: String,
-    val breed: String,
-    val species: String,
-    val gender: String,
-    val age: Int,
-    val weight: Float,
-    val healthStatus: String,
-    val ownerName: String,
-    val ownerPhone: String,
-    val healthHistory: String = "",
-    val profileImageUrl: String? = null
+    @SerialName("nome") val name: String,
+    @SerialName("raca") val breed: String,
+    @SerialName("especie") val species: String,
+    @SerialName("sexo") val gender: String,
+    @SerialName("idade") val age: Int,
+    @SerialName("peso") val weight: Float,
+    @SerialName("healthStatus") val healthStatus: String,
+    @SerialName("ownerName") val ownerName: String,
+    @SerialName("ownerPhone") val ownerPhone: String,
+    @SerialName("observacoes") val healthHistory: String = "",
+    @SerialName("fotoUrl") val profileImageUrl: String? = null
 )
 
 @Serializable
 data class UpdatePetRequest(
-    val name: String,
-    val breed: String,
-    val species: String,
-    val gender: String,
-    val age: Int,
-    val weight: Float,
-    val healthStatus: String,
-    val ownerName: String,
-    val ownerPhone: String,
-    val healthHistory: String = "",
-    val profileImageUrl: String? = null
+    @SerialName("nome") val name: String,
+    @SerialName("raca") val breed: String,
+    @SerialName("especie") val species: String,
+    @SerialName("sexo") val gender: String,
+    @SerialName("idade") val age: Int,
+    @SerialName("peso") val weight: Float,
+    @SerialName("healthStatus") val healthStatus: String,
+    @SerialName("ownerName") val ownerName: String,
+    @SerialName("ownerPhone") val ownerPhone: String,
+    @SerialName("observacoes") val healthHistory: String = "",
+    @SerialName("fotoUrl") val profileImageUrl: String? = null
 )
 
 @Serializable

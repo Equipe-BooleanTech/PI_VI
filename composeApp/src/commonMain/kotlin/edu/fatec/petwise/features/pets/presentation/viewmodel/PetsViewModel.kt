@@ -59,6 +59,10 @@ class PetsViewModel(
                 when (event) {
                     is DataRefreshEvent.PetsUpdated -> loadPets()
                     is DataRefreshEvent.AllDataUpdated -> loadPets()
+                    is DataRefreshEvent.UserLoggedOut -> {
+                        println("PetsViewModel: Usuário deslogou — limpando estado")
+                        _uiState.value = PetsUiState()
+                    }
                     else -> {}
                 }
             }

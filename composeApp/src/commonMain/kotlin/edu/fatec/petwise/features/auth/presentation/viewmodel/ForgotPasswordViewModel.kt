@@ -2,6 +2,8 @@ package edu.fatec.petwise.features.auth.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import edu.fatec.petwise.core.data.DataRefreshEvent
+import edu.fatec.petwise.core.data.DataRefreshManager
 import edu.fatec.petwise.features.auth.domain.usecases.RequestPasswordResetUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,6 +17,21 @@ class ForgotPasswordViewModel(
 
     private val _uiState = MutableStateFlow(ForgotPasswordUiState())
     val uiState: StateFlow<ForgotPasswordUiState> = _uiState.asStateFlow()
+
+    init {
+        observeLogout()
+    }
+
+    private fun observeLogout() {
+        viewModelScope.launch {
+            DataRefreshManager.refreshEvents.collect { event ->
+                if (event is DataRefreshEvent.UserLoggedOut) {
+                    println("ForgotPasswordViewModel: Usuário deslogou — limpando estado")
+                    reset()
+                }
+            }
+        }
+    }
 
     fun requestPasswordReset(email: String) {
         viewModelScope.launch {

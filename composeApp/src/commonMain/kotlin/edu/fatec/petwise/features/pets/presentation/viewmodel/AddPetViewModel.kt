@@ -2,6 +2,8 @@ package edu.fatec.petwise.features.pets.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import edu.fatec.petwise.core.data.DataRefreshManager
+import edu.fatec.petwise.core.data.DataRefreshEvent
 import edu.fatec.petwise.features.pets.domain.models.Pet
 import edu.fatec.petwise.features.pets.domain.models.PetSpecies
 import edu.fatec.petwise.features.pets.domain.models.PetGender
@@ -40,6 +42,21 @@ class AddPetViewModel(
 
     private val _uiState = MutableStateFlow(AddPetUiState())
     val uiState: StateFlow<AddPetUiState> = _uiState.asStateFlow()
+
+    init {
+        observeLogout()
+    }
+
+    private fun observeLogout() {
+        viewModelScope.launch {
+            DataRefreshManager.refreshEvents.collect { event ->
+                if (event is DataRefreshEvent.UserLoggedOut) {
+                    println("AddPetViewModel: Usuário deslogou — limpando estado")
+                    clearState()
+                }
+            }
+        }
+    }
 
     fun onEvent(event: AddPetUiEvent) {
         when (event) {

@@ -9,10 +9,13 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import edu.fatec.petwise.core.data.DataRefreshEvent
+import edu.fatec.petwise.core.data.DataRefreshManager
 import kotlinx.coroutines.delay
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonPrimitive
-
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.doubleOrNull
 
 @Immutable
 data class FormState(
@@ -99,6 +102,18 @@ class DynamicFormViewModel(
         initializeForm()
         setupEventHandling()
         setupAsyncValidation()
+        observeLogout()
+    }
+
+    private fun observeLogout() {
+        formScope.launch {
+            DataRefreshManager.refreshEvents.collect { event ->
+                if (event is DataRefreshEvent.UserLoggedOut) {
+                    println("DynamicFormViewModel: Usuário deslogou — resetando formulário ${_state.value.id}")
+                    resetForm()
+                }
+            }
+        }
     }
 
     private fun initializeForm() {
@@ -126,11 +141,23 @@ class DynamicFormViewModel(
         val initialStates = initialConfiguration.fields
             .filter { it.type != FormFieldType.SUBMIT }
             .associate { field ->
-                val defaultValue = field.default?.jsonPrimitive?.content ?: ""
+                // Parse default JSON primitive into the appropriate Kotlin type
+                val defaultPrimitive = field.default?.jsonPrimitive
+                val defaultValue: Any? = when {
+                    defaultPrimitive == null -> ""
+                    field.type == FormFieldType.CHECKBOX || field.type == FormFieldType.SWITCH ->
+                        defaultPrimitive.content.toBoolean()
+                    field.type == FormFieldType.NUMBER ->
+                        defaultPrimitive.intOrNull ?: defaultPrimitive.content.toIntOrNull() ?: defaultPrimitive.content
+                    field.type == FormFieldType.DECIMAL ->
+                        defaultPrimitive.doubleOrNull ?: defaultPrimitive.content.toDoubleOrNull() ?: defaultPrimitive.content
+                    else -> defaultPrimitive.content
+                }
+
                 field.id to FieldState(
                     id = field.id,
                     value = defaultValue,
-                    displayValue = defaultValue,
+                    displayValue = defaultValue?.toString() ?: "",
                     isVisible = field.visibility == null,
                     isEnabled = true
                 )
@@ -777,20 +804,30 @@ class DynamicFormViewModel(
                 .filter { it.type != FormFieldType.SUBMIT }
                 .associate { field ->
                     val existingState = currentFieldStates[field.id]
-                    val defaultValue = field.default?.jsonPrimitive?.content ?: ""
-                    
+                    val defaultPrimitive = field.default?.jsonPrimitive
+                    val parsedDefault: Any? = when {
+                        defaultPrimitive == null -> ""
+                        field.type == FormFieldType.CHECKBOX || field.type == FormFieldType.SWITCH ->
+                            defaultPrimitive.content.toBoolean()
+                        field.type == FormFieldType.NUMBER ->
+                            defaultPrimitive.intOrNull ?: defaultPrimitive.content.toIntOrNull() ?: defaultPrimitive.content
+                        field.type == FormFieldType.DECIMAL ->
+                            defaultPrimitive.doubleOrNull ?: defaultPrimitive.content.toDoubleOrNull() ?: defaultPrimitive.content
+                        else -> defaultPrimitive.content
+                    }
+
                     val valueToUse = if (existingState != null && existingState.isDirty) {
                         existingState.value
                     } else {
-                        defaultValue
+                        parsedDefault
                     }
-                    
+
                     val displayValueToUse = if (existingState != null && existingState.isDirty) {
                         existingState.displayValue
                     } else {
-                        defaultValue
+                        valueToUse?.toString() ?: ""
                     }
-                    
+
                     field.id to FieldState(
                         id = field.id,
                         value = valueToUse,

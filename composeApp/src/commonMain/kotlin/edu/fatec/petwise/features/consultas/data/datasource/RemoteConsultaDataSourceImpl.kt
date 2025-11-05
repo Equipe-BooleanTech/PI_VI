@@ -37,6 +37,17 @@ class RemoteConsultaDataSourceImpl(
             petId = consulta.petId,
             petName = consulta.petName,
             veterinarianName = consulta.veterinarianName,
+            // build appointmentDatetime in ISO format if possible (combine date + time)
+            appointmentDatetime = try {
+                // expect consulta.consultaDate = yyyy-MM-dd and consulta.consultaTime = HH:mm or HH:mm:ss
+                val date = consulta.consultaDate.trim()
+                val time = consulta.consultaTime.trim()
+                if (date.isNotEmpty() && time.isNotEmpty()) "$date" + "T" + "$time" else null
+            } catch (e: Exception) {
+                null
+            },
+            // if veterinarianName actually carries an id (UUID string), pass it as veterinaryId
+            veterinaryId = if (consulta.veterinarianName.matches(Regex("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"))) consulta.veterinarianName else null,
             consultaType = consulta.consultaType.name,
             consultaDate = consulta.consultaDate,
             consultaTime = consulta.consultaTime,

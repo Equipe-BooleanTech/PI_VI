@@ -41,6 +41,21 @@ class AddConsultaViewModel(
     private val _uiState = MutableStateFlow(AddConsultaUiState())
     val uiState: StateFlow<AddConsultaUiState> = _uiState.asStateFlow()
 
+    init {
+        observeLogout()
+    }
+
+    private fun observeLogout() {
+        viewModelScope.launch {
+            edu.fatec.petwise.core.data.DataRefreshManager.refreshEvents.collect { event ->
+                if (event is edu.fatec.petwise.core.data.DataRefreshEvent.UserLoggedOut) {
+                    println("AddConsultaViewModel: Usuário deslogou — limpando estado")
+                    clearState()
+                }
+            }
+        }
+    }
+
     fun onEvent(event: AddConsultaUiEvent) {
         when (event) {
             is AddConsultaUiEvent.AddConsulta -> addConsulta(event)

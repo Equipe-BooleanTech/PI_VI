@@ -58,6 +58,10 @@ class ConsultasViewModel(
                 when (event) {
                     is DataRefreshEvent.ConsultasUpdated -> loadConsultas()
                     is DataRefreshEvent.AllDataUpdated -> loadConsultas()
+                    is DataRefreshEvent.UserLoggedOut -> {
+                        println("ConsultasViewModel: Usuário deslogou — limpando estado")
+                        _uiState.value = ConsultasUiState()
+                    }
                     else -> {}
                 }
             }
