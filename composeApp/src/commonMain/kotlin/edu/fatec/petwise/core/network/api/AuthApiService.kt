@@ -6,9 +6,7 @@ import edu.fatec.petwise.core.network.NetworkResult
 import edu.fatec.petwise.core.network.dto.*
 import io.ktor.client.request.*
 
-/**
- * Authentication API service
- */
+
 interface AuthApiService {
     suspend fun login(request: LoginRequest): NetworkResult<LoginResponse>
     suspend fun register(request: RegisterRequest): NetworkResult<RegisterResponse>
@@ -20,9 +18,6 @@ interface AuthApiService {
     suspend fun getUserProfile(): NetworkResult<UserProfileDto>
 }
 
-/**
- * Implementation of AuthApiService
- */
 class AuthApiServiceImpl(
     private val networkHandler: NetworkRequestHandler
 ) : AuthApiService {

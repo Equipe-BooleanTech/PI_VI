@@ -19,6 +19,9 @@ class NetworkRequestHandler(
         return try {
             val response = httpClient.request()
             handleResponse(response)
+        } catch (e: CancellationException) {
+            println("NetworkRequestHandler: Requisição cancelada (propagando CancellationException)")
+            throw e
         } catch (e: Exception) {
             handleException(e)
         }
@@ -196,6 +199,21 @@ class NetworkRequestHandler(
                 is HttpRequestTimeoutException -> NetworkException.Timeout()
                 is SerializationException -> NetworkException.SerializationError(cause = exception)
                 is NetworkException -> exception
+                is IllegalStateException -> {
+                    if (exception.message?.contains("Parent job is Completed") == true ||
+                        exception.message?.contains("Job is Completed") == true) {
+                        println("HttpClient em estado inválido: ${exception.message}")
+                        NetworkException.Unknown(
+                            message = "Cliente HTTP em estado inválido. Por favor, tente novamente.",
+                            cause = exception
+                        )
+                    } else {
+                        NetworkException.Unknown(
+                            message = exception.message ?: "Erro de estado desconhecido",
+                            cause = exception
+                        )
+                    }
+                }
                 else -> NetworkException.Unknown(
                     message = exception.message ?: "Erro desconhecido",
                     cause = exception

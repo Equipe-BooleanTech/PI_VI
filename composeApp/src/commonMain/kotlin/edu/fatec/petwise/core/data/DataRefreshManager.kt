@@ -11,6 +11,7 @@ sealed class DataRefreshEvent {
     object PetsUpdated : DataRefreshEvent()
     object ConsultasUpdated : DataRefreshEvent()
     object VaccinationsUpdated : DataRefreshEvent()
+    object UserLoggedOut : DataRefreshEvent()
     object AllDataUpdated : DataRefreshEvent()
     data class PetUpdated(val petId: String) : DataRefreshEvent()
     data class ConsultaUpdated(val consultaId: String) : DataRefreshEvent()
@@ -34,6 +35,13 @@ object DataRefreshManager {
         val emitted = _refreshEvents.tryEmit(DataRefreshEvent.ConsultasUpdated)
         if (!emitted) {
             println("DataRefreshManager: Falha ao emitir evento ConsultasUpdated")
+        }
+    }
+
+     fun notifyUserLoggedOut() {
+        val emitted = _refreshEvents.tryEmit(DataRefreshEvent.UserLoggedOut)
+        if (!emitted) {
+            println("DataRefreshManager: Nenhum observador ativo para UserLoggedOut (normal durante logout)")
         }
     }
 

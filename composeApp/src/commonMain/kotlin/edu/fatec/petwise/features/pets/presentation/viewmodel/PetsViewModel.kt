@@ -79,6 +79,10 @@ class PetsViewModel(
             is PetsUiEvent.ShowAddPetDialog -> showAddPetDialog()
             is PetsUiEvent.HideAddPetDialog -> hideAddPetDialog()
             is PetsUiEvent.ClearError -> clearError()
+            is DataRefreshEvent.UserLoggedOut -> {
+                println("PetsViewModel: Usuário deslogou — limpando estado")
+                _uiState.value = PetsUiState()
+            }
         }
     }
 

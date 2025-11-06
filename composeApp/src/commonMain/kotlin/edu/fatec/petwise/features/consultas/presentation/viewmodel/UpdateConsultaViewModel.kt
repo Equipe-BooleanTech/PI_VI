@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import edu.fatec.petwise.features.consultas.domain.models.Consulta
 import edu.fatec.petwise.features.consultas.domain.models.ConsultaType
 import edu.fatec.petwise.features.consultas.domain.usecases.UpdateConsultaUseCase
+import edu.fatec.petwise.core.data.DataRefreshEvent
+import edu.fatec.petwise.core.data.DataRefreshManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -43,6 +45,20 @@ class UpdateConsultaViewModel(
     private val _uiState = MutableStateFlow(UpdateConsultaUiState())
     val uiState: StateFlow<UpdateConsultaUiState> = _uiState.asStateFlow()
 
+    init {
+            observeLogout()
+        }
+
+    private fun observeLogout() {
+        viewModelScope.launch {
+            DataRefreshManager.refreshEvents.collect { event ->
+                if (event is DataRefreshEvent.UserLoggedOut) {
+                    println("UpdateConsultaViewModel: Usuário deslogou — limpando estado")
+                    clearState()
+                }
+            }
+        }
+    } 
     fun onEvent(event: UpdateConsultaUiEvent) {
         when (event) {
             is UpdateConsultaUiEvent.UpdateConsulta -> updateConsulta(event)

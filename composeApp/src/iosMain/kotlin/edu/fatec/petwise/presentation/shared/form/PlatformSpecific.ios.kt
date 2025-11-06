@@ -169,11 +169,60 @@ actual fun PlatformDatePicker(
     onValueChange: (String) -> Unit,
     modifier: Modifier
 ) {
+var showDialog by remember { mutableStateOf(true) }
 
-    androidx.compose.material3.Text(
-        text = "iOS Date Picker - ${fieldState.displayValue}",
-        modifier = modifier
-    )
+    val parts = fieldState.displayValue.split("-")
+    var year by remember { mutableStateOf(parts.getOrNull(0)?.toIntOrNull() ?: 2000) }
+    var month by remember { mutableStateOf(parts.getOrNull(1)?.toIntOrNull() ?: 1) }
+    var day by remember { mutableStateOf(parts.getOrNull(2)?.toIntOrNull() ?: 1) }
+
+    if (showDialog) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = {
+                showDialog = false
+                onValueChange(fieldState.displayValue)
+            },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = {
+                    val y = year
+                    val m = month.coerceIn(1, 12)
+                    val d = day.coerceIn(1, 31)
+                    val formatted = "%04d-%02d-%02d".format(y, m, d)
+                    showDialog = false
+                    onValueChange(formatted)
+                }) { androidx.compose.material3.Text("OK") }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(onClick = {
+                    showDialog = false
+                    onValueChange(fieldState.displayValue)
+                }) { androidx.compose.material3.Text("Cancelar") }
+            },
+            title = { androidx.compose.material3.Text(text = fieldDefinition.label ?: "Selecione a Data") },
+            text = {
+                androidx.compose.foundation.layout.Column {
+                    androidx.compose.material3.OutlinedTextField(
+                        value = year.toString(),
+                        onValueChange = { year = it.toIntOrNull() ?: year },
+                        label = { androidx.compose.material3.Text("Ano") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    androidx.compose.material3.OutlinedTextField(
+                        value = month.toString(),
+                        onValueChange = { month = it.toIntOrNull() ?: month },
+                        label = { androidx.compose.material3.Text("Mês") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    androidx.compose.material3.OutlinedTextField(
+                        value = day.toString(),
+                        onValueChange = { day = it.toIntOrNull() ?: day },
+                        label = { androidx.compose.material3.Text("Dia") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+        )
+    }
 }
 
 @Composable
@@ -183,11 +232,52 @@ actual fun PlatformTimePicker(
     onValueChange: (String) -> Unit,
     modifier: Modifier
 ) {
+var showDialog by remember { mutableStateOf(true) }
 
-    androidx.compose.material3.Text(
-        text = "iOS Time Picker - ${fieldState.displayValue}",
-        modifier = modifier
-    )
+    val parts = fieldState.displayValue.split(":")
+    var hour by remember { mutableStateOf(parts.getOrNull(0)?.toIntOrNull() ?: 12) }
+    var minute by remember { mutableStateOf(parts.getOrNull(1)?.toIntOrNull() ?: 0) }
+
+    if (showDialog) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = {
+                showDialog = false
+                onValueChange(fieldState.displayValue)
+            },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = {
+                    val h = hour.coerceIn(0,23)
+                    val m = minute.coerceIn(0,59)
+                    val formatted = "%02d:%02d".format(h,m)
+                    showDialog = false
+                    onValueChange(formatted)
+                }) { androidx.compose.material3.Text("OK") }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(onClick = {
+                    showDialog = false
+                    onValueChange(fieldState.displayValue)
+                }) { androidx.compose.material3.Text("Cancelar") }
+            },
+            title = { androidx.compose.material3.Text(text = fieldDefinition.label ?: "Selecione o Horário") },
+            text = {
+                androidx.compose.foundation.layout.Column {
+                    androidx.compose.material3.OutlinedTextField(
+                        value = hour.toString(),
+                        onValueChange = { hour = it.toIntOrNull() ?: hour },
+                        label = { androidx.compose.material3.Text("Hora") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    androidx.compose.material3.OutlinedTextField(
+                        value = minute.toString(),
+                        onValueChange = { minute = it.toIntOrNull() ?: minute },
+                        label = { androidx.compose.material3.Text("Minuto") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+        )
+    }
 }
 
 @Composable

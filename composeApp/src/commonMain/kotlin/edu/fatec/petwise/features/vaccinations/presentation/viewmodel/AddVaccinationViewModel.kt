@@ -6,6 +6,8 @@ import edu.fatec.petwise.features.vaccinations.domain.models.Vaccination
 import edu.fatec.petwise.features.vaccinations.domain.models.VaccineType
 import edu.fatec.petwise.features.vaccinations.domain.models.VaccinationStatus
 import edu.fatec.petwise.features.vaccinations.domain.usecases.AddVaccinationUseCase
+import edu.fatec.petwise.core.data.DataRefreshEvent
+import edu.fatec.petwise.core.data.DataRefreshManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -44,6 +46,21 @@ class AddVaccinationViewModel(
     private val _uiState = MutableStateFlow(AddVaccinationUiState())
     val uiState: StateFlow<AddVaccinationUiState> = _uiState.asStateFlow()
 
+    init {
+        observeLogout()
+    }
+
+    private fun observeLogout() {
+        viewModelScope.launch {
+            DataRefreshManager.refreshEvents.collect { event ->
+                if (event is DataRefreshEvent.UserLoggedOut) {
+                    println("AddVaccinationViewModel: Usuário deslogou — limpando estado")
+                    clearState()
+                }
+            }
+        }
+    }
+    
     fun onEvent(event: AddVaccinationUiEvent) {
         when (event) {
             is AddVaccinationUiEvent.AddVaccination -> addVaccination(event)

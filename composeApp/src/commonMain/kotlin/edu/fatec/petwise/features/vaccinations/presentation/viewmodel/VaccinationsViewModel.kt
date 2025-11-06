@@ -78,6 +78,10 @@ class VaccinationsViewModel(
             is VaccinationsUiEvent.ScheduleNextDose -> scheduleNextDose(event.id, event.nextDoseDate)
             is VaccinationsUiEvent.SelectVaccination -> selectVaccination(event.vaccination)
             is VaccinationsUiEvent.ClearError -> clearError()
+            is DataRefreshEvent.UserLoggedOut -> {
+                println("VaccinationsViewModel: Usuário deslogou — limpando estado")
+                _uiState.value = VaccinationsUiState()
+            }
         }
     }
 

@@ -7,11 +7,15 @@ import edu.fatec.petwise.core.session.SessionResetManager
 import edu.fatec.petwise.features.auth.domain.usecases.LoginUseCase
 import edu.fatec.petwise.features.auth.domain.usecases.LogoutUseCase
 import edu.fatec.petwise.features.auth.domain.usecases.RegisterUseCase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
 
 class AuthViewModel(
     private val loginUseCase: LoginUseCase,
@@ -19,13 +23,16 @@ class AuthViewModel(
     private val logoutUseCase: LogoutUseCase
 ) : ViewModel() {
 
+    // Use SupervisorJob to prevent cascading cancellations
+    private val supervisorScope = viewModelScope + SupervisorJob()
+
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
     
     var onLogoutComplete: (() -> Unit)? = null
 
     fun login(email: String, password: String) {
-        viewModelScope.launch {
+        supervisorScope.launch {
             println("AuthViewModel: Iniciando login para $email")
             
             println("AuthViewModel: Limpando dados do usuário anterior antes do login")
@@ -72,7 +79,8 @@ class AuthViewModel(
     }
 
     fun register(registerRequest: edu.fatec.petwise.core.network.dto.RegisterRequest) {
-        viewModelScope.launch {
+        // Launch in supervisorScope to isolate this operation
+        supervisorScope.launch {
             _uiState.value = _uiState.value.copy(
                 isLoading = true,
                 errorMessage = null,
@@ -104,7 +112,8 @@ class AuthViewModel(
     }
 
     fun logout() {
-        viewModelScope.launch {
+        // Launch in supervisorScope to isolate this operation
+        supervisorScope.launch {
             try {
                 val result = logoutUseCase.execute()
                 if (result.isSuccess) {
@@ -115,7 +124,8 @@ class AuthViewModel(
             } catch (e: Exception) {
                 println("AuthViewModel: Erro durante logout - ${e.message}")
             }
-
+            
+            DataRefreshManager.notifyUserLoggedOut()
             DataRefreshManager.notifyAllDataUpdated()
             println("AuthViewModel: Notificação de limpeza de dados enviada")
             delay(100)
@@ -137,10 +147,12 @@ class AuthViewModel(
             println("AuthViewModel: Navegação pós-logout acionada")
         }
     }
+    
     fun handleSessionExpired(message: String = "Sessão expirada. Faça login novamente.") {
         println("AuthViewModel: Sessão expirada detectada - executando limpeza completa")
         
-        viewModelScope.launch {
+        // Launch in supervisorScope to isolate this operation
+        supervisorScope.launch {
             try {
                 val result = logoutUseCase.execute()
                 if (result.isSuccess) {

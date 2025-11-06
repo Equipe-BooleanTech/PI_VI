@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import edu.fatec.petwise.core.data.DataRefreshManager
+import edu.fatec.petwise.core.data.DataRefreshEvent
 
 data class AddPetUiState(
     val isLoading: Boolean = false,
@@ -39,6 +41,21 @@ class AddPetViewModel(
     private val _uiState = MutableStateFlow(AddPetUiState())
     val uiState: StateFlow<AddPetUiState> = _uiState.asStateFlow()
 
+    init {
+        observeLogout()
+    }
+
+    private fun observeLogout() {
+        viewModelScope.launch {
+            DataRefreshManager.refreshEvents.collect { event ->
+                if (event is DataRefreshEvent.UserLoggedOut) {
+                    println("UpdateConsultaViewModel: Usuário deslogou — limpando estado")
+                    clearState()
+                }
+            }
+        }
+    }
+    
     fun onEvent(event: AddPetUiEvent) {
         when (event) {
             is AddPetUiEvent.AddPet -> addPet(event)
