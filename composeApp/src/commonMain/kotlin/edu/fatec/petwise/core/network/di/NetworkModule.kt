@@ -24,7 +24,6 @@ object NetworkModule {
     private var _httpClient: HttpClient? = null
     private var _isClientClosed = false
     
-    @Synchronized
     private fun getHttpClient(): HttpClient {
         val currentClient = _httpClient
         if (currentClient == null || _isClientClosed) {
@@ -45,7 +44,6 @@ object NetworkModule {
 
     private var _networkRequestHandler: NetworkRequestHandler? = null
     
-    @Synchronized
     private fun getNetworkRequestHandler(): NetworkRequestHandler {
         val currentHandler = _networkRequestHandler
         if (currentHandler == null) {
@@ -69,11 +67,6 @@ object NetworkModule {
     val vaccinationApiService: VaccinationApiService
         get() = VaccinationApiServiceImpl(getNetworkRequestHandler())
 
-    /**
-     * Provides a new, single-use NetworkRequestHandler with its own HttpClient.
-     * This is crucial for operations like login/logout that must not be affected
-     * by the state of the shared client (e.g., if it was closed).
-     */
     fun getDedicatedNetworkRequestHandler(): NetworkRequestHandler {
         println("NetworkModule: Criando NetworkRequestHandler e HttpClient dedicados.")
         val dedicatedConfig = createHttpClientConfig()
@@ -81,7 +74,6 @@ object NetworkModule {
         return NetworkRequestHandler(dedicatedClient)
     }
 
-    @Synchronized
     fun clear() {
         println("NetworkModule: Limpando recursos de rede")
         try {

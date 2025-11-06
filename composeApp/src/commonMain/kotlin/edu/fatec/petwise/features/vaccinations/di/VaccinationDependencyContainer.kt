@@ -21,16 +21,16 @@ import kotlinx.coroutines.cancel
 
 object VaccinationDependencyContainer {
 
-    @Volatile
+    
     private var remoteDataSource: RemoteVaccinationDataSourceImpl? = null
 
-    @Volatile
+    
     private var repository: VaccinationRepository? = null
 
-    @Volatile
+    
     private var vaccinationsViewModel: VaccinationsViewModel? = null
 
-    @Volatile
+    
     private var addVaccinationViewModel: AddVaccinationViewModel? = null
 
     private fun getRemoteDataSource(): RemoteVaccinationDataSourceImpl {

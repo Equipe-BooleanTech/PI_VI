@@ -21,28 +21,28 @@ import kotlinx.coroutines.cancel
 
 object DashboardDepedencyContainer {
 
-    @Volatile
+    
     private var petRemoteDataSource: RemotePetDataSourceImpl? = null
 
-    @Volatile
+    
     private var consultaRemoteDataSource: RemoteConsultaDataSourceImpl? = null
 
-    @Volatile
+    
     private var petRepository: PetRepository? = null
 
-    @Volatile
+    
     private var vaccinationRemoteDataSource: RemoteVaccinationDataSourceImpl? = null
 
-    @Volatile
+    
     private var vaccinationRepository: VaccinationRepository? = null
 
-    @Volatile
+    
     private var authRemoteDataSource: RemoteAuthDataSourceImpl? = null
 
-    @Volatile
+    
     private var authRepository: AuthRepository? = null
 
-    @Volatile
+    
     private var dashboardViewModel: DashboardViewModel? = null
 
     private fun getPetRemoteDataSource(): RemotePetDataSourceImpl {

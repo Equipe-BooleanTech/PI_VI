@@ -18,19 +18,19 @@ import kotlinx.coroutines.cancel
 
 object ConsultaDependencyContainer {
 
-    @Volatile
+    
     private var remoteDataSource: RemoteConsultaDataSourceImpl? = null
 
-    @Volatile
+    
     private var repository: ConsultaRepository? = null
 
-    @Volatile
+    
     private var consultasViewModel: ConsultasViewModel? = null
 
-    @Volatile
+    
     private var addConsultaViewModel: AddConsultaViewModel? = null
 
-    @Volatile
+    
     private var updateConsultaViewModel: UpdateConsultaViewModel? = null
 
     private fun getRemoteDataSource(): RemoteConsultaDataSourceImpl {

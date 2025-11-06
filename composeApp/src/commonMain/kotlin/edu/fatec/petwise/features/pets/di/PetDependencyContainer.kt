@@ -18,19 +18,19 @@ import kotlinx.coroutines.cancel
 
 object PetDependencyContainer {
 
-    @Volatile
+    
     private var remoteDataSource: RemotePetDataSourceImpl? = null
 
-    @Volatile
+    
     private var repository: PetRepository? = null
 
-    @Volatile
+    
     private var petsViewModel: PetsViewModel? = null
 
-    @Volatile
+    
     private var addPetViewModel: AddPetViewModel? = null
 
-    @Volatile
+    
     private var updatePetViewModel: UpdatePetViewModel? = null
 
     private fun getRemoteDataSource(): RemotePetDataSourceImpl {
