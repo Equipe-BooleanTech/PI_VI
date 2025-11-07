@@ -44,6 +44,29 @@ object ApiEndpoints {
     fun markVaccinationAsApplied(id: String) = "$VACCINATIONS/$id/apply"
     fun scheduleVaccinationNextDose(id: String) = "$VACCINATIONS/$id/schedule-next"
 
+    // Vacinas (Vaccine Catalog Management)
+    const val VACINAS = "/api/vacinas"
+    fun getVacina(id: String) = "$VACINAS/$id"
+    const val VACINAS_SEARCH = "$VACINAS/search"
+    const val VACINAS_ACTIVE = "$VACINAS/active"
+    const val VACINAS_LOW_STOCK = "$VACINAS/low-stock"
+    fun getVacinasByTipo(tipo: String) = "$VACINAS/tipo/$tipo"
+    fun getVacinasByEspecie(especie: String) = "$VACINAS/especie/$especie"
+    fun updateVacinaEstoque(id: String) = "$VACINAS/$id/estoque"
+    fun updateVacinaLote(id: String) = "$VACINAS/$id/lote"
+    fun toggleVacinaAtivo(id: String) = "$VACINAS/$id/toggle-active"
+
+    // Farmácias (Pharmacy Management)
+    const val FARMACIAS = "/api/farmacias"
+    fun getFarmacia(id: String) = "$FARMACIAS/$id"
+    const val FARMACIAS_SEARCH = "$FARMACIAS/search"
+    const val FARMACIAS_ATIVAS = "$FARMACIAS/ativas"
+    const val FARMACIAS_FRETE_GRATIS = "$FARMACIAS/frete-gratis"
+    fun getFarmaciasByCidade(cidade: String) = "$FARMACIAS/cidade/$cidade"
+    fun getFarmaciasByEstado(estado: String) = "$FARMACIAS/estado/$estado"
+    fun updateFarmaciaLimiteCredito(id: String) = "$FARMACIAS/$id/limite-credito"
+    fun updateFarmaciaStatus(id: String) = "$FARMACIAS/$id/status"
+
     const val USER_PROFILE = "/api/auth/profile"
 
 }

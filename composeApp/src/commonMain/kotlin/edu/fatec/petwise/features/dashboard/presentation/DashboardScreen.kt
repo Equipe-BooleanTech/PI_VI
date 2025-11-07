@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import edu.fatec.petwise.features.dashboard.domain.models.DashboardDataProvider
 import edu.fatec.petwise.features.dashboard.domain.models.DefaultDashboardDataProvider
 import edu.fatec.petwise.features.dashboard.domain.models.UserType
+import edu.fatec.petwise.features.farmacias.presentation.screens.FarmaciasScreen
 import edu.fatec.petwise.features.pets.presentation.view.PetsScreen
 import edu.fatec.petwise.features.consultas.presentation.view.ConsultasScreen
 import edu.fatec.petwise.navigation.NavigationManager
@@ -136,6 +137,15 @@ fun DashboardScreen(
                         title = "Farmácias"
                     )
                 }
+                NavigationManager.TabScreen.Farmacias -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues)
+                    ) {
+                        FarmaciasScreen(navigationManager = navigationManager)
+                    }
+                }
                 NavigationManager.TabScreen.Labs -> {
                     PlaceholderContent(
                         paddingValues = paddingValues,
@@ -229,6 +239,7 @@ fun HomeTabContent(
                         "appointments" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Appointments)
                         "vaccines" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Vaccines)
                         "reminders" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Medication)
+                        "pharmacy", "farmacias" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Farmacias)
                         else -> { }
                     }
                 }
@@ -245,6 +256,7 @@ fun HomeTabContent(
                         "appointments" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Appointments)
                         "medications" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Medication)
                         "vaccines" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Vaccines)
+                        "pharmacy", "farmacias" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Farmacias)
                         else -> { }
                     }
                 }

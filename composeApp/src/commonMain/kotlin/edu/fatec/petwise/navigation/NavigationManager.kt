@@ -55,5 +55,6 @@ class NavigationManager {
         object Supplies : TabScreen()
         object Pharmacy : TabScreen()
         object Labs : TabScreen()
+        object Farmacias : TabScreen() // ✅ Tela de Farmácias Parceiras
     }
 }

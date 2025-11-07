@@ -198,7 +198,7 @@ fun MoreMenu(
                     MoreMenuItem(
                         title = "Farmácias",
                         icon = Icons.Default.LocalPharmacy,
-                        tabScreen = NavigationManager.TabScreen.Pharmacy
+                        tabScreen = NavigationManager.TabScreen.Farmacias
                     ),
                     MoreMenuItem(
                         title = "Exames",

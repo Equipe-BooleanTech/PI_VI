@@ -51,6 +51,12 @@ object NetworkModule {
     val vaccinationApiService: VaccinationApiService
         get() = VaccinationApiServiceImpl(getNetworkRequestHandler())
 
+    val vacinaApiService: VacinaApiService
+        get() = VacinaApiServiceImpl(getNetworkRequestHandler())
+
+    val farmaciaApiService: FarmaciaApiService
+        get() = FarmaciaApiServiceImpl(getNetworkRequestHandler())
+
     fun clear() {
         println("NetworkModule: Limpando recursos de rede")
         _httpClient?.close()
