@@ -291,8 +291,6 @@ private fun getConsultaTypeColor(type: ConsultaType): Color {
         ConsultaType.VACCINATION -> Color.fromHex("#4CAF50")
         ConsultaType.SURGERY -> Color.fromHex("#FF5722")
         ConsultaType.EXAM -> Color.fromHex("#00BCD4")
-        ConsultaType.DENTAL -> Color.fromHex("#FF9800")
-        ConsultaType.GROOMING -> Color.fromHex("#E91E63")
         ConsultaType.OTHER -> Color.fromHex("#607D8B")
     }
 }
@@ -305,8 +303,6 @@ private fun getConsultaTypeIcon(type: ConsultaType) = when (type) {
     ConsultaType.VACCINATION -> Icons.Default.Vaccines
     ConsultaType.SURGERY -> Icons.Default.MedicalServices
     ConsultaType.EXAM -> Icons.Default.Science
-    ConsultaType.DENTAL -> Icons.Default.MedicalServices
-    ConsultaType.GROOMING -> Icons.Default.Spa
     ConsultaType.OTHER -> Icons.Default.MoreHoriz
 }
 

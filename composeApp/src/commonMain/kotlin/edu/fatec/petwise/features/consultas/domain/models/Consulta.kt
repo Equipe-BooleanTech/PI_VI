@@ -30,8 +30,6 @@ enum class ConsultaType(val displayName: String) {
     VACCINATION("Vacinação"),
     SURGERY("Cirurgia"),
     EXAM("Exame"),
-    DENTAL("Odontologia"),
-    GROOMING("Estética"),
     OTHER("Outro")
 }
 

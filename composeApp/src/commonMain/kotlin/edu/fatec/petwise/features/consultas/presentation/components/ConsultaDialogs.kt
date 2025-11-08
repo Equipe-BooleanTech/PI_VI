@@ -192,8 +192,6 @@ fun AddConsultaDialog(
                                     "Vacinação" -> ConsultaType.VACCINATION
                                     "Cirurgia" -> ConsultaType.SURGERY
                                     "Exame" -> ConsultaType.EXAM
-                                    "Odontologia" -> ConsultaType.DENTAL
-                                    "Estética" -> ConsultaType.GROOMING
                                     else -> ConsultaType.OTHER
                                 }
 
@@ -398,8 +396,6 @@ fun EditConsultaDialog(
                                     "Vacinação" -> ConsultaType.VACCINATION
                                     "Cirurgia" -> ConsultaType.SURGERY
                                     "Exame" -> ConsultaType.EXAM
-                                    "Odontologia" -> ConsultaType.DENTAL
-                                    "Estética" -> ConsultaType.GROOMING
                                     else -> ConsultaType.OTHER
                                 }
 

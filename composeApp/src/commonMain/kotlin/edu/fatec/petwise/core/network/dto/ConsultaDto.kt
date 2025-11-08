@@ -136,8 +136,6 @@ private fun mapStringToConsultaType(value: String): ConsultaType {
             "Vacinação" -> ConsultaType.VACCINATION
             "Cirurgia" -> ConsultaType.SURGERY
             "Exame" -> ConsultaType.EXAM
-            "Odontologia" -> ConsultaType.DENTAL
-            "Estética" -> ConsultaType.GROOMING
             "Outro" -> ConsultaType.OTHER
             else -> ConsultaType.OTHER
         }

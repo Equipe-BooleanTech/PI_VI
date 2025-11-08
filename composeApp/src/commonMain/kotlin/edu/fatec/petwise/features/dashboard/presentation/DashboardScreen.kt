@@ -42,6 +42,8 @@ import edu.fatec.petwise.features.dashboard.domain.models.DashboardDataProvider
 import edu.fatec.petwise.features.dashboard.domain.models.DefaultDashboardDataProvider
 import edu.fatec.petwise.features.dashboard.domain.models.UserType
 import edu.fatec.petwise.features.pets.presentation.view.PetsScreen
+import edu.fatec.petwise.features.vaccinations.di.VaccinationDependencyContainer
+import edu.fatec.petwise.features.vaccinations.presentation.view.VaccinationsScreen
 import edu.fatec.petwise.navigation.NavigationManager
 import edu.fatec.petwise.presentation.components.BottomNavigation.BottomNavigationBar
 import edu.fatec.petwise.presentation.components.MoreMenu.MoreMenu
@@ -161,10 +163,17 @@ fun DashboardScreen(
                     )
                 }
                 NavigationManager.TabScreen.Vaccines -> {
-                    PlaceholderContent(
-                        paddingValues = paddingValues,
-                        title = "Vacinas"
-                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues)
+                    ) {
+                        VaccinationsScreen(
+                            viewModel = remember { VaccinationDependencyContainer.provideVaccinationsViewModel() },
+                            navigationKey = currentTabScreen,
+                            canAddVaccinations = userType != UserType.OWNER
+                        )
+                    }
                 }
                 NavigationManager.TabScreen.Veterinarians -> {
                     PlaceholderContent(

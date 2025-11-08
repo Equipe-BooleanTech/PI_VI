@@ -30,7 +30,6 @@ class VaccinationRepositoryImpl(
             println("Repositório: Buscando vacinação por ID '$id' via API")
             val vacinacao = remoteDataSource.getVaccinationById(id)
             if (vacinacao != null) {
-                println("Repositório: Vacinação '${vacinacao.vaccineName}' do pet '${vacinacao.petName}' encontrada")
             } else {
                 println("Repositório: Vacinação com ID '$id' não encontrada")
             }
@@ -62,9 +61,7 @@ class VaccinationRepositoryImpl(
                 val typeMatch = options.vaccineType?.let { vaccination.vaccineType == it } ?: true
                 val statusMatch = options.status?.let { vaccination.status == it } ?: true
                 val searchMatch = if (options.searchQuery.isNotBlank()) {
-                    vaccination.vaccineName.contains(options.searchQuery, ignoreCase = true) ||
-                    vaccination.petName.contains(options.searchQuery, ignoreCase = true) ||
-                    vaccination.veterinarianName.contains(options.searchQuery, ignoreCase = true)
+                    vaccination.observations.contains(options.searchQuery, ignoreCase = true)
                 } else true
 
                 petMatch && typeMatch && statusMatch && searchMatch
@@ -103,27 +100,26 @@ class VaccinationRepositoryImpl(
 
     override suspend fun addVaccination(vaccination: Vaccination): Result<Vaccination> {
         return try {
-            println("Repositório: Adicionando nova vacinação '${vaccination.vaccineName}' para pet '${vaccination.petName}' via API")
+            println("Repositório: Adicionando nova vacinação para pet '${vaccination}' via API")
             val novaVacinacao = remoteDataSource.createVaccination(vaccination)
-            println("Repositório: Vacinação '${novaVacinacao.vaccineName}' criada com sucesso - ID: ${novaVacinacao.id}")
             DataRefreshManager.notifyVaccinationsUpdated()
             Result.success(novaVacinacao)
         } catch (e: Exception) {
-            println("Repositório: Erro ao criar vacinação '${vaccination.vaccineName}' - ${e.message}")
+            println("Repositório: Erro ao criar vacinação - ${e.message}")
             Result.failure(e)
         }
     }
 
     override suspend fun updateVaccination(vaccination: Vaccination): Result<Vaccination> {
         return try {
-            println("Repositório: Atualizando vacinação '${vaccination.vaccineName}' (ID: ${vaccination.id}) via API")
+            println("Repositório: Atualizando vacinação '${vaccination}' (ID: ${vaccination.id}) via API")
             val vacinacaoAtualizada = remoteDataSource.updateVaccination(vaccination)
-            println("Repositório: Vacinação '${vacinacaoAtualizada.vaccineName}' atualizada com sucesso")
+            println("Repositório: Vacinação '${vacinacaoAtualizada}' atualizada com sucesso")
             DataRefreshManager.notifyVaccinationUpdated(vacinacaoAtualizada.id)
             DataRefreshManager.notifyVaccinationsUpdated()
             Result.success(vacinacaoAtualizada)
         } catch (e: Exception) {
-            println("Repositório: Erro ao atualizar vacinação '${vaccination.vaccineName}' - ${e.message}")
+            println("Repositório: Erro ao atualizar vacinação '${vaccination}' - ${e.message}")
             Result.failure(e)
         }
     }
@@ -147,10 +143,9 @@ class VaccinationRepositoryImpl(
             val vacinacaoAtualizada = remoteDataSource.markAsApplied(
                 id = id,
                 observations = observations,
-                sideEffects = "",
-                applicationDate = Clock.System.now().toEpochMilliseconds().toString()
+                vaccinationDate = Clock.System.now().toEpochMilliseconds().toString()
             )
-            println("Repositório: Vacinação '${vacinacaoAtualizada.vaccineName}' marcada como aplicada com sucesso")
+            println("Repositório: Vacinação '${vacinacaoAtualizada}' marcada como aplicada com sucesso")
             DataRefreshManager.notifyVaccinationUpdated(vacinacaoAtualizada.id)
             DataRefreshManager.notifyVaccinationsUpdated()
             Result.success(vacinacaoAtualizada)
@@ -164,7 +159,7 @@ class VaccinationRepositoryImpl(
         return try {
             println("Repositório: Agendando próxima dose da vacinação '$id' para '$nextDoseDate' via API")
             val vacinacaoAtualizada = remoteDataSource.scheduleNextDose(id, nextDoseDate)
-            println("Repositório: Próxima dose da vacinação '${vacinacaoAtualizada.vaccineName}' agendada com sucesso")
+            println("Repositório: Próxima dose da vacinação agendada com sucesso")
             DataRefreshManager.notifyVaccinationUpdated(vacinacaoAtualizada.id)
             DataRefreshManager.notifyVaccinationsUpdated()
             Result.success(vacinacaoAtualizada)

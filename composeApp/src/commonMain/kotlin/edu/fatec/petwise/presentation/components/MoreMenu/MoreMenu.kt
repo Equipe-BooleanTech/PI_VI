@@ -165,16 +165,6 @@ fun MoreMenu(
                     onClick = { navigationManager.navigateToTab(NavigationManager.TabScreen.Settings) }
                 )
 
-                MoreMenuOption(
-                    text = "Configurações",
-                    onClick = { navigationManager.navigateToTab(NavigationManager.TabScreen.Settings) }
-                )
-
-                MoreMenuOption(
-                    text = "Notificações",
-                    onClick = { navigationManager.navigateToTab(NavigationManager.TabScreen.Settings) }
-                )
-
                 Divider(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -233,23 +223,6 @@ fun MoreMenu(
                     color = Color.LightGray
                 )
 
-                Text(
-                    text = "Suporte",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Bold
-                    ),
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-
-                MoreMenuOption(
-                    text = "Ajuda",
-                    onClick = { navigationManager.navigateToTab(NavigationManager.TabScreen.Help) }
-                )
-
-                MoreMenuOption(
-                    text = "Contato",
-                    onClick = { navigationManager.navigateToTab(NavigationManager.TabScreen.Help) }
-                )
 
                 Spacer(modifier = Modifier.height(24.dp))
 
