@@ -179,9 +179,11 @@ fun AuthScreen(
                                         phone = values["phone"]?.toString(),
                                         cpf = values["cpf"]?.toString(),
                                         cnpj = values["cnpj"]?.toString(),
+                                        specialization = values["specialization"]?.toString(),
                                         companyName = values["companyName"]?.toString(),
                                         crmv = values["crmv"]?.toString(),
-                                        adminCode = values["adminCode"]?.toString()
+                                        adminCode = values["adminCode"]?.toString(),
+                                        active = values["active"]?.toString()?.toBoolean()
                                     )
                                     authViewModel.register(registerRequest)
                                 }

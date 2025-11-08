@@ -30,8 +30,10 @@ data class RegisterRequest(
     val cpf: String? = null,
     val cnpj: String? = null,
     val companyName: String? = null,
+    val specialization: String? = null,
     val crmv: String? = null,
-    val adminCode: String? = null
+    val adminCode: String? = null,
+    val active: Boolean? = null
 )
 
 @Serializable

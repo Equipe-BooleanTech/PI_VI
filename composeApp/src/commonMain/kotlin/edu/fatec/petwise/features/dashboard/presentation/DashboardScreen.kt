@@ -387,25 +387,7 @@ fun HomeTabContent(
                         navigationManager.navigateToTab(NavigationManager.TabScreen.Home)
                     }
                 )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                RemindersSection(
-                    userType = userType,
-                    dataProvider = dataProvider,
-                    onReminderClick = { route ->
-                        if (route?.contains("appointments") == true) {
-                            navigationManager.navigateToTab(NavigationManager.TabScreen.Appointments)
-                        } else if (route?.contains("vaccines") == true) {
-                            navigationManager.navigateToTab(NavigationManager.TabScreen.Vaccines)
-                        } else if (route?.contains("medications") == true) {
-                            navigationManager.navigateToTab(NavigationManager.TabScreen.Medication)
-                        } else if (route?.contains("reminders") == true) {
-                            navigationManager.navigateToTab(NavigationManager.TabScreen.Medication)
-                        }
-                    }
-                )
-
+                
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }

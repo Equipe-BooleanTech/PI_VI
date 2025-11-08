@@ -6,7 +6,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 
 enum class UserType {
     OWNER,
-    VETERINARIAN,
+    VETERINARY,
     ADMIN,
     PHARMACY
 }

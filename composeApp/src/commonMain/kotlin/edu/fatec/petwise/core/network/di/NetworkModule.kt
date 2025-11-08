@@ -67,6 +67,9 @@ object NetworkModule {
     val vaccinationApiService: VaccinationApiService
         get() = VaccinationApiServiceImpl(getNetworkRequestHandler())
 
+    val medicationApiService: MedicationApiService
+        get() = MedicationApiServiceImpl(getNetworkRequestHandler())
+
     fun getDedicatedNetworkRequestHandler(): NetworkRequestHandler {
         println("NetworkModule: Criando NetworkRequestHandler e HttpClient dedicados.")
         val dedicatedConfig = createHttpClientConfig()

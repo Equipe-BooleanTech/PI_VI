@@ -52,7 +52,7 @@ val registerFormConfiguration: FormConfiguration = FormConfiguration(
             type = FormFieldType.SELECT,
             selectOptions = listOf(
                 SelectOption("OWNER", "Cliente"),
-                SelectOption("VETERINARIAN", "Veterinário"),
+                SelectOption("VETERINARY", "Veterinário"),
                 SelectOption("PHARMACY", "Farmácia"),
                 SelectOption("ADMIN", "Admin")
             ),
@@ -101,7 +101,7 @@ val registerFormConfiguration: FormConfiguration = FormConfiguration(
                     VisibilityCondition(
                         fieldId = "userType",
                         operator = ComparisonOperator.EQUALS,
-                        value = JsonPrimitive("VETERINARIAN")
+                        value = JsonPrimitive("VETERINARY")
                     )
                 )
             ),
@@ -129,7 +129,6 @@ val registerFormConfiguration: FormConfiguration = FormConfiguration(
                 SelectOption("DERMATOLOGY", "Dermatologia"),
                 SelectOption("CARDIOLOGY", "Cardiologia"),
                 SelectOption("ORTHOPEDICS", "Ortopedia"),
-                SelectOption("NEUROLOGY", "Neurologia"),
                 SelectOption("OPHTHALMOLOGY", "Oftalmologia"),
                 SelectOption("OTHER", "Outra")
             ),
@@ -138,7 +137,7 @@ val registerFormConfiguration: FormConfiguration = FormConfiguration(
                     VisibilityCondition(
                         fieldId = "userType",
                         operator = ComparisonOperator.EQUALS,
-                        value = JsonPrimitive("VETERINARIAN")
+                        value = JsonPrimitive("VETERINARY")
                     )
                 )
             ),

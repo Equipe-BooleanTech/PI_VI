@@ -1,6 +1,7 @@
 package edu.fatec.petwise.features.medications.di
 
 import androidx.lifecycle.viewModelScope
+import edu.fatec.petwise.core.network.di.NetworkModule
 import edu.fatec.petwise.features.medications.data.datasource.MedicationDataSource
 import edu.fatec.petwise.features.medications.data.datasource.RemoteMedicationDataSourceImpl
 import edu.fatec.petwise.features.medications.data.repository.MedicationRepositoryImpl
@@ -23,19 +24,17 @@ object MedicationDependencyContainer {
 
     private var updateMedicationViewModel: UpdateMedicationViewModel? = null
 
-    private fun getRemoteDataSource(): MedicationDataSource {
+    fun getRemoteDataSource(): MedicationDataSource {
         val existing = remoteDataSource
         if (existing != null) return existing
         val created = RemoteMedicationDataSourceImpl(
-            // TODO: Add API services when available
-            // NetworkModule.medicationApiService,
-            // NetworkModule.authApiService
+            NetworkModule.medicationApiService
         )
         remoteDataSource = created
         return created
     }
 
-    private fun getRepository(): MedicationRepository {
+    fun getRepository(): MedicationRepository {
         val existing = repository
         if (existing != null) return existing
         val created = MedicationRepositoryImpl(getRemoteDataSource())
