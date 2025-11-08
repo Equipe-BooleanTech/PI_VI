@@ -16,6 +16,7 @@ import edu.fatec.petwise.features.vaccinations.domain.usecases.MarkVaccinationAs
 import edu.fatec.petwise.features.vaccinations.domain.usecases.ScheduleNextDoseUseCase
 import edu.fatec.petwise.features.vaccinations.domain.usecases.UpdateVaccinationUseCase
 import edu.fatec.petwise.features.vaccinations.presentation.viewmodel.AddVaccinationViewModel
+import edu.fatec.petwise.features.vaccinations.presentation.viewmodel.UpdateVaccinationViewModel
 import edu.fatec.petwise.features.vaccinations.presentation.viewmodel.VaccinationsViewModel
 import kotlinx.coroutines.cancel
 
@@ -32,6 +33,9 @@ object VaccinationDependencyContainer {
 
     
     private var addVaccinationViewModel: AddVaccinationViewModel? = null
+
+    
+    private var updateVaccinationViewModel: UpdateVaccinationViewModel? = null
 
     private fun getRemoteDataSource(): RemoteVaccinationDataSourceImpl {
         val existing = remoteDataSource
@@ -70,6 +74,13 @@ object VaccinationDependencyContainer {
         )
     }
 
+    private fun buildUpdateVaccinationViewModel(): UpdateVaccinationViewModel {
+        val repo = getRepository()
+        return UpdateVaccinationViewModel(
+            updateVaccinationUseCase = UpdateVaccinationUseCase(repo)
+        )
+    }
+
     fun provideVaccinationsViewModel(): VaccinationsViewModel {
         val existing = vaccinationsViewModel
         if (existing != null) return existing
@@ -86,12 +97,22 @@ object VaccinationDependencyContainer {
         return created
     }
 
+    fun provideUpdateVaccinationViewModel(): UpdateVaccinationViewModel {
+        val existing = updateVaccinationViewModel
+        if (existing != null) return existing
+        val created = buildUpdateVaccinationViewModel()
+        updateVaccinationViewModel = created
+        return created
+    }
+
     fun reset() {
         vaccinationsViewModel?.viewModelScope?.cancel()
         addVaccinationViewModel?.viewModelScope?.cancel()
+        updateVaccinationViewModel?.viewModelScope?.cancel()
 
         vaccinationsViewModel = null
         addVaccinationViewModel = null
+        updateVaccinationViewModel = null
 
         repository = null
         remoteDataSource = null
