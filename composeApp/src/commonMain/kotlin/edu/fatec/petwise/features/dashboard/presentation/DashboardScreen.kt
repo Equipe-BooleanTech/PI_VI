@@ -41,6 +41,7 @@ import edu.fatec.petwise.features.consultas.presentation.view.ConsultasScreen
 import edu.fatec.petwise.features.dashboard.domain.models.DashboardDataProvider
 import edu.fatec.petwise.features.dashboard.domain.models.DefaultDashboardDataProvider
 import edu.fatec.petwise.features.dashboard.domain.models.UserType
+import edu.fatec.petwise.features.medications.presentation.view.MedicationsScreen
 import edu.fatec.petwise.features.pets.presentation.view.PetsScreen
 import edu.fatec.petwise.features.vaccinations.di.VaccinationDependencyContainer
 import edu.fatec.petwise.features.vaccinations.presentation.view.VaccinationsScreen
@@ -145,10 +146,17 @@ fun DashboardScreen(
                     }
                 }
                 NavigationManager.TabScreen.Medication -> {
-                    PlaceholderContent(
-                        paddingValues = paddingValues,
-                        title = "Medicações"
-                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues)
+                    ) {
+                        MedicationsScreen(
+                            navigationKey = currentTabScreen,
+                            canAddMedications = userType != UserType.OWNER,
+                            canEditMedications = userType != UserType.OWNER
+                        )
+                    }
                 }
                 NavigationManager.TabScreen.Settings -> {
                     PlaceholderContent(
