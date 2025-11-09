@@ -56,6 +56,10 @@ object ApiEndpoints {
 
     const val USER_PROFILE = "/api/auth/profile"
 
+    const val VETERINARIES = "/api/veterinaries"
+    fun getVeterinary(id: String) = "$VETERINARIES/$id"
+    const val VETERINARIES_SEARCH = "$VETERINARIES/search"
+
 }
 
 object PetWiseHttpHeaders {
