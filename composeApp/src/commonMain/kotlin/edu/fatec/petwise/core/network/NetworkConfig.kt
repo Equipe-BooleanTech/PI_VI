@@ -44,7 +44,21 @@ object ApiEndpoints {
     fun markVaccinationAsApplied(id: String) = "$VACCINATIONS/$id/apply"
     fun scheduleVaccinationNextDose(id: String) = "$VACCINATIONS/$id/schedule-next"
 
+    const val MEDICATIONS = "/api/medications"
+    fun getMedication(id: String) = "$MEDICATIONS/$id"
+    fun getMedicationsByPet(petId: String) = "$MEDICATIONS/pet/$petId"
+    fun getActiveMedicationsByPet(petId: String) = "$MEDICATIONS/pet/$petId/active"
+    const val MEDICATIONS_SEARCH = "$MEDICATIONS/search"
+    const val MEDICATIONS_UPCOMING = "$MEDICATIONS/upcoming"
+    const val MEDICATIONS_EXPIRED = "$MEDICATIONS/expired"
+    fun updateMedicationStatus(id: String) = "$MEDICATIONS/$id/status"
+    fun completeMedication(id: String) = "$MEDICATIONS/$id/complete"
+
     const val USER_PROFILE = "/api/auth/profile"
+
+    const val VETERINARIES = "/api/veterinaries"
+    fun getVeterinary(id: String) = "$VETERINARIES/$id"
+    const val VETERINARIES_SEARCH = "$VETERINARIES/search"
 
 }
 

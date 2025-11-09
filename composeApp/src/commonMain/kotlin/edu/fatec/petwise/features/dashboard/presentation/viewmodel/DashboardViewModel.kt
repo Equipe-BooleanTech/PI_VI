@@ -18,6 +18,7 @@ data class DashboardUiState(
     val petCount: Int = 0,
     val consultasCount: Int = 0,
     val vacinasCount: Int = 0,
+    val medicamentosCount: Int = 0,
     val upcomingConsultas: List<Consulta> = emptyList(),
     val isLoading: Boolean = false,
     val errorMessage: String? = null
@@ -78,8 +79,9 @@ class DashboardViewModel(
                 val petCount = statistics.getOrElse(0) { 0 }
                 val consultasCount = statistics.getOrElse(1) { 0 }
                 val vacinasCount = statistics.getOrElse(2) { 0 }
+                val medicamentosCount = statistics.getOrElse(3) { 0 }
 
-                println("Estatísticas carregadas: pets=$petCount, consultas=$consultasCount, vacinas=$vacinasCount, userName=$userName")
+                println("Estatísticas carregadas: pets=$petCount, consultas=$consultasCount, vacinas=$vacinasCount, medicamentos=$medicamentosCount, userName=$userName")
 
                 val consultas = getUpcomingConsultasUseCase()
                 println("Consultas próximas carregadas: ${consultas.size}")

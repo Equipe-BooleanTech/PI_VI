@@ -17,33 +17,35 @@ import edu.fatec.petwise.features.dashboard.domain.usecases.GetCardsStatisticsUs
 import edu.fatec.petwise.features.dashboard.domain.usecases.GetUpcomingConsultasUseCase
 import edu.fatec.petwise.features.dashboard.domain.usecases.GetUserNameUseCase
 import edu.fatec.petwise.features.dashboard.presentation.viewmodel.DashboardViewModel
+import edu.fatec.petwise.features.medications.data.datasource.MedicationDataSource
+import edu.fatec.petwise.features.medications.data.datasource.RemoteMedicationDataSourceImpl
+import edu.fatec.petwise.features.medications.data.repository.MedicationRepositoryImpl
+import edu.fatec.petwise.features.medications.domain.repository.MedicationRepository
+
 import kotlinx.coroutines.cancel
 
 object DashboardDepedencyContainer {
 
-    
     private var petRemoteDataSource: RemotePetDataSourceImpl? = null
 
-    
     private var consultaRemoteDataSource: RemoteConsultaDataSourceImpl? = null
 
-    
     private var petRepository: PetRepository? = null
 
-    
+    private var medicationRemoteDataSource: MedicationDataSource? = null
+
+    private var medicationRepository: MedicationRepository? = null
+
     private var vaccinationRemoteDataSource: RemoteVaccinationDataSourceImpl? = null
 
-    
     private var vaccinationRepository: VaccinationRepository? = null
 
-    
     private var authRemoteDataSource: RemoteAuthDataSourceImpl? = null
 
-    
     private var authRepository: AuthRepository? = null
 
-    
     private var dashboardViewModel: DashboardViewModel? = null
+
 
     private fun getPetRemoteDataSource(): RemotePetDataSourceImpl {
         val existing = petRemoteDataSource
@@ -88,6 +90,22 @@ object DashboardDepedencyContainer {
         return created
     }
 
+    private fun getMedicationRemoteDataSource(): MedicationDataSource {
+        val existing = medicationRemoteDataSource
+        if (existing != null) return existing
+        val created = RemoteMedicationDataSourceImpl(NetworkModule.medicationApiService)
+        medicationRemoteDataSource = created
+        return created
+    }
+
+    private fun getMedicationRepository(): MedicationRepository {
+        val existing = medicationRepository
+        if (existing != null) return existing
+        val created = MedicationRepositoryImpl(getMedicationRemoteDataSource())
+        medicationRepository = created
+        return created
+    }
+
     private fun getAuthRemoteDataSource(): RemoteAuthDataSourceImpl {
         val existing = authRemoteDataSource
         if (existing != null) return existing
@@ -112,7 +130,8 @@ object DashboardDepedencyContainer {
             GetCardsStatisticsUseCase(
                 getPetRepository(),
                 getConsultaRemoteDataSource(),
-                getVaccinationRepository()
+                getVaccinationRepository(),
+                getMedicationRepository()
             ),
             GetUpcomingConsultasUseCase(getConsultaRemoteDataSource()),
             GetUserNameUseCase(getAuthRepository())
@@ -134,6 +153,8 @@ object DashboardDepedencyContainer {
         petRemoteDataSource = null
         consultaRemoteDataSource = null
         petRepository = null
+        medicationRemoteDataSource = null
+        medicationRepository = null
         vaccinationRemoteDataSource = null
         vaccinationRepository = null
         authRemoteDataSource = null

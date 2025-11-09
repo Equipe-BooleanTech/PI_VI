@@ -41,9 +41,11 @@ import edu.fatec.petwise.features.consultas.presentation.view.ConsultasScreen
 import edu.fatec.petwise.features.dashboard.domain.models.DashboardDataProvider
 import edu.fatec.petwise.features.dashboard.domain.models.DefaultDashboardDataProvider
 import edu.fatec.petwise.features.dashboard.domain.models.UserType
+import edu.fatec.petwise.features.medications.presentation.view.MedicationsScreen
 import edu.fatec.petwise.features.pets.presentation.view.PetsScreen
 import edu.fatec.petwise.features.vaccinations.di.VaccinationDependencyContainer
 import edu.fatec.petwise.features.vaccinations.presentation.view.VaccinationsScreen
+import edu.fatec.petwise.features.veterinaries.presentation.view.VeterinariesScreen
 import edu.fatec.petwise.navigation.NavigationManager
 import edu.fatec.petwise.presentation.components.BottomNavigation.BottomNavigationBar
 import edu.fatec.petwise.presentation.components.MoreMenu.MoreMenu
@@ -132,7 +134,12 @@ fun DashboardScreen(
                             .fillMaxSize()
                             .padding(paddingValues)
                     ) {
-                        PetsScreen(navigationKey = currentTabScreen)
+                        
+                        PetsScreen(
+                            navigationKey = currentTabScreen,
+                            canAddPets = userType == UserType.OWNER,
+                            canEditPets = userType == UserType.OWNER
+                        )
                     }
                 }
                 NavigationManager.TabScreen.Appointments -> {
@@ -141,14 +148,28 @@ fun DashboardScreen(
                             .fillMaxSize()
                             .padding(paddingValues)
                     ) {
-                        ConsultasScreen(navigationKey = currentTabScreen)
+                        
+                        ConsultasScreen(
+                            navigationKey = currentTabScreen,
+                            canAddConsultas = userType == UserType.OWNER || userType == UserType.VETERINARY,
+                            canEditConsultas = userType == UserType.OWNER || userType == UserType.VETERINARY
+                        )
                     }
                 }
                 NavigationManager.TabScreen.Medication -> {
-                    PlaceholderContent(
-                        paddingValues = paddingValues,
-                        title = "Medicações"
-                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues)
+                    ) {
+                        println("DashboardScreen - userType: $userType, canAdd: ${userType != UserType.OWNER}, canEdit: ${userType != UserType.OWNER}")
+                        
+                        MedicationsScreen(
+                            navigationKey = currentTabScreen,
+                            canAddMedications = userType != UserType.OWNER,
+                            canEditMedications = userType != UserType.OWNER
+                        )
+                    }
                 }
                 NavigationManager.TabScreen.Settings -> {
                     PlaceholderContent(
@@ -176,10 +197,7 @@ fun DashboardScreen(
                     }
                 }
                 NavigationManager.TabScreen.Veterinarians -> {
-                    PlaceholderContent(
-                        paddingValues = paddingValues,
-                        title = "Veterinários"
-                    )
+                    VeterinariesScreen()
                 }
                 NavigationManager.TabScreen.Supplies -> {
                     PlaceholderContent(
@@ -379,25 +397,7 @@ fun HomeTabContent(
                         navigationManager.navigateToTab(NavigationManager.TabScreen.Home)
                     }
                 )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                RemindersSection(
-                    userType = userType,
-                    dataProvider = dataProvider,
-                    onReminderClick = { route ->
-                        if (route?.contains("appointments") == true) {
-                            navigationManager.navigateToTab(NavigationManager.TabScreen.Appointments)
-                        } else if (route?.contains("vaccines") == true) {
-                            navigationManager.navigateToTab(NavigationManager.TabScreen.Vaccines)
-                        } else if (route?.contains("medications") == true) {
-                            navigationManager.navigateToTab(NavigationManager.TabScreen.Medication)
-                        } else if (route?.contains("reminders") == true) {
-                            navigationManager.navigateToTab(NavigationManager.TabScreen.Medication)
-                        }
-                    }
-                )
-
+                
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }

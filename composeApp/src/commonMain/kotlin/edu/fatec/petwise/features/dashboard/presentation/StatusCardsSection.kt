@@ -58,14 +58,14 @@ fun StatusCardsSection(
                 color = "#FF9800"
             ),
             StatusCardData(
-                title = "Lembretes",
+                title = "Medicações",
                 value = "0", // TODO: Add medication count when available
                 icon = "notifications",
                 route = "reminders",
                 color = "#9C27B0"
             )
         )
-        UserType.VETERINARIAN -> listOf(
+        UserType.VETERINARY -> listOf(
             StatusCardData(
                 title = "Pacientes",
                 value = petCount.toString(),

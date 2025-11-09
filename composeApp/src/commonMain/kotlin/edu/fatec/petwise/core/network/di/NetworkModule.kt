@@ -67,6 +67,12 @@ object NetworkModule {
     val vaccinationApiService: VaccinationApiService
         get() = VaccinationApiServiceImpl(getNetworkRequestHandler())
 
+    val medicationApiService: MedicationApiService
+        get() = MedicationApiServiceImpl(getNetworkRequestHandler())
+
+    val veterinaryApiService: VeterinaryApiService
+        get() = VeterinaryApiServiceImpl(getNetworkRequestHandler())
+
     fun getDedicatedNetworkRequestHandler(): NetworkRequestHandler {
         println("NetworkModule: Criando NetworkRequestHandler e HttpClient dedicados.")
         val dedicatedConfig = createHttpClientConfig()
@@ -89,7 +95,6 @@ object NetworkModule {
             println("NetworkModule: Erro ao fechar HttpClient: ${e.message}")
             e.printStackTrace()
         } finally {
-            // Mark as closed BEFORE nulling references
             _isClientClosed = true
             _httpClient = null
             _networkRequestHandler = null

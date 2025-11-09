@@ -5,18 +5,21 @@ import edu.fatec.petwise.features.consultas.data.datasource.RemoteConsultaDataSo
 import edu.fatec.petwise.features.consultas.domain.models.Consulta
 import edu.fatec.petwise.features.pets.domain.repository.PetRepository
 import edu.fatec.petwise.features.vaccinations.domain.repository.VaccinationRepository
+import edu.fatec.petwise.features.medications.domain.repository.MedicationRepository
 import kotlinx.coroutines.flow.first
 
 class GetCardsStatisticsUseCase(
     private val petRepository: PetRepository,
     private val consultaRepository: RemoteConsultaDataSourceImpl,
     private val vacinaRepository: VaccinationRepository,
+    private val medicamentoRepository: MedicationRepository
 ) {
     suspend operator fun invoke(): List<Int> {
         val petCount = petRepository.getAllPets().first().size
         val consultaCount = consultaRepository.getAllConsultas().size
         val vacinaCount = vacinaRepository.getAllVaccinations().first().size
-        return listOf(petCount, consultaCount, vacinaCount)
+        val medicamentoCount = medicamentoRepository.getAllMedications().first().size
+        return listOf(petCount, consultaCount, vacinaCount, medicamentoCount)
     }
 }
 

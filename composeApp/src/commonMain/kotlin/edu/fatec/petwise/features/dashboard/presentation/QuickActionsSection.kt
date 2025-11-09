@@ -66,7 +66,7 @@ fun QuickActionsSection(
                 background = "#FF9800"
             )
         )
-        UserType.VETERINARIAN -> listOf(
+        UserType.VETERINARY -> listOf(
             QuickActionData(
                 id = "new_appointment",
                 title = "Nova Consulta",

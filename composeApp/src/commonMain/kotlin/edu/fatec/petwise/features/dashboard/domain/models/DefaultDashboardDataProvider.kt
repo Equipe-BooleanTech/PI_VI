@@ -75,7 +75,7 @@ class DefaultDashboardDataProvider : DashboardDataProvider {
                     route = "messages"
                 )
             )
-            UserType.VETERINARIAN -> listOf(
+            UserType.VETERINARY -> listOf(
                 StatusCardData(
                     id = "users",
                     title = "Usuários",
@@ -178,7 +178,7 @@ class DefaultDashboardDataProvider : DashboardDataProvider {
                     background = "#FFC107"
                 )
             )
-            UserType.VETERINARIAN -> listOf(
+            UserType.VETERINARY -> listOf(
                 QuickActionData(
                     id = "schedule",
                     title = "Agenda",
@@ -302,7 +302,7 @@ class DefaultDashboardDataProvider : DashboardDataProvider {
                     route = "pets/detail/1/health"
                 )
             )
-            UserType.VETERINARIAN -> listOf(
+            UserType.VETERINARY -> listOf(
                 RecentActivityData(
                     id = "appointment1",
                     title = "Consulta Realizada",
@@ -436,7 +436,7 @@ class DefaultDashboardDataProvider : DashboardDataProvider {
                     route = "reminders/detail/4"
                 )
             )
-            UserType.VETERINARIAN -> listOf(
+            UserType.VETERINARY -> listOf(
                 ReminderData(
                     id = "appointment1",
                     title = "Consulta - Max",
@@ -550,7 +550,7 @@ class DefaultDashboardDataProvider : DashboardDataProvider {
                     "Cuidando de $petCount pets com carinho"
                 }
             }
-            UserType.VETERINARIAN -> "5 consultas agendadas hoje"
+            UserType.VETERINARY -> "5 consultas agendadas hoje"
             UserType.ADMIN -> "Gerenciando 3 clínicas ativas"
             UserType.PHARMACY -> "20 pedidos para processar"
         }

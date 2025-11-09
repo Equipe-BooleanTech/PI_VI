@@ -45,7 +45,7 @@ fun RecentActivitiesSection(
             id = consulta.id,
             title = when (userType) {
                 UserType.OWNER -> "Consulta agendada"
-                UserType.VETERINARIAN -> "Próximo atendimento"
+                UserType.VETERINARY -> "Próximo atendimento"
                 else -> "Consulta registrada"
             },
             description = "${consulta.petName} - ${consulta.symptoms.ifEmpty { "Consulta veterinária" }}",

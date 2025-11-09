@@ -39,8 +39,6 @@ fun createAddConsultaFormConfiguration(petOptions: List<SelectOption> = emptyLis
                 "Vacinação",
                 "Cirurgia",
                 "Exame",
-                "Odontologia",
-                "Estética",
                 "Outro"
             ),
             validators = listOf(
