@@ -29,7 +29,13 @@ import edu.fatec.petwise.presentation.theme.fromHex
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PetsScreen(navigationKey: Any? = null) {
+fun PetsScreen(
+    navigationKey: Any? = null,
+    canAddPets: Boolean = true,
+    canEditPets: Boolean = true
+) {
+    println("PetsScreen - canAddPets: $canAddPets, canEditPets: $canEditPets")
+    
     val petsViewModel = remember { PetDependencyContainer.providePetsViewModel() }
     val addPetViewModel = remember { PetDependencyContainer.provideAddPetViewModel() }
     val updatePetViewModel = remember { PetDependencyContainer.provideUpdatePetViewModel() }
@@ -79,7 +85,11 @@ fun PetsScreen(navigationKey: Any? = null) {
             selectedCount = selectedPetIds.size,
             onSearchClick = { showSearchBar = !showSearchBar },
             onFilterClick = { showFilterSheet = true },
-            onAddPetClick = { petsViewModel.onEvent(PetsUiEvent.ShowAddPetDialog) },
+            onAddPetClick = { 
+                if (canAddPets) {
+                    petsViewModel.onEvent(PetsUiEvent.ShowAddPetDialog)
+                }
+            },
             onSelectionModeToggle = { 
                 selectionMode = !selectionMode
                 if (!selectionMode) selectedPetIds = setOf()
@@ -88,7 +98,8 @@ fun PetsScreen(navigationKey: Any? = null) {
                 if (selectedPetIds.isNotEmpty()) {
                     showDeleteConfirmation = true
                 }
-            }
+            },
+            canAddPets = canAddPets
         )
 
         if (showSearchBar) {
@@ -110,7 +121,12 @@ fun PetsScreen(navigationKey: Any? = null) {
                 }
                 petsState.filteredPets.isEmpty() -> {
                     EmptyContent(
-                        onAddPetClick = { petsViewModel.onEvent(PetsUiEvent.ShowAddPetDialog) }
+                        onAddPetClick = { 
+                            if (canAddPets) {
+                                petsViewModel.onEvent(PetsUiEvent.ShowAddPetDialog)
+                            }
+                        },
+                        canAddPets = canAddPets
                     )
                 }
                 else -> {
@@ -133,9 +149,12 @@ fun PetsScreen(navigationKey: Any? = null) {
                             petsViewModel.onEvent(PetsUiEvent.ToggleFavorite(petId))
                         },
                         onEditClick = { pet ->
-                            petToEdit = pet
-                            showEditPetDialog = true
-                        }
+                            if (canEditPets) {
+                                petToEdit = pet
+                                showEditPetDialog = true
+                            }
+                        },
+                        canEditPets = canEditPets
                     )
                 }
             }
@@ -230,7 +249,8 @@ private fun PetsHeader(
     onFilterClick: () -> Unit,
     onAddPetClick: () -> Unit,
     onSelectionModeToggle: () -> Unit,
-    onDeleteSelected: () -> Unit
+    onDeleteSelected: () -> Unit,
+    canAddPets: Boolean = true
 ) {
     val theme = PetWiseTheme.Light
 
@@ -320,7 +340,7 @@ private fun PetsHeader(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            if (!selectionMode) {
+            if (!selectionMode && canAddPets) {
                 Button(
                     onClick = onAddPetClick,
                     modifier = Modifier.fillMaxWidth(),
@@ -444,7 +464,8 @@ private fun LoadingContent() {
 
 @Composable
 private fun EmptyContent(
-    onAddPetClick: () -> Unit
+    onAddPetClick: () -> Unit,
+    canAddPets: Boolean = true
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -474,26 +495,28 @@ private fun EmptyContent(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Adicione seu primeiro pet para começar!",
+                text = if (canAddPets) "Adicione seu primeiro pet para começar!" else "Nenhum pet encontrado",
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = Color.Gray
                 )
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            if (canAddPets) {
+                Spacer(modifier = Modifier.height(24.dp))
 
-            Button(
-                onClick = onAddPetClick,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.fromHex("#00b942")
-                )
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Adicionar"
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Adicionar Pet")
+                Button(
+                    onClick = onAddPetClick,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.fromHex("#00b942")
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Adicionar"
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Adicionar Pet")
+                }
             }
         }
     }
@@ -506,7 +529,8 @@ private fun PetsListContent(
     selectedPetIds: Set<String>,
     onPetClick: (Pet) -> Unit,
     onFavoriteClick: (String) -> Unit,
-    onEditClick: (Pet) -> Unit
+    onEditClick: (Pet) -> Unit,
+    canEditPets: Boolean = true
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -520,7 +544,8 @@ private fun PetsListContent(
                 isSelected = selectedPetIds.contains(pet.id),
                 onClick = onPetClick,
                 onFavoriteClick = onFavoriteClick,
-                onEditClick = onEditClick
+                onEditClick = if (canEditPets) onEditClick else { _ -> },
+                canEdit = canEditPets
             )
         }
     }

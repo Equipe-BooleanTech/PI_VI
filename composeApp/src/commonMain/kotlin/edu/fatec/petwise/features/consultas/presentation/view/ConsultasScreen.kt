@@ -22,7 +22,13 @@ import androidx.compose.ui.text.font.FontWeight
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ConsultasScreen(navigationKey: Any? = null) {
+fun ConsultasScreen(
+    navigationKey: Any? = null,
+    canAddConsultas: Boolean = true,
+    canEditConsultas: Boolean = true
+) {
+    println("ConsultasScreen - canAddConsultas: $canAddConsultas, canEditConsultas: $canEditConsultas")
+    
     val consultasViewModel = remember { ConsultaDependencyContainer.provideConsultasViewModel() }
     val addConsultaViewModel = remember { ConsultaDependencyContainer.provideAddConsultaViewModel() }
     val updateConsultaViewModel = remember { ConsultaDependencyContainer.provideUpdateConsultaViewModel() }
@@ -72,7 +78,11 @@ fun ConsultasScreen(navigationKey: Any? = null) {
             selectedCount = selectedConsultaIds.size,
             onSearchClick = { showSearchBar = !showSearchBar },
             onFilterClick = { showFilterSheet = true },
-            onAddConsultaClick = { consultasViewModel.onEvent(ConsultasUiEvent.ShowAddConsultaDialog) },
+            onAddConsultaClick = { 
+                if (canAddConsultas) {
+                    consultasViewModel.onEvent(ConsultasUiEvent.ShowAddConsultaDialog)
+                }
+            },
             onSelectionModeToggle = { 
                 selectionMode = !selectionMode
                 if (!selectionMode) selectedConsultaIds = setOf()
@@ -81,7 +91,8 @@ fun ConsultasScreen(navigationKey: Any? = null) {
                 if (selectedConsultaIds.isNotEmpty()) {
                     showDeleteConfirmation = true
                 }
-            }
+            },
+            canAddConsultas = canAddConsultas
         )
 
         if (showSearchBar) {
@@ -103,6 +114,7 @@ fun ConsultasScreen(navigationKey: Any? = null) {
                 }
                 consultasState.filteredConsultas.isEmpty() -> {
                     EmptyContent(
+                        canAddConsultas = canAddConsultas,
                         onAddConsultaClick = { consultasViewModel.onEvent(ConsultasUiEvent.ShowAddConsultaDialog) }
                     )
                 }
@@ -110,6 +122,7 @@ fun ConsultasScreen(navigationKey: Any? = null) {
                     ConsultasListContent(
                         consultas = consultasState.filteredConsultas,
                         selectionMode = selectionMode,
+                        canEdit = canEditConsultas,
                         selectedConsultaIds = selectedConsultaIds,
                         onConsultaClick = { consulta ->
                             if (selectionMode) {
@@ -222,7 +235,8 @@ private fun ConsultasHeader(
     onFilterClick: () -> Unit,
     onAddConsultaClick: () -> Unit,
     onSelectionModeToggle: () -> Unit,
-    onDeleteSelected: () -> Unit
+    onDeleteSelected: () -> Unit,
+    canAddConsultas: Boolean = true
 ) {
     val theme = PetWiseTheme.Light
 
@@ -312,7 +326,7 @@ private fun ConsultasHeader(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            if (!selectionMode) {
+            if (!selectionMode && canAddConsultas) {
                 Button(
                     onClick = onAddConsultaClick,
                     modifier = Modifier.fillMaxWidth(),
@@ -436,6 +450,7 @@ private fun LoadingContent() {
 
 @Composable
 private fun EmptyContent(
+    canAddConsultas: Boolean,
     onAddConsultaClick: () -> Unit
 ) {
     Box(
@@ -474,18 +489,20 @@ private fun EmptyContent(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Button(
-                onClick = onAddConsultaClick,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.fromHex("#2196F3")
-                )
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Adicionar"
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Agendar Consulta")
+            if (canAddConsultas) {
+                Button(
+                    onClick = onAddConsultaClick,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.fromHex("#2196F3")
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Adicionar"
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Agendar Consulta")
+                }
             }
         }
     }
@@ -495,6 +512,7 @@ private fun EmptyContent(
 private fun ConsultasListContent(
     consultas: List<Consulta>,
     selectionMode: Boolean,
+    canEdit: Boolean,
     selectedConsultaIds: Set<String>,
     onConsultaClick: (Consulta) -> Unit,
     onEditClick: (Consulta) -> Unit,
@@ -510,6 +528,7 @@ private fun ConsultasListContent(
             ConsultaCard(
                 consulta = consulta,
                 selectionMode = selectionMode,
+                canEdit = canEdit,
                 isSelected = selectedConsultaIds.contains(consulta.id),
                 onClick = onConsultaClick,
                 onEditClick = onEditClick,

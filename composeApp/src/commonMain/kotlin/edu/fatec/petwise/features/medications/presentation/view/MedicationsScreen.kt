@@ -33,6 +33,9 @@ fun MedicationsScreen(
     canAddMedications: Boolean = true,
     canEditMedications: Boolean = true
 ) {
+    // Debug: Print permissions to verify they're being passed correctly
+    println("MedicationsScreen - canAddMedications: $canAddMedications, canEditMedications: $canEditMedications")
+    
     val medicationsViewModel = remember { MedicationDependencyContainer.provideMedicationsViewModel() }
     val addMedicationViewModel = remember { MedicationDependencyContainer.provideAddMedicationViewModel() }
     val updateMedicationViewModel = remember { MedicationDependencyContainer.provideUpdateMedicationViewModel() }

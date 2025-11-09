@@ -133,7 +133,12 @@ fun DashboardScreen(
                             .fillMaxSize()
                             .padding(paddingValues)
                     ) {
-                        PetsScreen(navigationKey = currentTabScreen)
+                        
+                        PetsScreen(
+                            navigationKey = currentTabScreen,
+                            canAddPets = userType == UserType.OWNER,
+                            canEditPets = userType == UserType.OWNER
+                        )
                     }
                 }
                 NavigationManager.TabScreen.Appointments -> {
@@ -142,7 +147,12 @@ fun DashboardScreen(
                             .fillMaxSize()
                             .padding(paddingValues)
                     ) {
-                        ConsultasScreen(navigationKey = currentTabScreen)
+                        
+                        ConsultasScreen(
+                            navigationKey = currentTabScreen,
+                            canAddConsultas = userType == UserType.OWNER || userType == UserType.VETERINARY,
+                            canEditConsultas = userType == UserType.OWNER || userType == UserType.VETERINARY
+                        )
                     }
                 }
                 NavigationManager.TabScreen.Medication -> {
@@ -151,6 +161,8 @@ fun DashboardScreen(
                             .fillMaxSize()
                             .padding(paddingValues)
                     ) {
+                        println("DashboardScreen - userType: $userType, canAdd: ${userType != UserType.OWNER}, canEdit: ${userType != UserType.OWNER}")
+                        
                         MedicationsScreen(
                             navigationKey = currentTabScreen,
                             canAddMedications = userType != UserType.OWNER,
