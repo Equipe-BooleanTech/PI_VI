@@ -43,6 +43,21 @@ class UpdatePetViewModel(
     private val _uiState = MutableStateFlow(UpdatePetUiState())
     val uiState: StateFlow<UpdatePetUiState> = _uiState.asStateFlow()
 
+    init {
+        observeLogout()
+    }
+
+    private fun observeLogout() {
+        viewModelScope.launch {
+            edu.fatec.petwise.core.data.DataRefreshManager.refreshEvents.collect { event ->
+                if (event is edu.fatec.petwise.core.data.DataRefreshEvent.UserLoggedOut) {
+                    println("UpdatePetViewModel: Usuário deslogou — limpando estado")
+                    clearState()
+                }
+            }
+        }
+    }
+
     fun onEvent(event: UpdatePetUiEvent) {
         when (event) {
             is UpdatePetUiEvent.LoadPet -> loadPet(event.pet)

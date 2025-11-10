@@ -27,22 +27,16 @@ val addVaccinationFormConfiguration: FormConfiguration = FormConfiguration(
             )
         ),
         FormFieldDefinition(
-            id = "vaccineName",
-            label = "Nome da Vacina",
-            type = FormFieldType.TEXT,
-            placeholder = "Nome comercial da vacina",
+            id = "veterinarianId",
+            label = "Selecione o Veterinário",
+            type = FormFieldType.SELECT,
+            placeholder = "Selecione o veterinário",
             validators = listOf(
                 ValidationRule(
                     type = ValidationType.REQUIRED,
-                    message = "Nome da vacina é obrigatório"
-                ),
-                ValidationRule(
-                    type = ValidationType.MIN_LENGTH,
-                    value = JsonPrimitive(2),
-                    message = "Nome deve ter pelo menos 2 caracteres"
+                    message = "Selecione o veterinário"
                 )
-            ),
-            formatting = FieldFormatting(capitalize = true)
+            )
         ),
         FormFieldDefinition(
             id = "vaccineType",
@@ -69,8 +63,8 @@ val addVaccinationFormConfiguration: FormConfiguration = FormConfiguration(
             )
         ),
         FormFieldDefinition(
-            id = "applicationDate",
-            label = "Data de Aplicação",
+            id = "vaccinationDate",
+            label = "Data de Vacinação",
             type = FormFieldType.DATE,
             placeholder = "DD/MM/AAAA",
             validators = listOf(
@@ -97,23 +91,6 @@ val addVaccinationFormConfiguration: FormConfiguration = FormConfiguration(
             )
         ),
         FormFieldDefinition(
-            id = "doseNumber",
-            label = "Número da Dose",
-            type = FormFieldType.NUMBER,
-            placeholder = "Ex: 1",
-            default = JsonPrimitive("1"),
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Número da dose é obrigatório"
-                ),
-                ValidationRule(
-                    type = ValidationType.NUMERIC,
-                    message = "Digite apenas números"
-                )
-            )
-        ),
-        FormFieldDefinition(
             id = "totalDoses",
             label = "Total de Doses",
             type = FormFieldType.NUMBER,
@@ -129,68 +106,6 @@ val addVaccinationFormConfiguration: FormConfiguration = FormConfiguration(
                     message = "Digite apenas números"
                 )
             )
-        ),
-        FormFieldDefinition(
-            id = "veterinarianName",
-            label = "Nome do Veterinário",
-            type = FormFieldType.TEXT,
-            placeholder = "Nome completo",
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Nome do veterinário é obrigatório"
-                ),
-                ValidationRule(
-                    type = ValidationType.MIN_LENGTH,
-                    value = JsonPrimitive(3),
-                    message = "Nome deve ter pelo menos 3 caracteres"
-                )
-            ),
-            formatting = FieldFormatting(capitalize = true)
-        ),
-        FormFieldDefinition(
-            id = "veterinarianCrmv",
-            label = "CRMV",
-            type = FormFieldType.TEXT,
-            placeholder = "CRMV-UF 00000",
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "CRMV é obrigatório"
-                )
-            ),
-            formatting = FieldFormatting(uppercase = true)
-        ),
-        FormFieldDefinition(
-            id = "clinicName",
-            label = "Clínica/Hospital",
-            type = FormFieldType.TEXT,
-            placeholder = "Nome da clínica veterinária",
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Nome da clínica é obrigatório"
-                ),
-                ValidationRule(
-                    type = ValidationType.MIN_LENGTH,
-                    value = JsonPrimitive(3),
-                    message = "Nome deve ter pelo menos 3 caracteres"
-                )
-            ),
-            formatting = FieldFormatting(capitalize = true)
-        ),
-        FormFieldDefinition(
-            id = "batchNumber",
-            label = "Número do Lote",
-            type = FormFieldType.TEXT,
-            placeholder = "Lote da vacina",
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Número do lote é obrigatório"
-                )
-            ),
-            formatting = FieldFormatting(uppercase = true)
         ),
         FormFieldDefinition(
             id = "manufacturer",

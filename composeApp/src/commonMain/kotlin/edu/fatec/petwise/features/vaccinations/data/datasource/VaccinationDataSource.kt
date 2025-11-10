@@ -9,7 +9,7 @@ interface RemoteVaccinationDataSource {
     suspend fun createVaccination(vaccination: Vaccination): Vaccination
     suspend fun updateVaccination(vaccination: Vaccination): Vaccination
     suspend fun deleteVaccination(id: String)
-    suspend fun markAsApplied(id: String, observations: String, sideEffects: String, applicationDate: String): Vaccination
+    suspend fun markAsApplied(id: String, observations: String, vaccinationDate: String): Vaccination
     suspend fun scheduleNextDose(id: String, nextDoseDate: String): Vaccination
     suspend fun getUpcomingVaccinations(days: Int): List<Vaccination>
     suspend fun getOverdueVaccinations(): List<Vaccination>

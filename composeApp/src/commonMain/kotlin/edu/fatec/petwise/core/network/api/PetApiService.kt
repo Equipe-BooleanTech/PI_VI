@@ -23,22 +23,9 @@ class PetApiServiceImpl(
 ) : PetApiService {
 
     override suspend fun getAllPets(page: Int, pageSize: Int): NetworkResult<PetListResponse> {
-        return when (val result = networkHandler.get<List<PetDto>>(ApiEndpoints.PETS) {
+        return networkHandler.get<PetListResponse>(ApiEndpoints.PETS) {
             parameter("page", page)
             parameter("pageSize", pageSize)
-        }) {
-            is NetworkResult.Success -> {
-                NetworkResult.Success(
-                    PetListResponse(
-                        pets = result.data,
-                        total = result.data.size,
-                        page = page,
-                        pageSize = pageSize
-                    )
-                )
-            }
-            is NetworkResult.Error -> result
-            is NetworkResult.Loading -> result
         }
     }
 
@@ -82,43 +69,17 @@ class PetApiServiceImpl(
     }
 
     override suspend fun searchPets(query: String, page: Int, pageSize: Int): NetworkResult<PetListResponse> {
-        return when (val result = networkHandler.get<List<PetDto>>(ApiEndpoints.PETS_SEARCH) {
+        return networkHandler.get<PetListResponse>(ApiEndpoints.PETS_SEARCH) {
             parameter("q", query)
             parameter("page", page)
             parameter("pageSize", pageSize)
-        }) {
-            is NetworkResult.Success -> {
-                NetworkResult.Success(
-                    PetListResponse(
-                        pets = result.data,
-                        total = result.data.size,
-                        page = page,
-                        pageSize = pageSize
-                    )
-                )
-            }
-            is NetworkResult.Error -> result
-            is NetworkResult.Loading -> result
         }
     }
 
     override suspend fun getFavoritePets(page: Int, pageSize: Int): NetworkResult<PetListResponse> {
-        return when (val result = networkHandler.get<List<PetDto>>(ApiEndpoints.PETS_FAVORITES) {
+        return networkHandler.get<PetListResponse>(ApiEndpoints.PETS_FAVORITES) {
             parameter("page", page)
             parameter("pageSize", pageSize)
-        }) {
-            is NetworkResult.Success -> {
-                NetworkResult.Success(
-                    PetListResponse(
-                        pets = result.data,
-                        total = result.data.size,
-                        page = page,
-                        pageSize = pageSize
-                    )
-                )
-            }
-            is NetworkResult.Error -> result
-            is NetworkResult.Loading -> result
         }
     }
 }

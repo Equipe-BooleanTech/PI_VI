@@ -189,8 +189,6 @@ fun AddPetDialog(
                                         age = values["age"]?.toString() ?: "",
                                         weight = values["weight"]?.toString() ?: "",
                                         healthStatus = healthStatus,
-                                        ownerName = values["ownerName"]?.toString() ?: "",
-                                        ownerPhone = values["ownerPhone"]?.toString() ?: "",
                                         healthHistory = values["healthHistory"]?.toString() ?: ""
                                     )
                                 )

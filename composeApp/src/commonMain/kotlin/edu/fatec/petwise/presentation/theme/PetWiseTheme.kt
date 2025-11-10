@@ -36,7 +36,7 @@ object PetWiseTheme {
             primary = "#00b942",
             primaryVariant = "#00d94e",
             secondary = "#f2f2f4",
-            background = "#2d3339",
+            background = "#FFFFFF",
             textPrimary = "#333333",
             textSecondary = "#666666",
             success = "#00b942",

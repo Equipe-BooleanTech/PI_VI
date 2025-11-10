@@ -4,6 +4,7 @@ import edu.fatec.petwise.core.network.NetworkResult
 import edu.fatec.petwise.core.network.api.VaccinationApiService
 import edu.fatec.petwise.core.network.dto.*
 import edu.fatec.petwise.features.vaccinations.domain.models.Vaccination
+import edu.fatec.petwise.core.network.NetworkException.NotFound
 
 class RemoteVaccinationDataSourceImpl(
     private val vaccinationApiService: VaccinationApiService
@@ -21,7 +22,7 @@ class RemoteVaccinationDataSourceImpl(
         return when (val result = vaccinationApiService.getVaccinationById(id)) {
             is NetworkResult.Success -> result.data.toDomain()
             is NetworkResult.Error -> {
-                if (result.exception is edu.fatec.petwise.core.network.NetworkException.NotFound) {
+                if (result.exception is NotFound) {
                     null
                 } else {
                     throw result.exception
@@ -42,18 +43,13 @@ class RemoteVaccinationDataSourceImpl(
     override suspend fun createVaccination(vaccination: Vaccination): Vaccination {
         val request = CreateVaccinationRequest(
             petId = vaccination.petId,
-            vaccineName = vaccination.vaccineName,
+            veterinarianId = vaccination.veterinarianId,
             vaccineType = vaccination.vaccineType.name,
-            applicationDate = vaccination.applicationDate,
-            nextDoseDate = vaccination.nextDoseDate,
-            doseNumber = vaccination.doseNumber,
+            vaccinationDate = vaccination.vaccinationDate,
+            nextDoseDate = vaccination.nextDoseDate ?: "",
+            manufacturer = vaccination.manufacturer ?: "",
+            observations = vaccination.observations ?: "",
             totalDoses = vaccination.totalDoses,
-            veterinarianName = vaccination.veterinarianName,
-            veterinarianCrmv = vaccination.veterinarianCrmv,
-            clinicName = vaccination.clinicName,
-            batchNumber = vaccination.batchNumber,
-            manufacturer = vaccination.manufacturer,
-            observations = vaccination.observations,
             status = vaccination.status.name
         )
 
@@ -66,16 +62,14 @@ class RemoteVaccinationDataSourceImpl(
 
     override suspend fun updateVaccination(vaccination: Vaccination): Vaccination {
         val request = UpdateVaccinationRequest(
-            vaccineName = vaccination.vaccineName,
-            applicationDate = vaccination.applicationDate,
-            nextDoseDate = vaccination.nextDoseDate,
-            veterinarianName = vaccination.veterinarianName,
-            veterinarianCrmv = vaccination.veterinarianCrmv,
-            clinicName = vaccination.clinicName,
-            batchNumber = vaccination.batchNumber,
-            manufacturer = vaccination.manufacturer,
+            petId = vaccination.petId,
+            veterinarianId = vaccination.veterinarianId,
+            vaccineType = vaccination.vaccineType.name,
+            vaccinationDate = vaccination.vaccinationDate,
+            nextDoseDate = vaccination.nextDoseDate ?: "",
+            manufacturer = vaccination.manufacturer ?: "",
             observations = vaccination.observations,
-            sideEffects = vaccination.sideEffects,
+            totalDoses = vaccination.totalDoses,
             status = vaccination.status.name
         )
 
@@ -97,13 +91,11 @@ class RemoteVaccinationDataSourceImpl(
     override suspend fun markAsApplied(
         id: String,
         observations: String,
-        sideEffects: String,
-        applicationDate: String
+        vaccinationDate: String
     ): Vaccination {
         val request = MarkAsAppliedRequest(
             observations = observations,
-            sideEffects = sideEffects,
-            applicationDate = applicationDate
+            vaccinationDate = vaccinationDate
         )
 
         return when (val result = vaccinationApiService.markAsApplied(id, request)) {

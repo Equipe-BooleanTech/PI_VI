@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -14,7 +13,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.draw.clip
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.Medication
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.Pending
+import androidx.compose.material.icons.filled.Pets
+import androidx.compose.material.icons.filled.Vaccines
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -25,7 +32,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -40,10 +49,28 @@ fun StatusCard(
     onClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val theme =PetWiseTheme.Light
+    val theme = PetWiseTheme.Light
 
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
+
+    val iconVector: ImageVector = when (statusCardData.icon) {
+        is ImageVector -> statusCardData.icon
+        "pets" -> Icons.Default.Pets
+        "event" -> Icons.Default.Event
+        "vaccines" -> Icons.Default.Vaccines
+        "notifications" -> Icons.Default.Notifications
+        "pending" -> Icons.Default.Pending
+        "people" -> Icons.Default.People
+        "medication" -> Icons.Default.Medication
+        else -> Icons.Default.Pets
+    }
+
+    val cardColor = if (statusCardData.color.isNotEmpty()) {
+        statusCardData.color
+    } else {
+        statusCardData.iconBackground
+    }
 
     Card(
         modifier = modifier
@@ -70,14 +97,14 @@ fun StatusCard(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(Color.fromHex(statusCardData.iconBackground).copy(alpha = 0.1f))
+                    .background(Color.fromHex(cardColor).copy(alpha = 0.1f))
                     .padding(8.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = statusCardData.icon,
+                    imageVector = iconVector,
                     contentDescription = statusCardData.title,
-                    tint = Color.fromHex(statusCardData.iconBackground),
+                    tint = Color.fromHex(cardColor),
                     modifier = Modifier.size(28.dp)
                 )
             }
@@ -95,7 +122,7 @@ fun StatusCard(
             )
 
             Text(
-                text = statusCardData.count.toString(),
+                text = statusCardData.value,
                 style = MaterialTheme.typography.headlineSmall.copy(
                     color = Color.fromHex(theme.palette.textPrimary),
                     fontWeight = FontWeight.Bold,

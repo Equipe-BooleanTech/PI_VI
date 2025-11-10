@@ -133,7 +133,6 @@ actual fun PlatformDatePicker(
     onValueChange: (String) -> Unit,
     modifier: Modifier
 ) {
-    // Calculate date constraints from validators
     val maxDate = fieldDefinition.validators.find { it.type == ValidationType.MAX_DATE }
         ?.value?.jsonPrimitive?.content?.toLongOrNull()
         ?: System.currentTimeMillis() + (365L * 24 * 60 * 60 * 1000 * 10)
@@ -142,7 +141,6 @@ actual fun PlatformDatePicker(
         ?.value?.jsonPrimitive?.content?.toLongOrNull()
         ?: System.currentTimeMillis() - (365L * 24 * 60 * 60 * 1000 * 100)
 
-    // Check if this is a birth date field (should not allow future dates)
     val isBirthDate = fieldDefinition.id.contains("birth", ignoreCase = true) || 
                       fieldDefinition.label?.contains("nascimento", ignoreCase = true) == true ||
                       fieldDefinition.label?.contains("birth", ignoreCase = true) == true
@@ -183,7 +181,6 @@ actual fun PlatformDatePicker(
             TextButton(
                 onClick = {
                     datePickerState.selectedDateMillis?.let { millis ->
-                        // Validate selected date against constraints
                         if (millis in minDate..effectiveMaxDate) {
                             val date = java.util.Date(millis)
                             val formatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())

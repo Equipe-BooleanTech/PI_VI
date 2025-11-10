@@ -32,7 +32,8 @@ fun PetCard(
     onEditClick: (Pet) -> Unit,
     modifier: Modifier = Modifier,
     selectionMode: Boolean = false,
-    isSelected: Boolean = false
+    isSelected: Boolean = false,
+    canEdit: Boolean = true
 ) {
     val theme = PetWiseTheme.Light
     val interactionSource = remember { MutableInteractionSource() }
@@ -168,16 +169,18 @@ fun PetCard(
                         )
                     }
 
-                    IconButton(
-                        onClick = { onEditClick(pet) },
-                        modifier = Modifier.size(36.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Editar",
-                            tint = Color.fromHex(theme.palette.primary),
-                            modifier = Modifier.size(20.dp)
-                        )
+                    if (canEdit) {
+                        IconButton(
+                            onClick = { onEditClick(pet) },
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Editar",
+                                tint = Color.fromHex(theme.palette.primary),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
                 }
             }

@@ -36,15 +36,39 @@ object ApiEndpoints {
     fun updateStatus(id: String) = "$CONSULTAS/$id/status"
     fun cancelConsulta(id: String) = "$CONSULTAS/$id/cancel"
 
-    const val VACCINATIONS = "/api/vaccinations"
+    const val VACCINATIONS = "/api/vaccines"
     fun getVaccination(id: String) = "$VACCINATIONS/$id"
-    fun getVaccinationsByPet(petId: String) = "/api/pets/$petId/vaccinations"
+    fun getVaccinationsByPet(petId: String) = "/api/pets/$petId/vaccines"
     const val VACCINATIONS_UPCOMING = "$VACCINATIONS/upcoming"
     const val VACCINATIONS_OVERDUE = "$VACCINATIONS/overdue"
     fun markVaccinationAsApplied(id: String) = "$VACCINATIONS/$id/apply"
     fun scheduleVaccinationNextDose(id: String) = "$VACCINATIONS/$id/schedule-next"
 
+    const val MEDICATIONS = "/api/medications"
+    fun getMedication(id: String) = "$MEDICATIONS/$id"
+    fun getMedicationsByPet(petId: String) = "$MEDICATIONS/pet/$petId"
+    fun getActiveMedicationsByPet(petId: String) = "$MEDICATIONS/pet/$petId/active"
+    const val MEDICATIONS_SEARCH = "$MEDICATIONS/search"
+    const val MEDICATIONS_UPCOMING = "$MEDICATIONS/upcoming"
+    const val MEDICATIONS_EXPIRED = "$MEDICATIONS/expired"
+    fun updateMedicationStatus(id: String) = "$MEDICATIONS/$id/status"
+    fun completeMedication(id: String) = "$MEDICATIONS/$id/complete"
+
     const val USER_PROFILE = "/api/auth/profile"
+
+    const val VETERINARIES = "/api/veterinaries"
+    fun getVeterinary(id: String) = "$VETERINARIES/$id"
+    const val VETERINARIES_SEARCH = "$VETERINARIES/search"
+
+    const val SUPRIMENTOS = "/api/supplies"
+    fun getSuprimento(id: String) = "$SUPRIMENTOS/$id"
+    fun getSuprimentosByPet(petId: String) = "/api/pets/$petId/supplies"
+    const val SUPRIMENTOS_SEARCH = "$SUPRIMENTOS/search"
+    const val SUPRIMENTOS_FILTER = "$SUPRIMENTOS/filter"
+    const val SUPRIMENTOS_BY_CATEGORY = "$SUPRIMENTOS/category"
+    const val SUPRIMENTOS_RECENT = "$SUPRIMENTOS/recent"
+    const val SUPRIMENTOS_PRICE_RANGE = "$SUPRIMENTOS/price-range"
+    const val SUPRIMENTOS_BY_SHOP = "$SUPRIMENTOS/shop"
 
 }
 

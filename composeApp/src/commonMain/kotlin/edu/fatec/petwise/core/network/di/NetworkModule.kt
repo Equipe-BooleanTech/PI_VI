@@ -22,21 +22,37 @@ object NetworkModule {
     }
 
     private var _httpClient: HttpClient? = null
+    private var _isClientClosed = false
     
     private fun getHttpClient(): HttpClient {
-        if (_httpClient == null) {
-            _httpClient = createDefaultHttpClient(createHttpClientConfig())
+        val currentClient = _httpClient
+        if (currentClient == null || _isClientClosed) {
+            println("NetworkModule: Criando novo HttpClient (anterior fechado: $_isClientClosed, nulo: ${currentClient == null})")
+            
+            _isClientClosed = false
+            
+            val newClient = createDefaultHttpClient(createHttpClientConfig())
+            _httpClient = newClient
+            
+            _networkRequestHandler = null
+            
+            println("NetworkModule: Novo HttpClient criado com sucesso")
+            return newClient
         }
-        return _httpClient!!
+        return currentClient
     }
 
     private var _networkRequestHandler: NetworkRequestHandler? = null
     
     private fun getNetworkRequestHandler(): NetworkRequestHandler {
-        if (_networkRequestHandler == null) {
-            _networkRequestHandler = NetworkRequestHandler(getHttpClient())
+        val currentHandler = _networkRequestHandler
+        if (currentHandler == null) {
+            println("NetworkModule: Criando novo NetworkRequestHandler")
+            val newHandler = NetworkRequestHandler(getHttpClient())
+            _networkRequestHandler = newHandler
+            return newHandler
         }
-        return _networkRequestHandler!!
+        return currentHandler
     }
 
     val authApiService: AuthApiService
@@ -51,13 +67,43 @@ object NetworkModule {
     val vaccinationApiService: VaccinationApiService
         get() = VaccinationApiServiceImpl(getNetworkRequestHandler())
 
+    val medicationApiService: MedicationApiService
+        get() = MedicationApiServiceImpl(getNetworkRequestHandler())
+
+    val veterinaryApiService: VeterinaryApiService
+        get() = VeterinaryApiServiceImpl(getNetworkRequestHandler())
+
+    val suprimentoApiService: SuprimentoApiService
+        get() = SuprimentoApiServiceImpl(getNetworkRequestHandler())
+
+    fun getDedicatedNetworkRequestHandler(): NetworkRequestHandler {
+        println("NetworkModule: Criando NetworkRequestHandler e HttpClient dedicados.")
+        val dedicatedConfig = createHttpClientConfig()
+        val dedicatedClient = createDefaultHttpClient(dedicatedConfig)
+        return NetworkRequestHandler(dedicatedClient)
+    }
+
     fun clear() {
         println("NetworkModule: Limpando recursos de rede")
-        _httpClient?.close()
-        _httpClient = null
-        _networkRequestHandler = null
-        tokenManager.clearTokens()
-        println("NetworkModule: Recursos limpos")
+        try {
+            val clientToClose = _httpClient
+            if (clientToClose != null) {
+                println("NetworkModule: Fechando HttpClient existente")
+                clientToClose.close()
+                println("NetworkModule: HttpClient fechado com sucesso")
+            } else {
+                println("NetworkModule: Nenhum HttpClient para fechar")
+            }
+        } catch (e: Exception) {
+            println("NetworkModule: Erro ao fechar HttpClient: ${e.message}")
+            e.printStackTrace()
+        } finally {
+            _isClientClosed = true
+            _httpClient = null
+            _networkRequestHandler = null
+            tokenManager.clearTokens()
+            println("NetworkModule: Recursos limpos - próxima requisição criará novo cliente")
+        }
     }
 
     fun setAuthToken(token: String) {
@@ -88,8 +134,11 @@ object NetworkModule {
     
     fun clearAuthToken() {
         println("NetworkModule: Limpando token de autenticação")
+        
         tokenManager.clearTokens()
-        println("NetworkModule: Token limpo, requisições subsequentes não terão autenticação")
+                
+        println("NetworkModule: Token limpo - requisições subsequentes não terão autenticação")
+        println("NetworkModule: HttpClient mantido ativo para prevenir JobCancellationException")
     }
 }
 

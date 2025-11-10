@@ -1,6 +1,5 @@
 package edu.fatec.petwise.features.dashboard.presentation
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,7 +7,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.FlashOn
+import androidx.compose.material.icons.filled.Medication
+import androidx.compose.material.icons.filled.Pets
+import androidx.compose.material.icons.filled.Vaccines
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -18,7 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import edu.fatec.petwise.features.dashboard.domain.models.DashboardDataProvider
+import edu.fatec.petwise.features.dashboard.domain.models.QuickActionData
 import edu.fatec.petwise.features.dashboard.domain.models.UserType
 import edu.fatec.petwise.features.dashboard.presentation.components.QuickActionItem
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
@@ -27,11 +31,132 @@ import edu.fatec.petwise.presentation.theme.fromHex
 @Composable
 fun QuickActionsSection(
     userType: UserType,
-    dataProvider: DashboardDataProvider,
     onActionClick: (String) -> Unit
 ) {
     val theme = PetWiseTheme.Light
-    val quickActions = dataProvider.getQuickActions(userType).take(4)
+
+    val quickActions = when (userType) {
+        UserType.OWNER -> listOf(
+            QuickActionData(
+                id = "add_pet",
+                title = "Adicionar Pet",
+                icon = Icons.Default.Add,
+                route = "pets",
+                background = "#00b942"
+            ),
+            QuickActionData(
+                id = "schedule_appointment",
+                title = "Agendar Consulta",
+                icon = Icons.Default.CalendarMonth,
+                route = "appointments",
+                background = "#2196F3"
+            ),
+            QuickActionData(
+                id = "add_medication",
+                title = "Nova Medicação",
+                icon = Icons.Default.Medication,
+                route = "medications",
+                background = "#9C27B0"
+            ),
+            QuickActionData(
+                id = "add_vaccine",
+                title = "Registrar Vacina",
+                icon = Icons.Default.Vaccines,
+                route = "vaccines",
+                background = "#FF9800"
+            )
+        )
+        UserType.VETERINARY -> listOf(
+            QuickActionData(
+                id = "new_appointment",
+                title = "Nova Consulta",
+                icon = Icons.Default.CalendarMonth,
+                route = "appointments",
+                background = "#2196F3"
+            ),
+            QuickActionData(
+                id = "add_patient",
+                title = "Adicionar Paciente",
+                icon = Icons.Default.Pets,
+                route = "pets",
+                background = "#00b942"
+            ),
+            QuickActionData(
+                id = "prescribe_medication",
+                title = "Prescrever Medicação",
+                icon = Icons.Default.Medication,
+                route = "medications",
+                background = "#9C27B0"
+            ),
+            QuickActionData(
+                id = "apply_vaccine",
+                title = "Aplicar Vacina",
+                icon = Icons.Default.Vaccines,
+                route = "vaccines",
+                background = "#FF9800"
+            )
+        )
+        UserType.ADMIN -> listOf(
+            QuickActionData(
+                id = "manage_pets",
+                title = "Gerenciar Pets",
+                icon = Icons.Default.Pets,
+                route = "pets",
+                background = "#00b942"
+            ),
+            QuickActionData(
+                id = "manage_appointments",
+                title = "Gerenciar Consultas",
+                icon = Icons.Default.CalendarMonth,
+                route = "appointments",
+                background = "#2196F3"
+            ),
+            QuickActionData(
+                id = "manage_vaccines",
+                title = "Gerenciar Vacinas",
+                icon = Icons.Default.Vaccines,
+                route = "vaccines",
+                background = "#FF9800"
+            ),
+            QuickActionData(
+                id = "manage_medications",
+                title = "Gerenciar Medicações",
+                icon = Icons.Default.Medication,
+                route = "medications",
+                background = "#9C27B0"
+            )
+        )
+        UserType.PHARMACY -> listOf(
+            QuickActionData(
+                id = "manage_medications",
+                title = "Gerenciar Medicações",
+                icon = Icons.Default.Medication,
+                route = "medications",
+                background = "#9C27B0"
+            ),
+            QuickActionData(
+                id = "view_prescriptions",
+                title = "Ver Prescrições",
+                icon = Icons.Default.CalendarMonth,
+                route = "appointments",
+                background = "#2196F3"
+            ),
+            QuickActionData(
+                id = "inventory",
+                title = "Estoque",
+                icon = Icons.Default.Add,
+                route = "medications",
+                background = "#607D8B"
+            ),
+            QuickActionData(
+                id = "orders",
+                title = "Pedidos",
+                icon = Icons.Default.CalendarMonth,
+                route = "medications",
+                background = "#FF5722"
+            )
+        )
+    }
 
     Column(
         modifier = Modifier.fillMaxWidth()

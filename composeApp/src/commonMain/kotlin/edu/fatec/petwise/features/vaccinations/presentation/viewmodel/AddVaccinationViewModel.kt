@@ -6,6 +6,8 @@ import edu.fatec.petwise.features.vaccinations.domain.models.Vaccination
 import edu.fatec.petwise.features.vaccinations.domain.models.VaccineType
 import edu.fatec.petwise.features.vaccinations.domain.models.VaccinationStatus
 import edu.fatec.petwise.features.vaccinations.domain.usecases.AddVaccinationUseCase
+import edu.fatec.petwise.core.data.DataRefreshEvent
+import edu.fatec.petwise.core.data.DataRefreshManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,17 +22,11 @@ data class AddVaccinationUiState(
 sealed class AddVaccinationUiEvent {
     data class AddVaccination(
         val petId: String,
-        val petName: String,
-        val vaccineName: String,
+        val veterinarianId: String,
         val vaccineType: VaccineType,
-        val applicationDate: String,
+        val vaccinationDate: String,
         val nextDoseDate: String?,
-        val doseNumber: String,
         val totalDoses: String,
-        val veterinarianName: String,
-        val veterinarianCrmv: String,
-        val clinicName: String,
-        val batchNumber: String,
         val manufacturer: String,
         val observations: String
     ) : AddVaccinationUiEvent()
@@ -44,6 +40,21 @@ class AddVaccinationViewModel(
     private val _uiState = MutableStateFlow(AddVaccinationUiState())
     val uiState: StateFlow<AddVaccinationUiState> = _uiState.asStateFlow()
 
+    init {
+        observeLogout()
+    }
+
+    private fun observeLogout() {
+        viewModelScope.launch {
+            DataRefreshManager.refreshEvents.collect { event ->
+                if (event is DataRefreshEvent.UserLoggedOut) {
+                    println("AddVaccinationViewModel: Usuário deslogou — limpando estado")
+                    clearState()
+                }
+            }
+        }
+    }
+    
     fun onEvent(event: AddVaccinationUiEvent) {
         when (event) {
             is AddVaccinationUiEvent.AddVaccination -> addVaccination(event)
@@ -56,16 +67,8 @@ class AddVaccinationViewModel(
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
 
             try {
-                val doseNumber = event.doseNumber.toIntOrNull()
-                val totalDoses = event.totalDoses.toIntOrNull()
 
-                if (doseNumber == null || doseNumber <= 0) {
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        errorMessage = "Número da dose deve ser um valor válido maior que 0"
-                    )
-                    return@launch
-                }
+                val totalDoses = event.totalDoses.toIntOrNull()
 
                 if (totalDoses == null || totalDoses <= 0) {
                     _uiState.value = _uiState.value.copy(
@@ -75,31 +78,16 @@ class AddVaccinationViewModel(
                     return@launch
                 }
 
-                if (doseNumber > totalDoses) {
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        errorMessage = "Número da dose não pode ser maior que o total de doses"
-                    )
-                    return@launch
-                }
-
                 val vaccination = Vaccination(
                     id = "",
                     petId = event.petId,
-                    petName = event.petName,
-                    vaccineName = event.vaccineName,
+                    veterinarianId = event.veterinarianId,
                     vaccineType = event.vaccineType,
-                    applicationDate = event.applicationDate,
+                    vaccinationDate = event.vaccinationDate,
                     nextDoseDate = event.nextDoseDate,
-                    doseNumber = doseNumber,
                     totalDoses = totalDoses,
-                    veterinarianName = event.veterinarianName,
-                    veterinarianCrmv = event.veterinarianCrmv,
-                    clinicName = event.clinicName,
-                    batchNumber = event.batchNumber,
                     manufacturer = event.manufacturer,
                     observations = event.observations,
-                    sideEffects = "",
                     status = VaccinationStatus.AGENDADA,
                     createdAt = "",
                     updatedAt = ""

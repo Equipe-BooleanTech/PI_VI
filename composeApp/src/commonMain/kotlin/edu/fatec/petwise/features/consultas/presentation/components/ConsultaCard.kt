@@ -32,6 +32,7 @@ fun ConsultaCard(
     onMarkAsPaid: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier,
     selectionMode: Boolean = false,
+    canEdit: Boolean = true,
     isSelected: Boolean = false
 ) {
     val theme = PetWiseTheme.Light
@@ -204,17 +205,19 @@ fun ConsultaCard(
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            onEditClick?.let { editClick ->
-                                IconButton(
-                                    onClick = { editClick(consulta) },
-                                    modifier = Modifier.size(36.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Edit,
-                                        contentDescription = "Editar",
-                                        tint = Color.fromHex(theme.palette.primary),
-                                        modifier = Modifier.size(20.dp)
-                                    )
+                            if (canEdit) {
+                                onEditClick?.let { editClick ->
+                                    IconButton(
+                                        onClick = { editClick(consulta) },
+                                        modifier = Modifier.size(36.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Edit,
+                                            contentDescription = "Editar",
+                                            tint = Color.fromHex(theme.palette.primary),
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -291,8 +294,6 @@ private fun getConsultaTypeColor(type: ConsultaType): Color {
         ConsultaType.VACCINATION -> Color.fromHex("#4CAF50")
         ConsultaType.SURGERY -> Color.fromHex("#FF5722")
         ConsultaType.EXAM -> Color.fromHex("#00BCD4")
-        ConsultaType.DENTAL -> Color.fromHex("#FF9800")
-        ConsultaType.GROOMING -> Color.fromHex("#E91E63")
         ConsultaType.OTHER -> Color.fromHex("#607D8B")
     }
 }
@@ -305,8 +306,6 @@ private fun getConsultaTypeIcon(type: ConsultaType) = when (type) {
     ConsultaType.VACCINATION -> Icons.Default.Vaccines
     ConsultaType.SURGERY -> Icons.Default.MedicalServices
     ConsultaType.EXAM -> Icons.Default.Science
-    ConsultaType.DENTAL -> Icons.Default.MedicalServices
-    ConsultaType.GROOMING -> Icons.Default.Spa
     ConsultaType.OTHER -> Icons.Default.MoreHoriz
 }
 

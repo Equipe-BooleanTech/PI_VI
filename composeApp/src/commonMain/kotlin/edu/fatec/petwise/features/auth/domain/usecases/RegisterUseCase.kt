@@ -36,7 +36,7 @@ class RegisterUseCase(
                     return Result.failure(Exception("CPF é obrigatório para clientes"))
                 }
             }
-            "VETERINARIAN" -> {
+            "VETERINARY" -> {
                 if (registerRequest.crmv.isNullOrBlank()) {
                     return Result.failure(Exception("CRMV é obrigatório para veterinários"))
                 }

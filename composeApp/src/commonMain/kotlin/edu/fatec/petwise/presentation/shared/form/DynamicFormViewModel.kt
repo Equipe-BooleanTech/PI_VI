@@ -12,7 +12,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonPrimitive
-
+import edu.fatec.petwise.core.data.DataRefreshEvent
+import edu.fatec.petwise.core.data.DataRefreshManager
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.doubleOrNull
 
 @Immutable
 data class FormState(
@@ -99,6 +102,18 @@ class DynamicFormViewModel(
         initializeForm()
         setupEventHandling()
         setupAsyncValidation()
+        observeLogout()
+    }
+
+    private fun observeLogout() {
+        formScope.launch {
+            DataRefreshManager.refreshEvents.collect { event ->
+                if (event is DataRefreshEvent.UserLoggedOut) {
+                    println("DynamicFormViewModel: Usuário deslogou — resetando formulário ${_state.value.id}")
+                    resetForm()
+                }
+            }
+        }
     }
 
     private fun initializeForm() {
@@ -126,11 +141,31 @@ class DynamicFormViewModel(
         val initialStates = initialConfiguration.fields
             .filter { it.type != FormFieldType.SUBMIT }
             .associate { field ->
-                val defaultValue = field.default?.jsonPrimitive?.content ?: ""
+               val defaultPrimitive = field.default?.jsonPrimitive
+                val defaultValue: Any? = when {
+                    defaultPrimitive == null -> ""
+                    field.type == FormFieldType.CHECKBOX || field.type == FormFieldType.SWITCH ->
+                        defaultPrimitive.content.toBoolean()
+                    field.type == FormFieldType.NUMBER ->
+                        defaultPrimitive.intOrNull ?: defaultPrimitive.content.toIntOrNull() ?: defaultPrimitive.content
+                    field.type == FormFieldType.DECIMAL ->
+                        defaultPrimitive.doubleOrNull ?: defaultPrimitive.content.toDoubleOrNull() ?: defaultPrimitive.content
+                    else -> defaultPrimitive.content
+                }
+                
+                val displayValue = when (field.type) {
+                    FormFieldType.SELECT -> {
+                        field.selectOptions?.find { it.key == defaultValue }?.value
+                            ?: field.options?.find { it == defaultValue }
+                            ?: defaultValue?.toString() ?: ""
+                    }
+                    else -> defaultValue?.toString() ?: ""
+                }
+                
                 field.id to FieldState(
                     id = field.id,
                     value = defaultValue,
-                    displayValue = defaultValue,
+                    displayValue = defaultValue?.toString() ?: "",
                     isVisible = field.visibility == null,
                     isEnabled = true
                 )
@@ -174,10 +209,9 @@ class DynamicFormViewModel(
             val fieldDefinition = currentState.configuration.fields.find { it.id == fieldId }
             val oldValue = fieldState.value
 
-            // Properly handle the value based on field type
             val processedValue: Any? = when (fieldDefinition?.type) {
                 FormFieldType.CHECKBOX, FormFieldType.SWITCH -> {
-                    // Boolean fields should preserve boolean type
+
                     when (newValue) {
                         is Boolean -> newValue
                         is String -> newValue.toBoolean()
@@ -185,7 +219,6 @@ class DynamicFormViewModel(
                     }
                 }
                 FormFieldType.NUMBER -> {
-                    // Number fields should preserve numeric type
                     when (newValue) {
                         is Number -> newValue
                         is String -> newValue.toIntOrNull() ?: newValue
@@ -193,7 +226,6 @@ class DynamicFormViewModel(
                     }
                 }
                 FormFieldType.DECIMAL -> {
-                    // Decimal fields should preserve numeric type
                     when (newValue) {
                         is Number -> newValue
                         is String -> newValue.toDoubleOrNull() ?: newValue
@@ -201,24 +233,23 @@ class DynamicFormViewModel(
                     }
                 }
                 FormFieldType.SELECT, FormFieldType.RADIO, FormFieldType.SEGMENTED_CONTROL -> {
-                    // Select fields: preserve the key value as-is
                     newValue
                 }
+                FormFieldType.DATE, FormFieldType.TIME, FormFieldType.DATETIME -> {
+                    newValue?.toString() ?: ""
+                }
                 else -> {
-                    // Text fields and others: convert to string
                     newValue?.toString() ?: ""
                 }
             }
 
             val displayValue = when (fieldDefinition?.type) {
                 FormFieldType.SELECT -> {
-                    // Try selectOptions first
-                    fieldDefinition.selectOptions?.find { it.key == newValue }?.value
-                        ?: fieldDefinition.options?.find { it == newValue }
-                        ?: newValue?.toString() ?: ""
+                    fieldDefinition.selectOptions?.find { it.key == processedValue }?.value
+                        ?: fieldDefinition.options?.find { it == processedValue }
+                        ?: processedValue?.toString() ?: ""
                 }
                 FormFieldType.CHECKBOX, FormFieldType.SWITCH -> {
-                    // Boolean fields display as string for UI
                     processedValue?.toString() ?: "false"
                 }
                 else -> {
@@ -728,8 +759,7 @@ class DynamicFormViewModel(
 
         when (handlingResult) {
             is ErrorHandlingResult.Retry -> {
-                // Retry logic disabled to prevent exhaustive API calls
-                // If needed in the future, implement with proper backoff and max attempts
+               
             }
             is ErrorHandlingResult.ShowMessage -> {
                 val currentErrorState = _state.value.errors
@@ -777,18 +807,28 @@ class DynamicFormViewModel(
                 .filter { it.type != FormFieldType.SUBMIT }
                 .associate { field ->
                     val existingState = currentFieldStates[field.id]
-                    val defaultValue = field.default?.jsonPrimitive?.content ?: ""
-                    
+                    val defaultPrimitive = field.default?.jsonPrimitive
+                    val parsedDefault: Any? = when {
+                        defaultPrimitive == null -> ""
+                        field.type == FormFieldType.CHECKBOX || field.type == FormFieldType.SWITCH ->
+                            defaultPrimitive.content.toBoolean()
+                        field.type == FormFieldType.NUMBER ->
+                            defaultPrimitive.intOrNull ?: defaultPrimitive.content.toIntOrNull() ?: defaultPrimitive.content
+                        field.type == FormFieldType.DECIMAL ->
+                            defaultPrimitive.doubleOrNull ?: defaultPrimitive.content.toDoubleOrNull() ?: defaultPrimitive.content
+                        else -> defaultPrimitive.content
+                    }
+
                     val valueToUse = if (existingState != null && existingState.isDirty) {
                         existingState.value
                     } else {
-                        defaultValue
+                        parsedDefault
                     }
-                    
+
                     val displayValueToUse = if (existingState != null && existingState.isDirty) {
                         existingState.displayValue
                     } else {
-                        defaultValue
+                        valueToUse?.toString() ?: ""
                     }
                     
                     field.id to FieldState(

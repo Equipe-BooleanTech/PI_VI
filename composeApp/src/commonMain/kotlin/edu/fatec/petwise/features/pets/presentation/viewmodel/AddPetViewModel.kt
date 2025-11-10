@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import edu.fatec.petwise.core.data.DataRefreshManager
+import edu.fatec.petwise.core.data.DataRefreshEvent
 
 data class AddPetUiState(
     val isLoading: Boolean = false,
@@ -27,8 +29,6 @@ sealed class AddPetUiEvent {
         val age: String,
         val weight: String,
         val healthStatus: HealthStatus,
-        val ownerName: String,
-        val ownerPhone: String,
         val healthHistory: String
     ) : AddPetUiEvent()
     object ClearState : AddPetUiEvent()
@@ -41,6 +41,21 @@ class AddPetViewModel(
     private val _uiState = MutableStateFlow(AddPetUiState())
     val uiState: StateFlow<AddPetUiState> = _uiState.asStateFlow()
 
+    init {
+        observeLogout()
+    }
+
+    private fun observeLogout() {
+        viewModelScope.launch {
+            DataRefreshManager.refreshEvents.collect { event ->
+                if (event is DataRefreshEvent.UserLoggedOut) {
+                    println("UpdateConsultaViewModel: Usuário deslogou — limpando estado")
+                    clearState()
+                }
+            }
+        }
+    }
+    
     fun onEvent(event: AddPetUiEvent) {
         when (event) {
             is AddPetUiEvent.AddPet -> addPet(event)
@@ -84,8 +99,8 @@ class AddPetViewModel(
                     age = ageInMonths,
                     weight = weightInKg,
                     healthStatus = event.healthStatus,
-                    ownerName = event.ownerName,
-                    ownerPhone = event.ownerPhone,
+                    ownerName = "",
+                    ownerPhone = "",
                     healthHistory = event.healthHistory,
                     isFavorite = false,
                     nextAppointment = null,
@@ -93,7 +108,7 @@ class AddPetViewModel(
                     updatedAt = ""
                 )
 
-                println("Salvando novo pet: nome=${pet.name}, raça=${pet.breed}, tutor=${pet.ownerName}")
+                println("Salvando novo pet: nome=${pet.name}, raça=${pet.breed}")
 
                 addPetUseCase(pet).fold(
                     onSuccess = { addedPet ->

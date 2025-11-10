@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import edu.fatec.petwise.features.consultas.domain.models.Consulta
 import edu.fatec.petwise.features.consultas.domain.models.ConsultaType
 import edu.fatec.petwise.features.consultas.domain.usecases.UpdateConsultaUseCase
+import edu.fatec.petwise.core.data.DataRefreshEvent
+import edu.fatec.petwise.core.data.DataRefreshManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,8 +34,6 @@ sealed class UpdateConsultaUiEvent {
         val notes: String,
         val nextAppointment: String?,
         val price: String,
-        val ownerName: String,
-        val ownerPhone: String
     ) : UpdateConsultaUiEvent()
     object ClearState : UpdateConsultaUiEvent()
 }
@@ -45,6 +45,20 @@ class UpdateConsultaViewModel(
     private val _uiState = MutableStateFlow(UpdateConsultaUiState())
     val uiState: StateFlow<UpdateConsultaUiState> = _uiState.asStateFlow()
 
+    init {
+            observeLogout()
+        }
+
+    private fun observeLogout() {
+        viewModelScope.launch {
+            DataRefreshManager.refreshEvents.collect { event ->
+                if (event is DataRefreshEvent.UserLoggedOut) {
+                    println("UpdateConsultaViewModel: Usuário deslogou — limpando estado")
+                    clearState()
+                }
+            }
+        }
+    } 
     fun onEvent(event: UpdateConsultaUiEvent) {
         when (event) {
             is UpdateConsultaUiEvent.UpdateConsulta -> updateConsulta(event)
@@ -65,7 +79,7 @@ class UpdateConsultaViewModel(
                     consultaType = event.consultaType,
                     consultaDate = event.consultaDate,
                     consultaTime = event.consultaTime,
-                    status = edu.fatec.petwise.features.consultas.domain.models.ConsultaStatus.SCHEDULED, // Keep existing status
+                    status = edu.fatec.petwise.features.consultas.domain.models.ConsultaStatus.SCHEDULED,
                     symptoms = event.symptoms,
                     diagnosis = event.diagnosis,
                     treatment = event.treatment,
@@ -73,11 +87,9 @@ class UpdateConsultaViewModel(
                     notes = event.notes,
                     nextAppointment = event.nextAppointment,
                     price = event.price.toFloatOrNull() ?: 0f,
-                    isPaid = false, // Keep existing isPaid
-                    ownerName = event.ownerName,
-                    ownerPhone = event.ownerPhone,
-                    createdAt = "", // Will be filled by API
-                    updatedAt = "" // Will be filled by API
+                    isPaid = false,
+                    createdAt = "", 
+                    updatedAt = "" 
                 )
 
                 updateConsultaUseCase(consulta).fold(

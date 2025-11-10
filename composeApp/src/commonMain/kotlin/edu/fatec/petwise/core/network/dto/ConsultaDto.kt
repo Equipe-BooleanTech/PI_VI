@@ -24,8 +24,6 @@ data class ConsultaDto(
     val nextAppointment: String? = null,
     val price: Float = 0f,
     val isPaid: Boolean = false,
-    val ownerName: String,
-    val ownerPhone: String,
     val createdAt: String,
     val updatedAt: String
 )
@@ -39,8 +37,6 @@ data class CreateConsultaRequest(
     val consultaDate: String,
     val consultaTime: String,
     val symptoms: String = "",
-    val ownerName: String,
-    val ownerPhone: String,
     val notes: String = ""
 )
 
@@ -64,7 +60,7 @@ data class UpdateConsultaRequest(
 @Serializable
 data class ConsultaListResponse(
     val consultas: List<ConsultaDto>,
-    val total: Int,
+    var total: Int,
     val page: Int,
     val pageSize: Int
 )
@@ -104,8 +100,6 @@ fun Consulta.toDto(): ConsultaDto = ConsultaDto(
     nextAppointment = nextAppointment,
     price = price,
     isPaid = isPaid,
-    ownerName = ownerName,
-    ownerPhone = ownerPhone,
     createdAt = createdAt,
     updatedAt = updatedAt
 )
@@ -127,8 +121,6 @@ fun ConsultaDto.toDomain(): Consulta = Consulta(
     nextAppointment = nextAppointment,
     price = price,
     isPaid = isPaid,
-    ownerName = ownerName,
-    ownerPhone = ownerPhone,
     createdAt = createdAt,
     updatedAt = updatedAt
 )
@@ -144,8 +136,6 @@ private fun mapStringToConsultaType(value: String): ConsultaType {
             "Vacinação" -> ConsultaType.VACCINATION
             "Cirurgia" -> ConsultaType.SURGERY
             "Exame" -> ConsultaType.EXAM
-            "Odontologia" -> ConsultaType.DENTAL
-            "Estética" -> ConsultaType.GROOMING
             "Outro" -> ConsultaType.OTHER
             else -> ConsultaType.OTHER
         }

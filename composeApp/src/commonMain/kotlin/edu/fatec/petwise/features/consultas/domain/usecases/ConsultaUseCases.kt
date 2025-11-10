@@ -44,17 +44,13 @@ class AddConsultaUseCase(
         return if (validateConsulta(consulta)) {
             repository.addConsulta(consulta)
         } else {
-            Result.failure(IllegalArgumentException("Consulta data is invalid"))
+            Result.failure(Exception("Dados da consulta inválidos"))
         }
     }
 
     private fun validateConsulta(consulta: Consulta): Boolean {
-        return consulta.petName.isNotBlank() &&
-               consulta.veterinarianName.isNotBlank() &&
-               consulta.consultaDate.isNotBlank() &&
+        return consulta.consultaDate.isNotBlank() &&
                consulta.consultaTime.isNotBlank() &&
-               consulta.ownerName.isNotBlank() &&
-               consulta.ownerPhone.isNotBlank() &&
                consulta.price >= 0
     }
 }

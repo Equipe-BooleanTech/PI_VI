@@ -19,6 +19,9 @@ class NetworkRequestHandler(
         return try {
             val response = httpClient.request()
             handleResponse(response)
+        } catch (e: CancellationException) {
+            println("NetworkRequestHandler: Requisição cancelada (propagando CancellationException)")
+            throw e
         } catch (e: Exception) {
             handleException(e)
         }
@@ -86,11 +89,19 @@ class NetworkRequestHandler(
                         val data: T = response.body()
                         NetworkResult.Success(data)
                     } catch (e: SerializationException) {
+                        val bodyText = try { response.bodyAsText() } catch (ex: Exception) { "Unable to read body" }
+                        println("Ktor: RESPONSE: ${response.status}")
+                        println("METHOD: ${response.request.method}")
+                        println("FROM: ${response.request.url}")
+                        println("BODY Content-Type: ${response.contentType()}")
+                        println("BODY START")
+                        println(bodyText)
+                        println("BODY END")
                         println("Erro de serialização na resposta 200: ${e.message}")
-                        println("Response body: ${response.bodyAsText()}")
+                        println("Expected type: ${T::class.simpleName}")
                         NetworkResult.Error(
                             NetworkException.SerializationError(
-                                message = "Falha ao processar resposta do servidor: ${e.message}",
+                                message = "Erro ao processar resposta: ${e.message ?: "Formato de dados inválido"}",
                                 cause = e
                             )
                         )
@@ -188,6 +199,21 @@ class NetworkRequestHandler(
                 is HttpRequestTimeoutException -> NetworkException.Timeout()
                 is SerializationException -> NetworkException.SerializationError(cause = exception)
                 is NetworkException -> exception
+                is IllegalStateException -> {
+                    if (exception.message?.contains("Parent job is Completed") == true ||
+                        exception.message?.contains("Job is Completed") == true) {
+                        println("HttpClient em estado inválido: ${exception.message}")
+                        NetworkException.Unknown(
+                            message = "Cliente HTTP em estado inválido. Por favor, tente novamente.",
+                            cause = exception
+                        )
+                    } else {
+                        NetworkException.Unknown(
+                            message = exception.message ?: "Erro de estado desconhecido",
+                            cause = exception
+                        )
+                    }
+                }
                 else -> NetworkException.Unknown(
                     message = exception.message ?: "Erro desconhecido",
                     cause = exception

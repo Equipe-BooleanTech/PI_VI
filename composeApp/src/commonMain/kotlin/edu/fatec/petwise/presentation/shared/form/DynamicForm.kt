@@ -649,6 +649,13 @@ private fun RenderSelectField(
     formHasBeenSubmitted: Boolean
 ) {
     var expanded by remember { mutableStateOf(false) }
+    
+    val isRequired = fieldDefinition.validators.any { it.type == ValidationType.REQUIRED }
+    val labelText = if (isRequired && fieldDefinition.label != null) {
+        "${fieldDefinition.label} *"
+    } else {
+        fieldDefinition.label
+    }
 
     ExposedDropdownMenuBox(
         expanded = expanded,
@@ -663,7 +670,7 @@ private fun RenderSelectField(
             value = fieldState.displayValue,
             onValueChange = {},
             readOnly = true,
-            label = fieldDefinition.label?.let { { Text(it) } },
+            label = labelText?.let { { Text(it) } },
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
             },
@@ -672,7 +679,7 @@ private fun RenderSelectField(
                 .fillMaxWidth()
                 .heightIn(min = fieldHeight),
             enabled = fieldState.isEnabled,
-            isError = fieldState.errors.isNotEmpty() && fieldState.isTouched && fieldState.isDirty,
+            isError = shouldShowFieldError(fieldState, formHasBeenSubmitted),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = colorScheme.primary,
                 unfocusedBorderColor = colorScheme.outline,
@@ -690,26 +697,24 @@ private fun RenderSelectField(
                 onBlur()
             }
         ) {
-            // Handle new selectOptions
             fieldDefinition.selectOptions?.forEach { option ->
                 DropdownMenuItem(
                     text = { Text(option.value) },
                     onClick = {
                         onValueChange(option.key)
                         expanded = false
-                        onBlur() 
+                        onBlur()
                     }
                 )
             }
             
-            // Handle legacy string options
             fieldDefinition.options?.forEach { option ->
                 DropdownMenuItem(
                     text = { Text(option) },
                     onClick = {
                         onValueChange(option)
                         expanded = false
-                        onBlur() 
+                        onBlur()
                     }
                 )
             }
@@ -727,24 +732,45 @@ private fun RenderSegmentedControl(
     val allOptions = (fieldDefinition.selectOptions?.map { it.key to it.value } ?: emptyList()) +
                      (fieldDefinition.options?.map { it to it } ?: emptyList())
     
+    val isRequired = fieldDefinition.validators.any { it.type == ValidationType.REQUIRED }
+    
     if (allOptions.isNotEmpty()) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        Column(
+            modifier = Modifier.fillMaxWidth()
         ) {
-            allOptions.forEach { (key, value) ->
-                val isSelected = fieldState.value == key
-
-                FilterChip(
-                    onClick = { onValueChange(key) },
-                    label = { Text(value) },
-                    selected = isSelected,
-                    modifier = Modifier.weight(1f),
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = colorScheme.primary,
-                        selectedLabelColor = colorScheme.onPrimary
-                    )
+            fieldDefinition.label?.let { label ->
+                val labelText = if (isRequired) "$label *" else label
+                Text(
+                    text = labelText,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
+            }
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                allOptions.forEach { (key, value) ->
+                    val isSelected = fieldState.value == key
+
+                    FilterChip(
+                        onClick = { 
+                            onValueChange(key)
+                        },
+                        label = { Text(value) },
+                        selected = isSelected,
+                        enabled = fieldState.isEnabled,
+                        modifier = Modifier.weight(1f),
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = colorScheme.primary,
+                            selectedLabelColor = colorScheme.onPrimary,
+                            disabledContainerColor = colorScheme.surfaceVariant,
+                            disabledLabelColor = colorScheme.onSurfaceVariant
+                        )
+                    )
+                }
             }
         }
     }

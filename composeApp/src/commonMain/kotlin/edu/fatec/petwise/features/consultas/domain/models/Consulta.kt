@@ -1,5 +1,4 @@
 package edu.fatec.petwise.features.consultas.domain.models
-
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -20,8 +19,6 @@ data class Consulta(
     val nextAppointment: String? = null,
     val price: Float = 0f,
     val isPaid: Boolean = false,
-    val ownerName: String,
-    val ownerPhone: String,
     val createdAt: String,
     val updatedAt: String
 )
@@ -33,8 +30,6 @@ enum class ConsultaType(val displayName: String) {
     VACCINATION("Vacinação"),
     SURGERY("Cirurgia"),
     EXAM("Exame"),
-    DENTAL("Odontologia"),
-    GROOMING("Estética"),
     OTHER("Outro")
 }
 

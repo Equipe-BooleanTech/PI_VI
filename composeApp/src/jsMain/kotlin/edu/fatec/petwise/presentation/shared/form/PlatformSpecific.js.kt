@@ -1,9 +1,20 @@
 package edu.fatec.petwise.presentation.shared.form
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
@@ -64,8 +75,62 @@ actual fun PlatformDatePicker(
     onValueChange: (String) -> Unit,
     modifier: Modifier
 ) {
-    androidx.compose.material3.Text(text = "JS Date Picker - ${fieldState.displayValue}", modifier = modifier)
+    var showDialog by remember { mutableStateOf(true) }
+
+    val parts = fieldState.displayValue.split("-")
+    var year by remember { mutableStateOf(parts.getOrNull(0)?.toIntOrNull() ?: 2000) }
+    var month by remember { mutableStateOf(parts.getOrNull(1)?.toIntOrNull() ?: 1) }
+    var day by remember { mutableStateOf(parts.getOrNull(2)?.toIntOrNull() ?: 1) }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showDialog = false
+                onValueChange(fieldState.displayValue)
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val y = year
+                    val m = month.coerceIn(1, 12)
+                    val d = day.coerceIn(1, 31)
+                    val formatted = "${y.toString().padStart(4, '0')}-${m.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}"
+                    showDialog = false
+                    onValueChange(formatted)
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showDialog = false
+                    onValueChange(fieldState.displayValue)
+                }) { Text("Cancelar") }
+            },
+            title = { Text(text = fieldDefinition.label ?: "Selecione a Data") },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = year.toString(),
+                        onValueChange = { year = it.toIntOrNull() ?: year },
+                        label = { Text("Ano") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = month.toString(),
+                        onValueChange = { month = it.toIntOrNull() ?: month },
+                        label = { Text("Mês") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = day.toString(),
+                        onValueChange = { day = it.toIntOrNull() ?: day },
+                        label = { Text("Dia") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+        )
+    }
 }
+
 
 @Composable
 actual fun PlatformTimePicker(
@@ -74,8 +139,55 @@ actual fun PlatformTimePicker(
     onValueChange: (String) -> Unit,
     modifier: Modifier
 ) {
-    androidx.compose.material3.Text(text = "JS Time Picker - ${fieldState.displayValue}", modifier = modifier)
+    var showDialog by remember { mutableStateOf(true) }
+
+    val parts = fieldState.displayValue.split(":")
+    var hour by remember { mutableStateOf(parts.getOrNull(0)?.toIntOrNull() ?: 12) }
+    var minute by remember { mutableStateOf(parts.getOrNull(1)?.toIntOrNull() ?: 0) }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showDialog = false
+                onValueChange(fieldState.displayValue)
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val h = hour.coerceIn(0, 23)
+                    val m = minute.coerceIn(0, 59)
+                    // build formatted time without using JVM String.format
+                    val formatted = "${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}"
+                    showDialog = false
+                    onValueChange(formatted)
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showDialog = false
+                    onValueChange(fieldState.displayValue)
+                }) { Text("Cancelar") }
+            },
+            title = { Text(text = fieldDefinition.label ?: "Selecione o Horário") },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = hour.toString(),
+                        onValueChange = { hour = it.toIntOrNull() ?: hour },
+                        label = { Text("Hora") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = minute.toString(),
+                        onValueChange = { minute = it.toIntOrNull() ?: minute },
+                        label = { Text("Minuto") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+        )
+    }
 }
+
 
 @Composable
 actual fun PlatformFilePicker(

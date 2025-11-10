@@ -4,13 +4,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -29,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,7 +40,7 @@ fun ActivityItem(
     onClick: (String?) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val theme =PetWiseTheme.Light
+    val theme = PetWiseTheme.Light
 
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
@@ -70,56 +67,56 @@ fun ActivityItem(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-        Box(
-            modifier = Modifier
-                .padding(start = 8.dp)
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(Color.fromHex(activityData.iconBackground).copy(alpha = 0.2f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = activityData.icon,
-                contentDescription = null,
-                tint = Color.fromHex(activityData.iconBackground),
-                modifier = Modifier.size(22.dp)
-            )
-        }
+            Box(
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(Color.fromHex(activityData.iconBackground).copy(alpha = 0.2f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = activityData.icon,
+                    contentDescription = null,
+                    tint = Color.fromHex(activityData.iconBackground),
+                    modifier = Modifier.size(22.dp)
+                )
+            }
 
-        Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
-        Column(
-            modifier = Modifier.weight(1f)
-        ) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = activityData.title,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontWeight = FontWeight.Medium,
+                        color = Color.fromHex(theme.palette.textPrimary)
+                    ),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Text(
+                    text = activityData.description,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = Color.fromHex(theme.palette.textSecondary),
+                        fontSize = 12.sp
+                    ),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
             Text(
-                text = activityData.title,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontWeight = FontWeight.Medium,
-                    color = Color.fromHex(theme.palette.textPrimary)
-                ),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-
-            Text(
-                text = activityData.description,
+                text = activityData.date,
                 style = MaterialTheme.typography.bodySmall.copy(
                     color = Color.fromHex(theme.palette.textSecondary),
                     fontSize = 12.sp
                 ),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                modifier = Modifier.padding(start = 8.dp, end = 12.dp)
             )
-        }
-
-        Text(
-            text = activityData.date,
-            style = MaterialTheme.typography.bodySmall.copy(
-                color = Color.fromHex(theme.palette.textSecondary),
-                fontSize = 12.sp
-            ),
-            modifier = Modifier.padding(start = 8.dp, end = 12.dp)
-        )
         }
     }
 }

@@ -57,6 +57,14 @@ object AuthDependencyContainer {
     private val getUserProfileUseCase: GetUserProfileUseCase by lazy {
         GetUserProfileUseCase(authRepository)
     }
+    
+    private val _authViewModel: AuthViewModel by lazy {
+        AuthViewModel(
+            loginUseCase = loginUseCase,
+            registerUseCase = registerUseCase,
+            logoutUseCase = logoutUseCase
+        )
+    }
 
     fun provideLoginUseCase(): LoginUseCase = loginUseCase
 
@@ -70,13 +78,7 @@ object AuthDependencyContainer {
 
     fun provideGetUserProfileUseCase(): GetUserProfileUseCase = getUserProfileUseCase
 
-    fun provideAuthViewModel(): AuthViewModel {
-        return AuthViewModel(
-            loginUseCase = loginUseCase,
-            registerUseCase = registerUseCase,
-            logoutUseCase = logoutUseCase
-        )
-    }
+    fun provideAuthViewModel(): AuthViewModel = _authViewModel
 
     fun provideForgotPasswordViewModel(): ForgotPasswordViewModel {
         return ForgotPasswordViewModel(requestPasswordResetUseCase = requestPasswordResetUseCase)
@@ -103,7 +105,7 @@ class AuthTokenStorageImpl : AuthTokenStorage {
     override fun saveToken(token: String) {
         println("AuthTokenStorage: Saving token: ${token.take(10)}...")
         this.token = token
-        this.tokenExpirationTime = currentTimeMs() + (60 * 60 * 1000) // Default 1 hour
+        this.tokenExpirationTime = currentTimeMs() + (60 * 60 * 1000)
     }
 
     override fun getToken(): String? {

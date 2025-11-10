@@ -297,18 +297,15 @@ class DefaultValidationEngine(
        return cnpj.length != 14 || cnpj.all { it == cnpj[0] }
     }
 
-    // Parse supported date formats and return epoch millis in system default timezone
     private fun parseDateToEpochMillis(dateString: String): Long? {
         return try {
             when {
                 dateString.matches(Regex("^\\d{4}-\\d{2}-\\d{2}$")) -> {
-                    // yyyy-MM-dd
                     val local = LocalDate.parse(dateString)
                     val instant = local.atStartOfDayIn(TimeZone.currentSystemDefault())
                     instant.toEpochMilliseconds()
                 }
                 dateString.matches(Regex("^\\d{2}/\\d{2}/\\d{4}$")) -> {
-                    // dd/MM/yyyy -> convert to LocalDate
                     val parts = dateString.split('/')
                     if (parts.size != 3) return null
                     val day = parts[0].toIntOrNull() ?: return null

@@ -1,0 +1,734 @@
+package edu.fatec.petwise.features.vaccinations.presentation.view
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Vaccines
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import edu.fatec.petwise.features.vaccinations.domain.models.Vaccination
+import edu.fatec.petwise.features.vaccinations.domain.models.VaccinationStatus
+import edu.fatec.petwise.features.vaccinations.presentation.components.EditVaccinationDialog
+import edu.fatec.petwise.features.vaccinations.presentation.viewmodel.VaccinationsViewModel
+import edu.fatec.petwise.features.vaccinations.presentation.viewmodel.VaccinationsUiEvent
+import edu.fatec.petwise.features.vaccinations.presentation.viewmodel.UpdateVaccinationViewModel
+import edu.fatec.petwise.features.vaccinations.presentation.viewmodel.UpdateVaccinationUiEvent
+import edu.fatec.petwise.features.vaccinations.di.VaccinationDependencyContainer
+import edu.fatec.petwise.presentation.theme.PetWiseTheme
+import edu.fatec.petwise.presentation.theme.fromHex
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun VaccinationsScreen(
+    viewModel: VaccinationsViewModel,
+    navigationKey: Any? = null,
+    onNavigateBack: () -> Unit = {},
+    onAddVaccination: () -> Unit = {},
+    onEditVaccination: (String) -> Unit = {},
+    onScheduleVaccination: (String) -> Unit = {},
+    canAddVaccinations: Boolean = true,
+    canEditVaccinations: Boolean = true
+) {
+    val updateVaccinationViewModel = remember { VaccinationDependencyContainer.provideUpdateVaccinationViewModel() }
+    val uiState by viewModel.uiState.collectAsState()
+    val updateUiState by updateVaccinationViewModel.uiState.collectAsState()
+    val vaccinations = uiState.vaccinations
+    val pendingVaccinations = remember(vaccinations) {
+        vaccinations.filter { 
+            it.status == VaccinationStatus.ATRASADA || it.status == VaccinationStatus.AGENDADA 
+        }
+    }
+    val theme = PetWiseTheme.Light
+    
+    var showEditDialog by remember { mutableStateOf(false) }
+    var vaccinationToEdit by remember { mutableStateOf<Vaccination?>(null) }
+    
+    LaunchedEffect(navigationKey) {
+        viewModel.onEvent(VaccinationsUiEvent.LoadVaccinations)
+    }
+
+    LaunchedEffect(updateUiState.isSuccess) {
+        if (updateUiState.isSuccess) {
+            showEditDialog = false
+            vaccinationToEdit = null
+            viewModel.onEvent(VaccinationsUiEvent.LoadVaccinations)
+            updateVaccinationViewModel.onEvent(UpdateVaccinationUiEvent.ClearState)
+        }
+    }
+    
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.fromHex("#F7F7F7"))
+    ) {
+        VaccinationsHeader(
+            vaccinationCount = vaccinations.size,
+            pendingCount = pendingVaccinations.size,
+            onAddVaccinationClick = onAddVaccination,
+            canAddVaccinations = canAddVaccinations
+        )
+
+        Box(modifier = Modifier.fillMaxSize()) {
+            when {
+                uiState.isLoading -> {
+                    LoadingContent()
+                }
+                vaccinations.isEmpty() -> {
+                    EmptyContent(
+                        onAddVaccinationClick = onAddVaccination,
+                        canAddVaccinations = canAddVaccinations
+                    )
+                }
+                else -> {
+                    VaccinationsListContent(
+                        vaccinations = vaccinations,
+                        pendingVaccinations = pendingVaccinations,
+                        onEditVaccination = { vaccination ->
+                            if (canEditVaccinations) {
+                                vaccinationToEdit = vaccination
+                                showEditDialog = true
+                            }
+                        },
+                        onScheduleVaccination = onScheduleVaccination,
+                        canEditVaccinations = canEditVaccinations
+                    )
+                }
+            }
+
+            uiState.error?.let { errorMessage ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter)
+                ) {
+                    VaccinationErrorSnackbar(
+                        message = errorMessage,
+                        isError = true,
+                        onDismiss = { /* Clear error event */ },
+                        actionLabel = "Tentar Novamente",
+                        onAction = { viewModel.onEvent(VaccinationsUiEvent.LoadVaccinations) }
+                    )
+                }
+            }
+        }
+    }
+    
+    // Edit Dialog
+    vaccinationToEdit?.let { vaccination ->
+        if (showEditDialog) {
+            EditVaccinationDialog(
+                vaccination = vaccination,
+                updateVaccinationViewModel = updateVaccinationViewModel,
+                isLoading = updateUiState.isLoading,
+                errorMessage = updateUiState.errorMessage,
+                onDismiss = {
+                    showEditDialog = false
+                    vaccinationToEdit = null
+                    updateVaccinationViewModel.onEvent(UpdateVaccinationUiEvent.ClearState)
+                },
+                onSuccess = {
+                    viewModel.onEvent(VaccinationsUiEvent.LoadVaccinations)
+                },
+                canEditVaccinations = canEditVaccinations
+            )
+        }
+    }
+}
+
+@Composable
+private fun VaccinationsHeader(
+    vaccinationCount: Int,
+    pendingCount: Int,
+    onAddVaccinationClick: () -> Unit,
+    canAddVaccinations: Boolean = true
+) {
+    val theme = PetWiseTheme.Light
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.fromHex("#4CAF50")
+        ),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "Vacinas",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    )
+                    Text(
+                        text = if (vaccinationCount > 0) {
+                            "$vaccinationCount vacina(s) registrada(s)"
+                        } else {
+                            "Nenhuma vacina registrada"
+                        },
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = Color.White.copy(alpha = 0.9f)
+                        )
+                    )
+                }
+
+                if (pendingCount > 0) {
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = Color(0xFFDC3545)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Notifications,
+                                contentDescription = "Pendentes",
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "$pendingCount",
+                                color = Color.White,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (canAddVaccinations) {
+                Button(
+                    onClick = onAddVaccinationClick,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White,
+                        contentColor = Color.fromHex("#4CAF50")
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Adicionar",
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Adicionar Vacina",
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LoadingContent() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator(
+            color = Color.fromHex("#4CAF50")
+        )
+    }
+}
+
+@Composable
+private fun EmptyContent(
+    onAddVaccinationClick: () -> Unit,
+    canAddVaccinations: Boolean = true
+) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Vaccines,
+                contentDescription = "Nenhuma vacina",
+                tint = Color.Gray,
+                modifier = Modifier.size(80.dp)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "Nenhuma vacina registrada",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Gray
+                )
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = if (canAddVaccinations) {
+                    "Registre a primeira vacina para começar!"
+                } else {
+                    "Não há vacinas registradas no momento."
+                },
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = Color.Gray
+                )
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            if (canAddVaccinations) {
+                Button(
+                    onClick = onAddVaccinationClick,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.fromHex("#4CAF50")
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Adicionar"
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Adicionar Vacina")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun VaccinationsListContent(
+    vaccinations: List<Vaccination>,
+    pendingVaccinations: List<Vaccination>,
+    onEditVaccination: (Vaccination) -> Unit,
+    onScheduleVaccination: (String) -> Unit,
+    canEditVaccinations: Boolean = true
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        if (pendingVaccinations.isNotEmpty()) {
+            item {
+                PendingVaccinationsCard(pendingVaccinations = pendingVaccinations)
+            }
+        }
+        
+        item {
+            VaccinationStatsRow(
+                total = vaccinations.size,
+                upcoming = pendingVaccinations.size
+            )
+        }
+        
+        items(
+            items = vaccinations,
+            key = { vaccination: Vaccination -> vaccination.id }
+        ) { vaccination: Vaccination ->
+            VaccinationCard(
+                vaccination = vaccination,
+                onEdit = { onEditVaccination(vaccination) },
+                onSchedule = { onScheduleVaccination(vaccination.id) },
+                canEditVaccinations = canEditVaccinations
+            )
+        }
+    }
+}
+
+@Composable
+private fun VaccinationErrorSnackbar(
+    message: String,
+    isError: Boolean,
+    onDismiss: () -> Unit,
+    actionLabel: String? = null,
+    onAction: (() -> Unit)? = null
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isError) Color(0xFFDC3545) else Color(0xFF28A745)
+        ),
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = message,
+                color = Color.White,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.weight(1f)
+            )
+            
+            if (actionLabel != null && onAction != null) {
+                TextButton(onClick = onAction) {
+                    Text(
+                        text = actionLabel,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PendingVaccinationsCard(pendingVaccinations: List<Vaccination>) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        color = Color(0xFFFFF3CD),
+        shadowElevation = 0.dp
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(bottom = 12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Notifications,
+                    contentDescription = null,
+                    tint = Color(0xFFFF9800),
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Reforços de Vacina Pendentes",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF856404)
+                )
+            }
+            
+            pendingVaccinations.forEach { vaccination: Vaccination ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "${vaccination.petId} - ${vaccination.vaccineType.getDisplayName()}",
+                        fontSize = 14.sp,
+                        color = Color(0xFF856404)
+                    )
+                    Text(
+                        text = vaccination.nextDoseDate ?: "",
+                        fontSize = 14.sp,
+                        color = Color(0xFF856404)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun VaccinationStatsRow(total: Int, upcoming: Int) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        StatCard(
+            modifier = Modifier.weight(1f),
+            label = "Total",
+            value = total.toString(),
+            iconTint = Color(0xFF2196F3),
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Vaccines,
+                    contentDescription = null,
+                    tint = Color(0xFF2196F3),
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        )
+        
+        StatCard(
+            modifier = Modifier.weight(1f),
+            label = "Próximos",
+            value = upcoming.toString(),
+            iconTint = Color(0xFFFF9800),
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Notifications,
+                    contentDescription = null,
+                    tint = Color(0xFFFF9800),
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        )
+    }
+}
+
+@Composable
+private fun StatCard(
+    modifier: Modifier = Modifier,
+    label: String,
+    value: String,
+    iconTint: Color,
+    icon: @Composable (() -> Unit)? = null
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(12.dp),
+        color = Color.White,
+        shadowElevation = 2.dp
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(
+                        iconTint.copy(alpha = 0.1f),
+                        RoundedCornerShape(8.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                if (icon != null) {
+                    icon()
+                }
+            }
+            
+            Spacer(modifier = Modifier.width(12.dp))
+            
+            Column {
+                Text(
+                    text = label,
+                    fontSize = 13.sp,
+                    color = Color(0xFF757575)
+                )
+                Text(
+                    text = value,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF1F1F1F)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun VaccinationCard(
+    vaccination: Vaccination,
+    onEdit: () -> Unit,
+    onSchedule: () -> Unit,
+    canEditVaccinations: Boolean = true
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        color = Color.White,
+        shadowElevation = 2.dp
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = Color(0xFF2196F3).copy(alpha = 0.1f)
+                ) {
+                    Text(
+                        text = vaccination.petId,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                        fontSize = 13.sp,
+                        color = Color(0xFF2196F3),
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+                
+                if (vaccination.status == VaccinationStatus.ATRASADA) {
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = Color(0xFFDC3545).copy(alpha = 0.1f)
+                    ) {
+                        Text(
+                            text = vaccination.status.getDisplayName(),
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                            fontSize = 13.sp,
+                            color = Color(0xFFDC3545),
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+                
+                if (vaccination.status == VaccinationStatus.APLICADA) {
+                    Text(
+                        text = vaccination.vaccinationDate,
+                        fontSize = 13.sp,
+                        color = Color(0xFF757575)
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Text(
+                text = vaccination.vaccineType.getDisplayName(),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF1F1F1F)
+            )
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            VaccinationInfoRow(
+                label = "Data de Aplicação:",
+                value = vaccination.vaccinationDate
+            )
+            
+            if (vaccination.nextDoseDate != null) {
+                VaccinationInfoRow(
+                    label = "Próximo Reforço:",
+                    value = vaccination.nextDoseDate,
+                    valueColor = if (vaccination.status == VaccinationStatus.ATRASADA) 
+                        Color(0xFFDC3545) else Color(0xFF757575)
+                )
+            }
+            
+            VaccinationInfoRow(
+                label = "Doses Totais:",
+                value = "${vaccination.totalDoses}"
+            )
+            
+            if (vaccination.manufacturer != null) {
+                VaccinationInfoRow(
+                    label = "Fabricante:",
+                    value = vaccination.manufacturer
+                )
+            }
+            
+            if (vaccination.observations.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Observações:",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFF1F1F1F)
+                )
+                Text(
+                    text = vaccination.observations,
+                    fontSize = 14.sp,
+                    color = Color(0xFF757575),
+                    lineHeight = 20.sp
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = if (canEditVaccinations) Arrangement.spacedBy(8.dp) else Arrangement.Center
+            ) {
+                if (canEditVaccinations) {
+                    OutlinedButton(
+                        onClick = onEdit,
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color(0xFF666666)
+                        )
+                    ) {
+                        Text(
+                            text = "Editar",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+                
+                Button(
+                    onClick = onSchedule,
+                    modifier = if (canEditVaccinations) Modifier.weight(1f) else Modifier,
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF28A745)
+                    )
+                ) {
+                    Text(
+                        text = "Agendar",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun VaccinationInfoRow(
+    label: String,
+    value: String,
+    valueColor: Color = Color(0xFF757575)
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 3.dp)
+    ) {
+        Text(
+            text = label,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium,
+            color = Color(0xFF1F1F1F)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = value,
+            fontSize = 14.sp,
+            color = valueColor
+        )
+    }
+}
