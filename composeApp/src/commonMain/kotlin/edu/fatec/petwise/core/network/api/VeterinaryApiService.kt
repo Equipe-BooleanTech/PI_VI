@@ -9,7 +9,6 @@ import io.ktor.client.request.*
 interface VeterinaryApiService {
     suspend fun getAllVeterinaries(): NetworkResult<VeterinaryListResponse>
     suspend fun getVeterinaryById(id: String): NetworkResult<UserProfileDto>
-    suspend fun searchVeterinaries(query: String): NetworkResult<VeterinaryListResponse>
 }
 
 class VeterinaryApiServiceImpl(
@@ -22,11 +21,5 @@ class VeterinaryApiServiceImpl(
 
     override suspend fun getVeterinaryById(id: String): NetworkResult<UserProfileDto> {
         return networkHandler.get<UserProfileDto>(ApiEndpoints.getVeterinary(id))
-    }
-
-    override suspend fun searchVeterinaries(query: String): NetworkResult<VeterinaryListResponse> {
-        return networkHandler.get<VeterinaryListResponse>(ApiEndpoints.VETERINARIES_SEARCH) {
-            parameter("query", query)
-        }
     }
 }

@@ -56,28 +56,6 @@ class VeterinaryRepositoryImpl(
         }
     }
 
-    override fun searchVeterinaries(query: String): Flow<List<Veterinary>> = flow {
-        try {
-            println("Repositório: Pesquisando veterinários com query '$query' via API")
-            when (val result = remoteDataSource.searchVeterinaries(query)) {
-                is NetworkResult.Success -> {
-                    println("Repositório: ${result.data.size} veterinários encontrados na pesquisa")
-                    emit(result.data)
-                }
-                is NetworkResult.Error -> {
-                    println("Repositório: Erro ao pesquisar veterinários - ${result.exception.message}")
-                    throw result.exception
-                }
-                is NetworkResult.Loading -> {
-                    println("Repositório: Carregando pesquisa de veterinários...")
-                }
-            }
-        } catch (e: Exception) {
-            println("Repositório: Erro inesperado ao pesquisar veterinários - ${e.message}")
-            throw e
-        }
-    }
-
     override fun filterVeterinaries(options: VeterinaryFilterOptions): Flow<List<Veterinary>> = flow {
         try {
             println("Repositório: Aplicando filtros nos veterinários via API")
@@ -93,12 +71,10 @@ class VeterinaryRepositoryImpl(
             val filteredVeterinaries = allVeterinaries.filter { veterinary ->
                 var matches = true
 
-                // Filter by verification status
                 if (options.verified != null) {
                     matches = matches && (veterinary.verified == options.verified)
                 }
 
-                // Filter by search query
                 if (options.searchQuery.isNotBlank()) {
                     val query = options.searchQuery.lowercase()
                     matches = matches && (

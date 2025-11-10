@@ -21,7 +21,6 @@ data class VeterinariesUiState(
 
 sealed class VeterinariesUiEvent {
     object LoadVeterinaries : VeterinariesUiEvent()
-    data class SearchVeterinaries(val query: String) : VeterinariesUiEvent()
     data class FilterVeterinaries(val options: VeterinaryFilterOptions) : VeterinariesUiEvent()
     data class SelectVeterinary(val veterinary: Veterinary?) : VeterinariesUiEvent()
     object ShowVeterinaryDetails : VeterinariesUiEvent()
@@ -43,7 +42,6 @@ class VeterinariesViewModel(
     fun handleEvent(event: VeterinariesUiEvent) {
         when (event) {
             is VeterinariesUiEvent.LoadVeterinaries -> loadVeterinaries()
-            is VeterinariesUiEvent.SearchVeterinaries -> searchVeterinaries(event.query)
             is VeterinariesUiEvent.FilterVeterinaries -> filterVeterinaries(event.options)
             is VeterinariesUiEvent.SelectVeterinary -> selectVeterinary(event.veterinary)
             is VeterinariesUiEvent.ShowVeterinaryDetails -> showVeterinaryDetails()
@@ -69,32 +67,6 @@ class VeterinariesViewModel(
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     errorMessage = "Erro ao carregar veterinários: ${e.message}"
-                )
-            }
-        }
-    }
-
-    private fun searchVeterinaries(query: String) {
-        _uiState.value = _uiState.value.copy(searchQuery = query)
-        
-        if (query.isBlank()) {
-            _uiState.value = _uiState.value.copy(
-                filteredVeterinaries = applyFilters(_uiState.value.veterinaries)
-            )
-            return
-        }
-
-        viewModelScope.launch {
-            try {
-                veterinaryUseCases.searchVeterinaries(query).collect { veterinaries ->
-                    _uiState.value = _uiState.value.copy(
-                        filteredVeterinaries = applyFilters(veterinaries),
-                        errorMessage = null
-                    )
-                }
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    errorMessage = "Erro na busca: ${e.message}"
                 )
             }
         }

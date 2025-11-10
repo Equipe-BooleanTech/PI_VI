@@ -21,14 +21,6 @@ class GetVeterinaryByIdUseCase(
     }
 }
 
-class SearchVeterinariesUseCase(
-    private val veterinaryRepository: VeterinaryRepository
-) {
-    operator fun invoke(query: String): Flow<List<Veterinary>> {
-        return veterinaryRepository.searchVeterinaries(query)
-    }
-}
-
 class FilterVeterinariesUseCase(
     private val veterinaryRepository: VeterinaryRepository
 ) {
@@ -48,7 +40,6 @@ class GetVerifiedVeterinariesUseCase(
 data class VeterinaryUseCases(
     val getAllVeterinaries: GetAllVeterinariesUseCase,
     val getVeterinaryById: GetVeterinaryByIdUseCase,
-    val searchVeterinaries: SearchVeterinariesUseCase,
     val filterVeterinaries: FilterVeterinariesUseCase,
     val getVerifiedVeterinaries: GetVerifiedVeterinariesUseCase
 )

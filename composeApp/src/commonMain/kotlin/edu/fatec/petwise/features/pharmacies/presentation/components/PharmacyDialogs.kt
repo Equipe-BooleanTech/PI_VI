@@ -1,4 +1,4 @@
-package edu.fatec.petwise.features.veterinaries.presentation.components
+package edu.fatec.petwise.features.pharmacies.presentation.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,11 +13,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import edu.fatec.petwise.features.veterinaries.domain.models.Veterinary
+import edu.fatec.petwise.features.pharmacies.domain.models.Pharmacy
 
 @Composable
-fun VeterinaryDetailsDialog(
-    veterinary: Veterinary,
+fun PharmacyDetailsDialog(
+    pharmacy: Pharmacy,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -34,14 +34,13 @@ fun VeterinaryDetailsDialog(
                 modifier = Modifier.padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Header
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Detalhes do Veterinário",
+                        text = "Detalhes da Farmácia",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = Color.Black
@@ -61,36 +60,31 @@ fun VeterinaryDetailsDialog(
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
-                // Veterinary details
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // Profile icon
                     Icon(
-                        imageVector = Icons.Default.LocalHospital,
-                        contentDescription = "Veterinário",
+                        imageVector = Icons.Default.LocalPharmacy,
+                        contentDescription = "Farmácia",
                         tint = Color(0xFF4CAF50),
                         modifier = Modifier.size(64.dp)
                     )
                     
-                    // Name
                     Text(
-                        text = veterinary.fullName,
+                        text = pharmacy.fullName,
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.SemiBold,
                         color = Color.Black,
                         textAlign = TextAlign.Center
                     )
                     
-                    // User type badge
-                    if (veterinary.verified) {
+                    if (pharmacy.verified) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            modifier = Modifier
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Verified,
@@ -125,13 +119,13 @@ fun VeterinaryDetailsDialog(
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = veterinary.email,
+                                text = pharmacy.email,
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = Color.Black
                             )
                         }
                         
-                        veterinary.phone?.let { phone ->
+                        pharmacy.phone?.let { phone ->
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically
@@ -163,7 +157,7 @@ fun VeterinaryDetailsDialog(
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = veterinary.userType,
+                                text = pharmacy.userType,
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = Color.Black
                             )
@@ -173,7 +167,6 @@ fun VeterinaryDetailsDialog(
                 
                 Spacer(modifier = Modifier.height(24.dp))
                 
-                // Action buttons
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)

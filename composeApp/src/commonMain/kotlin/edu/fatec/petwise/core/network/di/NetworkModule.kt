@@ -73,6 +73,9 @@ object NetworkModule {
     val veterinaryApiService: VeterinaryApiService
         get() = VeterinaryApiServiceImpl(getNetworkRequestHandler())
 
+    val pharmacyApiService: PharmacyApiService
+        get() = PharmacyApiServiceImpl(getNetworkRequestHandler())
+
     val suprimentoApiService: SuprimentoApiService
         get() = SuprimentoApiServiceImpl(getNetworkRequestHandler())
 

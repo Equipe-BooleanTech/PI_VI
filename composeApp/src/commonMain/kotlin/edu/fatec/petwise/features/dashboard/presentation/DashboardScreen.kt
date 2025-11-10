@@ -50,6 +50,7 @@ import edu.fatec.petwise.features.suprimentos.presentation.view.SuprimentosScree
 import edu.fatec.petwise.features.vaccinations.di.VaccinationDependencyContainer
 import edu.fatec.petwise.features.vaccinations.presentation.view.VaccinationsScreen
 import edu.fatec.petwise.features.veterinaries.presentation.view.VeterinariesScreen
+import edu.fatec.petwise.features.pharmacies.presentation.view.PharmaciesScreen
 import edu.fatec.petwise.navigation.NavigationManager
 import edu.fatec.petwise.presentation.components.BottomNavigation.BottomNavigationBar
 import edu.fatec.petwise.presentation.components.MoreMenu.MoreMenu
@@ -229,9 +230,8 @@ fun DashboardScreen(
                     }
                 }
                 NavigationManager.TabScreen.Pharmacy -> {
-                    PlaceholderContent(
-                        paddingValues = paddingValues,
-                        title = "Farmácias"
+                    PharmaciesScreen(
+                        navigationKey = currentTabScreen
                     )
                 }
                 NavigationManager.TabScreen.Labs -> {

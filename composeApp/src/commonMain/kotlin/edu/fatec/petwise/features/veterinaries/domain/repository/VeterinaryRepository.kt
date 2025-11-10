@@ -9,8 +9,6 @@ interface VeterinaryRepository {
 
     fun getVeterinaryById(id: String): Flow<Veterinary?>
 
-    fun searchVeterinaries(query: String): Flow<List<Veterinary>>
-
     fun filterVeterinaries(options: VeterinaryFilterOptions): Flow<List<Veterinary>>
 
     fun getVerifiedVeterinaries(): Flow<List<Veterinary>>

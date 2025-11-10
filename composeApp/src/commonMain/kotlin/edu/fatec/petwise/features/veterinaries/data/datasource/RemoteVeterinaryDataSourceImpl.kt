@@ -30,15 +30,4 @@ class RemoteVeterinaryDataSourceImpl(
             is NetworkResult.Loading -> result
         }
     }
-
-    override suspend fun searchVeterinaries(query: String): NetworkResult<List<Veterinary>> {
-        return when (val result = veterinaryApiService.searchVeterinaries(query)) {
-            is NetworkResult.Success -> {
-                val veterinaries = result.data.veterinaries.map { it.toVeterinary() }
-                NetworkResult.Success(veterinaries)
-            }
-            is NetworkResult.Error -> result
-            is NetworkResult.Loading -> result
-        }
-    }
 }

@@ -1,4 +1,4 @@
-package edu.fatec.petwise.features.veterinaries.presentation.view
+package edu.fatec.petwise.features.pharmacies.presentation.view
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -16,11 +16,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import edu.fatec.petwise.core.network.NetworkResult
-import edu.fatec.petwise.features.veterinaries.domain.models.*
-import edu.fatec.petwise.features.veterinaries.presentation.components.*
-import edu.fatec.petwise.features.veterinaries.presentation.viewmodel.*
-import edu.fatec.petwise.features.veterinaries.presentation.forms.SearchVeterinaryFormSchema
-import edu.fatec.petwise.features.veterinaries.di.VeterinaryDependencyContainer
+import edu.fatec.petwise.features.pharmacies.domain.models.*
+import edu.fatec.petwise.features.pharmacies.presentation.components.*
+import edu.fatec.petwise.features.pharmacies.presentation.viewmodel.*
+import edu.fatec.petwise.features.pharmacies.presentation.forms.SearchPharmacyFormSchema
+import edu.fatec.petwise.features.pharmacies.di.PharmacyDependencyContainer
 import edu.fatec.petwise.presentation.shared.form.DynamicForm
 import edu.fatec.petwise.presentation.shared.form.DynamicFormViewModel
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
@@ -29,27 +29,27 @@ import edu.fatec.petwise.presentation.shared.form.FormEvent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VeterinariesScreen(
+fun PharmaciesScreen(
     navigationKey: Any? = null
 ) {
-    println("VeterinariesScreen - Carregando veterinários")
+    println("PharmaciesScreen - Carregando farmácias")
     
-    val veterinariesViewModel = remember {
-        VeterinariesViewModel(VeterinaryDependencyContainer.provideVeterinaryUseCases())
+    val pharmaciesViewModel = remember {
+        PharmaciesViewModel(PharmacyDependencyContainer.providePharmacyUseCases())
     }
     
     val searchFormViewModel = remember {
-        DynamicFormViewModel(SearchVeterinaryFormSchema.configuration)
+        DynamicFormViewModel(SearchPharmacyFormSchema.configuration)
     }
     
     val theme = PetWiseTheme.Light
-    val veterinariesState by veterinariesViewModel.uiState.collectAsStateWithLifecycle()
+    val pharmaciesState by pharmaciesViewModel.uiState.collectAsStateWithLifecycle()
     
     var showSearchSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(navigationKey) {
-        println("VeterinariesScreen: Recarregando veterinários - navigationKey: $navigationKey")
-        veterinariesViewModel.handleEvent(VeterinariesUiEvent.LoadVeterinaries)
+        println("PharmaciesScreen: Recarregando farmácias - navigationKey: $navigationKey")
+        pharmaciesViewModel.handleEvent(PharmaciesUiEvent.LoadPharmacies)
     }
 
     LaunchedEffect(Unit) {
@@ -61,12 +61,12 @@ fun VeterinariesScreen(
                         val searchQuery = formData["query"] as? String ?: ""
                         val verified = formData["verified"] as? Boolean
                         
-                        val filterOptions = VeterinaryFilterOptions(
+                        val filterOptions = PharmacyFilterOptions(
                             verified = verified,
                             searchQuery = searchQuery
                         )
                         
-                        veterinariesViewModel.handleEvent(VeterinariesUiEvent.FilterVeterinaries(filterOptions))
+                        pharmaciesViewModel.handleEvent(PharmaciesUiEvent.FilterPharmacies(filterOptions))
                         showSearchSheet = false
                     }
                 }
@@ -77,10 +77,14 @@ fun VeterinariesScreen(
 
     Scaffold(
         topBar = {
-            VeterinariesTopBar(
+            PharmaciesTopBar(
+                searchQuery = pharmaciesState.searchQuery,
+                onSearchQueryChange = { query ->
+                    pharmaciesViewModel.handleEvent(PharmaciesUiEvent.SearchPharmacies(query))
+                },
                 onSearchClick = { showSearchSheet = true },
                 onRefresh = {
-                    veterinariesViewModel.handleEvent(VeterinariesUiEvent.LoadVeterinaries)
+                    pharmaciesViewModel.handleEvent(PharmaciesUiEvent.LoadPharmacies)
                 }
             )
         }
@@ -92,43 +96,44 @@ fun VeterinariesScreen(
                 .padding(paddingValues)
         ) {
             when {
-                veterinariesState.isLoading -> {
-                    VeterinariesLoadingState()
+                pharmaciesState.isLoading -> {
+                    PharmaciesLoadingState()
                 }
-                veterinariesState.errorMessage != null -> {
-                    val currentErrorMessage = veterinariesState.errorMessage
-                    VeterinariesErrorState(
+                pharmaciesState.errorMessage != null -> {
+                    val currentErrorMessage = pharmaciesState.errorMessage
+                    PharmaciesErrorState(
                         errorMessage = currentErrorMessage!!,
                         onRetry = {
-                            veterinariesViewModel.handleEvent(VeterinariesUiEvent.ClearError)
-                            veterinariesViewModel.handleEvent(VeterinariesUiEvent.LoadVeterinaries)
+                            pharmaciesViewModel.handleEvent(PharmaciesUiEvent.ClearError)
+                            pharmaciesViewModel.handleEvent(PharmaciesUiEvent.LoadPharmacies)
                         }
                     )
                 }
-                veterinariesState.filteredVeterinaries.isEmpty() -> {
-                    VeterinariesEmptyState(
-                        isSearching = veterinariesState.searchQuery.isNotBlank() || 
-                                    veterinariesState.filterOptions.searchQuery.isNotBlank(),
+                pharmaciesState.filteredPharmacies.isEmpty() -> {
+                    PharmaciesEmptyState(
+                        isSearching = pharmaciesState.searchQuery.isNotBlank() || 
+                                    pharmaciesState.filterOptions.searchQuery.isNotBlank(),
                         onClearSearch = {
-                            veterinariesViewModel.handleEvent(
-                                VeterinariesUiEvent.FilterVeterinaries(VeterinaryFilterOptions())
+                            pharmaciesViewModel.handleEvent(PharmaciesUiEvent.SearchPharmacies(""))
+                            pharmaciesViewModel.handleEvent(
+                                PharmaciesUiEvent.FilterPharmacies(PharmacyFilterOptions())
                             )
                         }
                     )
                 }
                 else -> {
-                    VeterinariesContent(
-                        veterinaries = veterinariesState.filteredVeterinaries,
-                        onVeterinaryClick = { veterinary ->
-                            veterinariesViewModel.handleEvent(VeterinariesUiEvent.SelectVeterinary(veterinary))
-                            veterinariesViewModel.handleEvent(VeterinariesUiEvent.ShowVeterinaryDetails)
+                    PharmaciesContent(
+                        pharmacies = pharmaciesState.filteredPharmacies,
+                        onPharmacyClick = { pharmacy ->
+                            pharmaciesViewModel.handleEvent(PharmaciesUiEvent.SelectPharmacy(pharmacy))
+                            pharmaciesViewModel.handleEvent(PharmaciesUiEvent.ShowPharmacyDetails)
                         }
                     )
                 }
             }
 
-            veterinariesState.errorMessage?.let { errorMessage ->
-                VeterinaryErrorSnackbar(
+            pharmaciesState.errorMessage?.let { errorMessage ->
+                PharmacyErrorSnackbar(
                     message = errorMessage,
                     modifier = Modifier.align(Alignment.BottomCenter)
                 )
@@ -169,12 +174,12 @@ fun VeterinariesScreen(
         }
     }
 
-    if (veterinariesState.showVeterinaryDetails && veterinariesState.selectedVeterinary != null) {
-        val currentSelectedVeterinary = veterinariesState.selectedVeterinary
-        VeterinaryDetailsDialog(
-            veterinary = currentSelectedVeterinary!!,
+    if (pharmaciesState.showPharmacyDetails && pharmaciesState.selectedPharmacy != null) {
+        val currentSelectedPharmacy = pharmaciesState.selectedPharmacy
+        PharmacyDetailsDialog(
+            pharmacy = currentSelectedPharmacy!!,
             onDismiss = {
-                veterinariesViewModel.handleEvent(VeterinariesUiEvent.HideVeterinaryDetails)
+                pharmaciesViewModel.handleEvent(PharmaciesUiEvent.HidePharmacyDetails)
             }
         )
     }
@@ -182,7 +187,9 @@ fun VeterinariesScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun VeterinariesTopBar(
+private fun PharmaciesTopBar(
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
     onSearchClick: () -> Unit,
     onRefresh: () -> Unit
 ) {
@@ -191,7 +198,7 @@ private fun VeterinariesTopBar(
     TopAppBar(
         title = {
             Text(
-                text = "Veterinários",
+                text = "Farmácias",
                 style = theme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
@@ -220,7 +227,7 @@ private fun VeterinariesTopBar(
 }
 
 @Composable
-private fun VeterinariesLoadingState() {
+private fun PharmaciesLoadingState() {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -234,7 +241,7 @@ private fun VeterinariesLoadingState() {
                 modifier = Modifier.size(48.dp)
             )
             Text(
-                text = "Carregando veterinários...",
+                text = "Carregando farmácias...",
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.Gray
             )
@@ -243,7 +250,7 @@ private fun VeterinariesLoadingState() {
 }
 
 @Composable
-private fun VeterinariesErrorState(
+private fun PharmaciesErrorState(
     errorMessage: String,
     onRetry: () -> Unit
 ) {
@@ -297,7 +304,7 @@ private fun VeterinariesErrorState(
 }
 
 @Composable
-private fun VeterinariesEmptyState(
+private fun PharmaciesEmptyState(
     isSearching: Boolean,
     onClearSearch: () -> Unit
 ) {
@@ -311,14 +318,14 @@ private fun VeterinariesEmptyState(
             modifier = Modifier.padding(32.dp)
         ) {
             Icon(
-                imageVector = if (isSearching) Icons.Default.SearchOff else Icons.Default.LocalHospital,
-                contentDescription = if (isSearching) "Nenhum resultado" else "Nenhum veterinário",
+                imageVector = if (isSearching) Icons.Default.SearchOff else Icons.Default.LocalPharmacy,
+                contentDescription = if (isSearching) "Nenhum resultado" else "Nenhuma farmácia",
                 tint = Color.Gray,
                 modifier = Modifier.size(64.dp)
             )
             
             Text(
-                text = if (isSearching) "Nenhum veterinário encontrado" else "Nenhum veterinário cadastrado",
+                text = if (isSearching) "Nenhuma farmácia encontrada" else "Nenhuma farmácia cadastrada",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black,
@@ -329,7 +336,7 @@ private fun VeterinariesEmptyState(
                 text = if (isSearching) 
                     "Tente ajustar os filtros de busca ou pesquisar por outros termos." 
                 else 
-                    "Ainda não há veterinários cadastrados na plataforma.",
+                    "Ainda não há farmácias cadastradas na plataforma.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.Gray,
                 textAlign = TextAlign.Center
@@ -356,9 +363,9 @@ private fun VeterinariesEmptyState(
 }
 
 @Composable
-private fun VeterinariesContent(
-    veterinaries: List<Veterinary>,
-    onVeterinaryClick: (Veterinary) -> Unit
+private fun PharmaciesContent(
+    pharmacies: List<Pharmacy>,
+    onPharmacyClick: (Pharmacy) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -366,12 +373,12 @@ private fun VeterinariesContent(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(
-            items = veterinaries,
+            items = pharmacies,
             key = { it.id }
-        ) { veterinary ->
-            VeterinaryCard(
-                veterinary = veterinary,
-                onClick = onVeterinaryClick
+        ) { pharmacy ->
+            PharmacyCard(
+                pharmacy = pharmacy,
+                onClick = onPharmacyClick
             )
         }
     }
