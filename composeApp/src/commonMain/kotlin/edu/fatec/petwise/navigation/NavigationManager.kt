@@ -61,5 +61,6 @@ class NavigationManager {
         object Supplies : TabScreen()
         object Pharmacy : TabScreen()
         object Labs : TabScreen()
+        object Suprimentos : TabScreen()
     }
 }

@@ -73,6 +73,9 @@ object NetworkModule {
     val veterinaryApiService: VeterinaryApiService
         get() = VeterinaryApiServiceImpl(getNetworkRequestHandler())
 
+    val suprimentoApiService: SuprimentoApiService
+        get() = SuprimentoApiServiceImpl(getNetworkRequestHandler())
+
     fun getDedicatedNetworkRequestHandler(): NetworkRequestHandler {
         println("NetworkModule: Criando NetworkRequestHandler e HttpClient dedicados.")
         val dedicatedConfig = createHttpClientConfig()

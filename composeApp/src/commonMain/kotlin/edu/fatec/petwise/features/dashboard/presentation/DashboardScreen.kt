@@ -29,7 +29,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -43,6 +45,8 @@ import edu.fatec.petwise.features.dashboard.domain.models.DefaultDashboardDataPr
 import edu.fatec.petwise.features.dashboard.domain.models.UserType
 import edu.fatec.petwise.features.medications.presentation.view.MedicationsScreen
 import edu.fatec.petwise.features.pets.presentation.view.PetsScreen
+import edu.fatec.petwise.features.suprimentos.presentation.view.SuprimentosPetSelectionScreen
+import edu.fatec.petwise.features.suprimentos.presentation.view.SuprimentosScreen
 import edu.fatec.petwise.features.vaccinations.di.VaccinationDependencyContainer
 import edu.fatec.petwise.features.vaccinations.presentation.view.VaccinationsScreen
 import edu.fatec.petwise.features.veterinaries.presentation.view.VeterinariesScreen
@@ -70,6 +74,8 @@ fun DashboardScreen(
     val currentTabScreen by navigationManager.currentTabScreen.collectAsState()
     val showMoreMenu by navigationManager.showMoreMenu.collectAsState()
     val dashboardUiState by dashboardViewModel.uiState.collectAsState()
+    
+    var selectedPetIdForSuprimentos by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
         println("DashboardScreen: Iniciando carregamento de dados")
@@ -80,6 +86,10 @@ fun DashboardScreen(
         if (currentTabScreen == NavigationManager.TabScreen.Home) {
             println("DashboardScreen: Retornando para Home, atualizando contagens")
             dashboardViewModel.onEvent(DashboardUiEvent.RefreshDashboard)
+        }
+        if (currentTabScreen != NavigationManager.TabScreen.Suprimentos) {
+            // Clear selected pet when leaving Suprimentos tab
+            selectedPetIdForSuprimentos = null
         }
     }
 
@@ -199,11 +209,24 @@ fun DashboardScreen(
                 NavigationManager.TabScreen.Veterinarians -> {
                     VeterinariesScreen()
                 }
-                NavigationManager.TabScreen.Supplies -> {
-                    PlaceholderContent(
-                        paddingValues = paddingValues,
-                        title = "Suprimentos"
-                    )
+                NavigationManager.TabScreen.Suprimentos -> {
+                    if (selectedPetIdForSuprimentos != null) {
+                        SuprimentosScreen(
+                            petId = selectedPetIdForSuprimentos!!,
+                            navigationKey = currentTabScreen,
+                            canAddSuprimentos = userType != UserType.OWNER,
+                            canEditSuprimentos = userType != UserType.OWNER
+                        )
+                    } else {
+                        SuprimentosPetSelectionScreen(
+                            onPetSelected = { petId ->
+                                selectedPetIdForSuprimentos = petId
+                            },
+                            onBackClick = {
+                                navigationManager.navigateToTab(NavigationManager.TabScreen.Home)
+                            }
+                        )
+                    }
                 }
                 NavigationManager.TabScreen.Pharmacy -> {
                     PlaceholderContent(
