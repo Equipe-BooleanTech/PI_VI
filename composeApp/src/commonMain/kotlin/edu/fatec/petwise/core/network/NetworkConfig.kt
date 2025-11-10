@@ -60,6 +60,16 @@ object ApiEndpoints {
     fun getVeterinary(id: String) = "$VETERINARIES/$id"
     const val VETERINARIES_SEARCH = "$VETERINARIES/search"
 
+    const val SUPRIMENTOS = "/api/supplies"
+    fun getSuprimento(id: String) = "$SUPRIMENTOS/$id"
+    fun getSuprimentosByPet(petId: String) = "/api/pets/$petId/supplies"
+    const val SUPRIMENTOS_SEARCH = "$SUPRIMENTOS/search"
+    const val SUPRIMENTOS_FILTER = "$SUPRIMENTOS/filter"
+    const val SUPRIMENTOS_BY_CATEGORY = "$SUPRIMENTOS/category"
+    const val SUPRIMENTOS_RECENT = "$SUPRIMENTOS/recent"
+    const val SUPRIMENTOS_PRICE_RANGE = "$SUPRIMENTOS/price-range"
+    const val SUPRIMENTOS_BY_SHOP = "$SUPRIMENTOS/shop"
+
 }
 
 object PetWiseHttpHeaders {
