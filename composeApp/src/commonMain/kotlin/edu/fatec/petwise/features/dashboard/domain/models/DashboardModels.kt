@@ -7,8 +7,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 enum class UserType {
     OWNER,
     VETERINARY,
-    ADMIN,
-    PHARMACY
+    PHARMACY,
+    PETSHOP
 }
 
 enum class PriorityLevel(val displayName: String, val color: String) {

@@ -30,8 +30,7 @@ fun SuprimentoCard(
     onClick: (Suprimento) -> Unit,
     onEditClick: (Suprimento) -> Unit,
     onDeleteClick: (Suprimento) -> Unit,
-    modifier: Modifier = Modifier,
-    canEdit: Boolean = true
+    modifier: Modifier = Modifier
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
@@ -158,33 +157,31 @@ fun SuprimentoCard(
                 }
             }
 
-            if (canEdit) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                IconButton(
+                    onClick = { onEditClick(suprimento) },
+                    modifier = Modifier.size(32.dp)
                 ) {
-                    IconButton(
-                        onClick = { onEditClick(suprimento) },
-                        modifier = Modifier.size(32.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Edit,
-                            contentDescription = "Editar suprimento",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Filled.Edit,
+                        contentDescription = "Editar suprimento",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
 
-                    IconButton(
-                        onClick = { onDeleteClick(suprimento) },
-                        modifier = Modifier.size(32.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Delete,
-                            contentDescription = "Excluir suprimento",
-                            tint = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
+                IconButton(
+                    onClick = { onDeleteClick(suprimento) },
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Delete,
+                        contentDescription = "Excluir suprimento",
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(18.dp)
+                    )
                 }
             }
         }

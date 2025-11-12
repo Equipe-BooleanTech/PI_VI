@@ -55,6 +55,13 @@ object NetworkModule {
         return currentHandler
     }
 
+    fun getDedicatedNetworkRequestHandler(): NetworkRequestHandler {
+        println("NetworkModule: Criando NetworkRequestHandler e HttpClient dedicados.")
+        val dedicatedConfig = createHttpClientConfig()
+        val dedicatedClient = createDefaultHttpClient(dedicatedConfig)
+        return NetworkRequestHandler(dedicatedClient)
+    }
+
     val authApiService: AuthApiService
         get() = AuthApiServiceImpl(getNetworkRequestHandler())
 
@@ -79,34 +86,11 @@ object NetworkModule {
     val suprimentoApiService: SuprimentoApiService
         get() = SuprimentoApiServiceImpl(getNetworkRequestHandler())
 
-    fun getDedicatedNetworkRequestHandler(): NetworkRequestHandler {
-        println("NetworkModule: Criando NetworkRequestHandler e HttpClient dedicados.")
-        val dedicatedConfig = createHttpClientConfig()
-        val dedicatedClient = createDefaultHttpClient(dedicatedConfig)
-        return NetworkRequestHandler(dedicatedClient)
-    }
-
     fun clear() {
         println("NetworkModule: Limpando recursos de rede")
-        try {
-            val clientToClose = _httpClient
-            if (clientToClose != null) {
-                println("NetworkModule: Fechando HttpClient existente")
-                clientToClose.close()
-                println("NetworkModule: HttpClient fechado com sucesso")
-            } else {
-                println("NetworkModule: Nenhum HttpClient para fechar")
-            }
-        } catch (e: Exception) {
-            println("NetworkModule: Erro ao fechar HttpClient: ${e.message}")
-            e.printStackTrace()
-        } finally {
-            _isClientClosed = true
-            _httpClient = null
-            _networkRequestHandler = null
-            tokenManager.clearTokens()
-            println("NetworkModule: Recursos limpos - próxima requisição criará novo cliente")
-        }
+        println("NetworkModule: Mantendo HttpClient ativo para evitar erros de coroutine")
+        tokenManager.clearTokens()
+        println("NetworkModule: Tokens limpos - HttpClient permanece ativo e reutilizável")
     }
 
     fun setAuthToken(token: String) {

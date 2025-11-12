@@ -22,7 +22,7 @@ fun HomeScreen(
                 userName = userProfile.fullName
                 userType = when (userProfile.userType.uppercase()) {
                     "VETERINARY", "VETERINARIAN", "VET" -> UserType.VETERINARY
-                    "ADMIN" -> UserType.ADMIN
+                    "PETSHOP" -> UserType.PETSHOP
                     "PHARMACY" -> UserType.PHARMACY
                     else -> UserType.OWNER
                 }

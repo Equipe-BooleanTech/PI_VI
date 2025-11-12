@@ -29,12 +29,8 @@ import edu.fatec.petwise.presentation.theme.fromHex
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MedicationsScreen(
-    navigationKey: Any? = null,
-    canAddMedications: Boolean = true,
-    canEditMedications: Boolean = true
+    navigationKey: Any? = null
 ) {
-    // Debug: Print permissions to verify they're being passed correctly
-    println("MedicationsScreen - canAddMedications: $canAddMedications, canEditMedications: $canEditMedications")
     
     val medicationsViewModel = remember { MedicationDependencyContainer.provideMedicationsViewModel() }
     val addMedicationViewModel = remember { MedicationDependencyContainer.provideAddMedicationViewModel() }
@@ -95,9 +91,7 @@ fun MedicationsScreen(
                 if (selectedMedicationIds.isNotEmpty()) {
                     showDeleteConfirmation = true
                 }
-            },
-            canAddMedications = canAddMedications,
-            canEditMedications = canEditMedications
+            }
         )
 
         if (showSearchBar) {
@@ -128,7 +122,6 @@ fun MedicationsScreen(
                         onAddMedicationClick = { 
                             medicationsViewModel.onEvent(MedicationsUiEvent.ShowAddMedicationDialog) 
                         },
-                        canAddMedications = canAddMedications,
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
@@ -158,11 +151,9 @@ fun MedicationsScreen(
                             }
                         },
                         onEditClick = { medication ->
-                            if (canEditMedications) {
-                                medicationToEdit = medication
-                                updateMedicationViewModel.loadMedication(medication.id)
-                                showEditMedicationDialog = true
-                            }
+                            medicationToEdit = medication
+                            updateMedicationViewModel.loadMedication(medication.id)
+                            showEditMedicationDialog = true
                         },
                         onMarkAsCompletedClick = { medicationId ->
                             medicationsViewModel.onEvent(MedicationsUiEvent.MarkAsCompleted(medicationId))
@@ -170,8 +161,7 @@ fun MedicationsScreen(
                         onPauseResumeClick = { medicationId ->
                             // Toggle between pause and resume
                             medicationsViewModel.onEvent(MedicationsUiEvent.PauseMedication(medicationId))
-                        },
-                        canEditMedications = canEditMedications
+                        }
                     )
                 }
             }
@@ -188,7 +178,7 @@ fun MedicationsScreen(
     }
 
     // Dialogs
-    if (medicationsState.showAddMedicationDialog && canAddMedications) {
+    if (medicationsState.showAddMedicationDialog) {
         AddMedicationDialog(
             addMedicationViewModel = addMedicationViewModel,
             isLoading = addMedicationState.isLoading,
@@ -204,7 +194,7 @@ fun MedicationsScreen(
         )
     }
 
-    if (showEditMedicationDialog && medicationToEdit != null && canEditMedications) {
+    if (showEditMedicationDialog && medicationToEdit != null) {
         EditMedicationDialog(
             medication = medicationToEdit!!,
             updateMedicationViewModel = updateMedicationViewModel,
@@ -255,8 +245,6 @@ private fun MedicationsHeader(
     onAddMedicationClick: () -> Unit,
     onSelectionModeToggle: () -> Unit,
     onDeleteSelected: () -> Unit,
-    canAddMedications: Boolean = true,
-    canEditMedications: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val theme = PetWiseTheme.Light
@@ -327,23 +315,19 @@ private fun MedicationsHeader(
                                 tint = Color.White
                             )
                         }
-                        if (canEditMedications) {
-                            IconButton(onClick = onSelectionModeToggle) {
-                                Icon(
-                                    imageVector = Icons.Default.CheckCircle,
-                                    contentDescription = "Modo seleção",
-                                    tint = Color.White
-                                )
-                            }
+                        IconButton(onClick = onSelectionModeToggle) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = "Modo seleção",
+                                tint = Color.White
+                            )
                         }
-                        if (canAddMedications) {
-                            IconButton(onClick = onAddMedicationClick) {
-                                Icon(
-                                    imageVector = Icons.Default.Add,
-                                    contentDescription = "Adicionar medicamento",
-                                    tint = Color.White
-                                )
-                            }
+                        IconButton(onClick = onAddMedicationClick) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Adicionar medicamento",
+                                tint = Color.White
+                            )
                         }
                     }
                 }
@@ -411,7 +395,6 @@ private fun LoadingContent(
 @Composable
 private fun EmptyMedicationsContent(
     onAddMedicationClick: () -> Unit,
-    canAddMedications: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val theme = PetWiseTheme.Light
@@ -437,15 +420,14 @@ private fun EmptyMedicationsContent(
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = if (canAddMedications) "Adicione o primeiro medicamento para começar" else "Nenhum medicamento encontrado",
+            text = "Adicione o primeiro medicamento para começar",
             style = MaterialTheme.typography.bodyMedium.copy(
                 color = Color.fromHex(theme.palette.textSecondary)
             )
         )
         
-        if (canAddMedications) {
-            Spacer(modifier = Modifier.height(24.dp))
-            Button(
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(
                 onClick = onAddMedicationClick,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.fromHex(theme.palette.primary)
@@ -461,7 +443,7 @@ private fun EmptyMedicationsContent(
             }
         }
     }
-}
+
 
 @Composable
 private fun NoResultsContent(
@@ -518,7 +500,6 @@ private fun MedicationsList(
     onEditClick: (Medication) -> Unit,
     onMarkAsCompletedClick: (String) -> Unit,
     onPauseResumeClick: (String) -> Unit,
-    canEditMedications: Boolean,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -537,8 +518,7 @@ private fun MedicationsList(
                 onMarkAsCompletedClick = onMarkAsCompletedClick,
                 onPauseResumeClick = onPauseResumeClick,
                 selectionMode = selectionMode,
-                isSelected = selectedIds.contains(medication.id),
-                canEdit = canEditMedications
+                isSelected = selectedIds.contains(medication.id)
             )
         }
     }

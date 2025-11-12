@@ -20,8 +20,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import edu.fatec.petwise.features.auth.di.AuthDependencyContainer
 import edu.fatec.petwise.navigation.NavigationManager
 import edu.fatec.petwise.presentation.theme.fromHex
 
@@ -41,32 +46,46 @@ data class BottomNavItem(
 
 @Composable
 fun BottomNavigationBar(
-    navigationManager: NavigationManager,
-    userType: String = "OWNER"
+    navigationManager: NavigationManager
 ) {
+    val getUserProfileUseCase = remember { AuthDependencyContainer.provideGetUserProfileUseCase() }
+    var userType by remember { mutableStateOf("OWNER") }
     val currentTabScreen by navigationManager.currentTabScreen.collectAsState()
 
-    println("BottomNavigationBar - userType: $userType")
+    LaunchedEffect(Unit) {
+        getUserProfileUseCase.execute().fold(
+            onSuccess = { userProfile ->
+                userType = userProfile.userType
+                println("BottomNavigationBar - userType loaded: ${userProfile.userType}")
+            },
+            onFailure = {
+                userType = "OWNER"
+                println("BottomNavigationBar - failed to load userType: ${it.message}")
+            }
+        )
+    }
+
+    println("BottomNavigationBar - current userType: $userType")
 
     val navItems = when (userType.uppercase()) {
         "VETERINARY" -> listOf(
             BottomNavItem("Início", Icons.Default.Home, NavigationManager.TabScreen.Home),
             BottomNavItem("Consultas", Icons.Default.MedicalServices, NavigationManager.TabScreen.Appointments),
-            BottomNavItem("Pets", Icons.Default.Pets, NavigationManager.TabScreen.Pets),
-            BottomNavItem("Medicação", Icons.Default.Medication, NavigationManager.TabScreen.Medication),
             BottomNavItem("Mais", Icons.Default.Menu, NavigationManager.TabScreen.More)
         )
         "PHARMACY" -> listOf(
             BottomNavItem("Início", Icons.Default.Home, NavigationManager.TabScreen.Home),
-            BottomNavItem("Medicação", Icons.Default.Medication, NavigationManager.TabScreen.Medication),
-            BottomNavItem("Veterinários", Icons.Default.MedicalServices, NavigationManager.TabScreen.Veterinarians),
+            BottomNavItem("Medicamentos", Icons.Default.Medication, NavigationManager.TabScreen.Medication),
             BottomNavItem("Mais", Icons.Default.Menu, NavigationManager.TabScreen.More)
         )
-        else -> listOf(
+        "PETSHOP" -> listOf(
+            BottomNavItem("Início", Icons.Default.Home, NavigationManager.TabScreen.Home),
+            BottomNavItem("Produtos", Icons.Default.Medication, NavigationManager.TabScreen.Food),
+            BottomNavItem("Mais", Icons.Default.Menu, NavigationManager.TabScreen.More)
+        )
+        else -> listOf( // OWNER
             BottomNavItem("Início", Icons.Default.Home, NavigationManager.TabScreen.Home),
             BottomNavItem("Pets", Icons.Default.Pets, NavigationManager.TabScreen.Pets),
-            BottomNavItem("Consultas", Icons.Default.MedicalServices, NavigationManager.TabScreen.Appointments),
-            BottomNavItem("Medicação", Icons.Default.Medication, NavigationManager.TabScreen.Medication),
             BottomNavItem("Mais", Icons.Default.Menu, NavigationManager.TabScreen.More)
         )
     }

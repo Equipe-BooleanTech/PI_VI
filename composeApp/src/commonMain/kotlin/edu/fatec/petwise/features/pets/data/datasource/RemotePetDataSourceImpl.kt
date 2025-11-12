@@ -2,14 +2,14 @@ package edu.fatec.petwise.features.pets.data.datasource
 
 import edu.fatec.petwise.core.network.NetworkResult
 import edu.fatec.petwise.core.network.api.PetApiService
-import edu.fatec.petwise.core.network.api.AuthApiService
+import edu.fatec.petwise.features.auth.domain.usecases.GetUserProfileUseCase
 import edu.fatec.petwise.core.network.dto.*
 import edu.fatec.petwise.features.pets.domain.models.HealthStatus
 import edu.fatec.petwise.features.pets.domain.models.Pet
 
 class RemotePetDataSourceImpl(
     private val petApiService: PetApiService,
-    private val authApiService: AuthApiService
+    private val getUserProfileUseCase: GetUserProfileUseCase
 ) : RemotePetDataSource {
 
     override suspend fun getAllPets(): List<Pet> { 
@@ -52,25 +52,16 @@ class RemotePetDataSourceImpl(
         
         val userProfile = try {
             kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) {
-                when (val result = authApiService.getUserProfile()) {
-                    is NetworkResult.Success -> result.data
-                    is NetworkResult.Error -> {
-                        when (result.exception) {
-                            is edu.fatec.petwise.core.network.NetworkException.Unauthorized -> {
-                                println("API: Usuário não autenticado - operação não permitida")
-                                throw edu.fatec.petwise.core.network.NetworkException.Unauthorized(
-                                    message = "Usuário deve estar logado para criar pets",
-                                    shouldRefreshToken = false
-                                )
-                            }
-                            else -> {
-                                println("API: Erro ao buscar perfil do usuário - ${result.exception.message}")
-                                throw result.exception
-                            }
-                        }
-                    }
-                    is NetworkResult.Loading -> {
-                        throw IllegalStateException("Busca de perfil em andamento")
+                val profileResult = getUserProfileUseCase.execute()
+                profileResult.getOrNull() ?: run {
+                    val ex = profileResult.exceptionOrNull()
+                    if (ex?.message?.contains("Token expirado", ignoreCase = true) == true) {
+                        throw edu.fatec.petwise.core.network.NetworkException.Unauthorized(
+                            message = ex.message ?: "Token expirado - faça login novamente",
+                            shouldRefreshToken = false
+                        )
+                    } else {
+                        throw ex ?: Exception("Erro ao buscar perfil do usuário")
                     }
                 }
             }
@@ -114,25 +105,16 @@ class RemotePetDataSourceImpl(
         
         val userProfile = try {
             kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) {
-                when (val result = authApiService.getUserProfile()) {
-                    is NetworkResult.Success -> result.data
-                    is NetworkResult.Error -> {
-                        when (result.exception) {
-                            is edu.fatec.petwise.core.network.NetworkException.Unauthorized -> {
-                                println("API: Usuário não autenticado - operação não permitida")
-                                throw edu.fatec.petwise.core.network.NetworkException.Unauthorized(
-                                    message = "Usuário deve estar logado para atualizar pets",
-                                    shouldRefreshToken = false
-                                )
-                            }
-                            else -> {
-                                println("API: Erro ao buscar perfil do usuário - ${result.exception.message}")
-                                throw result.exception
-                            }
-                        }
-                    }
-                    is NetworkResult.Loading -> {
-                        throw IllegalStateException("Busca de perfil em andamento")
+                val profileResult = getUserProfileUseCase.execute()
+                profileResult.getOrNull() ?: run {
+                    val ex = profileResult.exceptionOrNull()
+                    if (ex?.message?.contains("Token expirado", ignoreCase = true) == true) {
+                        throw edu.fatec.petwise.core.network.NetworkException.Unauthorized(
+                            message = ex.message ?: "Token expirado - faça login novamente",
+                            shouldRefreshToken = false
+                        )
+                    } else {
+                        throw ex ?: Exception("Erro ao buscar perfil do usuário")
                     }
                 }
             }

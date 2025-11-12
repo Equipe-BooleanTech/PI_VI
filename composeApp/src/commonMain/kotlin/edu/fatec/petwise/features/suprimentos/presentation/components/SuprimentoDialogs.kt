@@ -27,8 +27,7 @@ fun SuprimentoDetailsDialog(
     suprimento: Suprimento,
     onDismiss: () -> Unit,
     onEdit: (Suprimento) -> Unit,
-    onDelete: (Suprimento) -> Unit,
-    canEdit: Boolean = true
+    onDelete: (Suprimento) -> Unit
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -108,42 +107,40 @@ fun SuprimentoDetailsDialog(
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
                 // Actions
-                if (canEdit) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Button(
+                        onClick = { onEdit(suprimento) },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            contentColor = MaterialTheme.colorScheme.primary
+                        )
                     ) {
-                        Button(
-                            onClick = { onEdit(suprimento) },
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.buttonColors(
-                                contentColor = MaterialTheme.colorScheme.primary
-                            )
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Edit,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("Editar")
-                        }
+                        Icon(
+                            imageVector = Icons.Filled.Edit,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Editar")
+                    }
 
-                        Button(
-                            onClick = { onDelete(suprimento) },
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.error
-                            )
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Delete,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("Excluir")
-                        }
+                    Button(
+                        onClick = { onDelete(suprimento) },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Delete,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Excluir")
                     }
                 }
             }

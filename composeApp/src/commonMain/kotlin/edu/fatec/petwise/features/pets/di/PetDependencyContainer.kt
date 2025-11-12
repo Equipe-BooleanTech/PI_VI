@@ -2,6 +2,7 @@ package edu.fatec.petwise.features.pets.di
 
 import androidx.lifecycle.viewModelScope
 import edu.fatec.petwise.core.network.di.NetworkModule
+import edu.fatec.petwise.features.auth.di.AuthDependencyContainer
 import edu.fatec.petwise.features.pets.data.datasource.RemotePetDataSourceImpl
 import edu.fatec.petwise.features.pets.data.repository.PetRepositoryImpl
 import edu.fatec.petwise.features.pets.domain.repository.PetRepository
@@ -38,7 +39,7 @@ object PetDependencyContainer {
         if (existing != null) return existing
         val created = RemotePetDataSourceImpl(
             NetworkModule.petApiService,
-            NetworkModule.authApiService
+            AuthDependencyContainer.provideGetUserProfileUseCase()
         )
         remoteDataSource = created
         return created

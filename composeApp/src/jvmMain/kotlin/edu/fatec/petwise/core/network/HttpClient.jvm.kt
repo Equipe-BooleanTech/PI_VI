@@ -2,12 +2,15 @@ package edu.fatec.petwise.core.network
 
 import io.ktor.client.*
 import io.ktor.client.engine.java.*
+import kotlinx.coroutines.asCoroutineDispatcher
 import java.util.UUID
+import java.util.concurrent.Executors
 
 actual fun createHttpClient(config: PetWiseHttpClientConfig): HttpClient {
     return HttpClient(Java) {
         engine {
             pipelining = true
+            dispatcher = Executors.newFixedThreadPool(4).asCoroutineDispatcher()
         }
     }
 }

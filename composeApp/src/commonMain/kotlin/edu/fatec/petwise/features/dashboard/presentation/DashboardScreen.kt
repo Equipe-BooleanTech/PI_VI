@@ -121,8 +121,7 @@ fun DashboardScreen(
             },
             bottomBar = {
                 BottomNavigationBar(
-                    navigationManager = navigationManager,
-                    userType = dashboardUiState.userType
+                    navigationManager = navigationManager
                 )
             }
         ) { paddingValues ->
@@ -148,49 +147,48 @@ fun DashboardScreen(
                     )
                 }
                 NavigationManager.TabScreen.Pets -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(paddingValues)
-                    ) {
-                        val isOwner = dashboardUiState.userType.uppercase() == "OWNER"
-                        println("DashboardScreen - Pets Tab - userType: ${dashboardUiState.userType}, isOwner: $isOwner")
-                        
-                        PetsScreen(
-                            navigationKey = currentTabScreen,
-                            canAddPets = isOwner,
-                            canEditPets = isOwner
-                        )
+                    if (dashboardUiState.userType.uppercase() == "OWNER") {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(paddingValues)
+                        ) {
+                            PetsScreen(
+                                navigationKey = currentTabScreen
+                            )
+                        }
+                    } else {
+                        UnauthorizedScreen(paddingValues, "Você não tem permissão para acessar Pets")
                     }
                 }
                 NavigationManager.TabScreen.Appointments -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(paddingValues)
-                    ) {
-                        
-                        ConsultasScreen(
-                            navigationKey = currentTabScreen,
-                            canAddConsultas = dashboardUiState.userType.uppercase() != "PHARMACY",
-                            canEditConsultas = dashboardUiState.userType.uppercase() != "PHARMACY"
-                        )
+                    if (dashboardUiState.userType.uppercase() in listOf("OWNER", "VETERINARY")) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(paddingValues)
+                        ) {
+                            ConsultasScreen(
+                                navigationKey = currentTabScreen
+                            )
+                        }
+                    } else {
+                        UnauthorizedScreen(paddingValues, "Você não tem permissão para acessar Consultas")
                     }
                 }
                 NavigationManager.TabScreen.Medication -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(paddingValues)
-                    ) {
-                        val isOwner = dashboardUiState.userType.uppercase() == "OWNER"
-                        println("DashboardScreen - userType: ${dashboardUiState.userType}, canAdd: ${!isOwner}, canEdit: ${!isOwner}")
-
-                        MedicationsScreen(
-                            navigationKey = currentTabScreen,
-                            canAddMedications = !isOwner,
-                            canEditMedications = !isOwner
-                        )
+                    if (dashboardUiState.userType.uppercase() == "PHARMACY") {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(paddingValues)
+                        ) {
+                            MedicationsScreen(
+                                navigationKey = currentTabScreen
+                            )
+                        }
+                    } else {
+                        UnauthorizedScreen(paddingValues, "Você não tem permissão para acessar Medicamentos")
                     }
                 }
                 NavigationManager.TabScreen.Settings -> {
@@ -206,16 +204,19 @@ fun DashboardScreen(
                     )
                 }
                 NavigationManager.TabScreen.Vaccines -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(paddingValues)
-                    ) {
-                        VaccinationsScreen(
-                            viewModel = remember { VaccinationDependencyContainer.provideVaccinationsViewModel() },
-                            navigationKey = currentTabScreen,
-                            canAddVaccinations = dashboardUiState.userType.uppercase() != "OWNER"
-                        )
+                    if (dashboardUiState.userType.uppercase() in listOf("OWNER", "VETERINARY")) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(paddingValues)
+                        ) {
+                            VaccinationsScreen(
+                                viewModel = remember { VaccinationDependencyContainer.provideVaccinationsViewModel() },
+                                navigationKey = currentTabScreen
+                            )
+                        }
+                    } else {
+                        UnauthorizedScreen(paddingValues, "Você não tem permissão para acessar Vacinas")
                     }
                 }
                 NavigationManager.TabScreen.Veterinarians -> {
@@ -225,9 +226,7 @@ fun DashboardScreen(
                     if (selectedPetIdForSuprimentos != null) {
                         SuprimentosScreen(
                             petId = selectedPetIdForSuprimentos!!,
-                            navigationKey = currentTabScreen,
-                            canAddSuprimentos = dashboardUiState.userType.uppercase() != "OWNER",
-                            canEditSuprimentos = dashboardUiState.userType.uppercase() != "OWNER"
+                            navigationKey = currentTabScreen
                         )
                     } else {
                         SuprimentosPetSelectionScreen(
@@ -246,10 +245,82 @@ fun DashboardScreen(
                     )
                 }
                 NavigationManager.TabScreen.Labs -> {
-                    PlaceholderContent(
-                        paddingValues = paddingValues,
-                        title = "Exames"
-                    )
+                    if (dashboardUiState.userType.uppercase() == "VETERINARY") {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(paddingValues)
+                        ) {
+                            edu.fatec.petwise.features.labs.presentation.LabsScreen()
+                        }
+                    } else {
+                        UnauthorizedScreen(paddingValues, "Você não tem permissão para acessar Laboratório")
+                    }
+                }
+                NavigationManager.TabScreen.Prescriptions -> {
+                    if (dashboardUiState.userType.uppercase() == "VETERINARY") {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(paddingValues)
+                        ) {
+                            edu.fatec.petwise.features.prescriptions.presentation.PrescriptionsScreen()
+                        }
+                    } else {
+                        UnauthorizedScreen(paddingValues, "Você não tem permissão para acessar Prescrições")
+                    }
+                }
+                NavigationManager.TabScreen.Exams -> {
+                    if (dashboardUiState.userType.uppercase() == "VETERINARY") {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(paddingValues)
+                        ) {
+                            edu.fatec.petwise.features.exams.presentation.ExamsScreen()
+                        }
+                    } else {
+                        UnauthorizedScreen(paddingValues, "Você não tem permissão para acessar Exames")
+                    }
+                }
+                NavigationManager.TabScreen.Food -> {
+                    if (dashboardUiState.userType.uppercase() == "PETSHOP") {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(paddingValues)
+                        ) {
+                            edu.fatec.petwise.features.food.presentation.FoodScreen()
+                        }
+                    } else {
+                        UnauthorizedScreen(paddingValues, "Você não tem permissão para acessar Ração")
+                    }
+                }
+                NavigationManager.TabScreen.Hygiene -> {
+                    if (dashboardUiState.userType.uppercase() == "PETSHOP") {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(paddingValues)
+                        ) {
+                            edu.fatec.petwise.features.hygiene.presentation.HygieneScreen()
+                        }
+                    } else {
+                        UnauthorizedScreen(paddingValues, "Você não tem permissão para acessar Higiene")
+                    }
+                }
+                NavigationManager.TabScreen.Toys -> {
+                    if (dashboardUiState.userType.uppercase() == "PETSHOP") {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(paddingValues)
+                        ) {
+                            edu.fatec.petwise.features.toys.presentation.ToysScreen()
+                        }
+                    } else {
+                        UnauthorizedScreen(paddingValues, "Você não tem permissão para acessar Brinquedos")
+                    }
                 }
                 else -> {
                     val effectiveUserType = try {

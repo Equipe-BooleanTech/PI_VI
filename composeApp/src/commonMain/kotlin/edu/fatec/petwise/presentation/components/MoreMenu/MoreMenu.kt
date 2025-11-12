@@ -185,31 +185,19 @@ fun MoreMenu(
                             tabScreen = NavigationManager.TabScreen.Appointments
                         ),
                         MoreMenuItem(
-                            title = "Pets",
-                            icon = Icons.Default.Person,
-                            tabScreen = NavigationManager.TabScreen.Pets
-                        ),
-                        MoreMenuItem(
-                            title = "Medicamentos",
+                            title = "Prescrições",
                             icon = Icons.Default.LocalPharmacy,
-                            tabScreen = NavigationManager.TabScreen.Medication
-                        )
-                    )
-                    "PHARMACY" -> listOf(
-                        MoreMenuItem(
-                            title = "Medicamentos",
-                            icon = Icons.Default.LocalPharmacy,
-                            tabScreen = NavigationManager.TabScreen.Medication
+                            tabScreen = NavigationManager.TabScreen.Prescriptions
                         ),
                         MoreMenuItem(
-                            title = "Stock (will be created)",
-                            icon = Icons.Default.ShoppingCart,
-                            tabScreen = NavigationManager.TabScreen.Supplies
-                        ),
-                        MoreMenuItem(
-                            title = "Veterinários",
+                            title = "Exames",
                             icon = Icons.Default.MedicalInformation,
-                            tabScreen = NavigationManager.TabScreen.Veterinarians
+                            tabScreen = NavigationManager.TabScreen.Exams
+                        ),
+                        MoreMenuItem(
+                            title = "Laboratório",
+                            icon = Icons.Default.MedicalInformation,
+                            tabScreen = NavigationManager.TabScreen.Labs
                         ),
                         MoreMenuItem(
                             title = "Vacinas",
@@ -217,7 +205,36 @@ fun MoreMenu(
                             tabScreen = NavigationManager.TabScreen.Vaccines
                         )
                     )
+                    "PHARMACY" -> listOf(
+                        MoreMenuItem(
+                            title = "Medicamentos",
+                            icon = Icons.Default.LocalPharmacy,
+                            tabScreen = NavigationManager.TabScreen.Medication
+                        )
+                    )
+                    "PETSHOP" -> listOf(
+                        MoreMenuItem(
+                            title = "Ração",
+                            icon = Icons.Default.ShoppingCart,
+                            tabScreen = NavigationManager.TabScreen.Food
+                        ),
+                        MoreMenuItem(
+                            title = "Higiene",
+                            icon = Icons.Default.MedicalInformation,
+                            tabScreen = NavigationManager.TabScreen.Hygiene
+                        ),
+                        MoreMenuItem(
+                            title = "Brinquedos",
+                            icon = Icons.Default.ShoppingCart,
+                            tabScreen = NavigationManager.TabScreen.Toys
+                        )
+                    )
                     else -> listOf(
+                        MoreMenuItem(
+                            title = "Pets",
+                            icon = Icons.Default.Person,
+                            tabScreen = NavigationManager.TabScreen.Pets
+                        ),
                         MoreMenuItem(
                             title = "Vacinas",
                             icon = Icons.Default.HealthAndSafety,
@@ -237,11 +254,6 @@ fun MoreMenu(
                             title = "Farmácias",
                             icon = Icons.Default.LocalPharmacy,
                             tabScreen = NavigationManager.TabScreen.Pharmacy
-                        ),
-                        MoreMenuItem(
-                            title = "Exames",
-                            icon = Icons.Default.MedicalInformation,
-                            tabScreen = NavigationManager.TabScreen.Labs
                         )
                     )
                 }

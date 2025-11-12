@@ -53,7 +53,7 @@ object DashboardDepedencyContainer {
         if (existing != null) return existing
         val created = RemotePetDataSourceImpl(
             NetworkModule.petApiService,
-            NetworkModule.authApiService
+            AuthDependencyContainer.provideGetUserProfileUseCase()
         )
         petRemoteDataSource = created
         return created

@@ -32,8 +32,7 @@ fun MedicationCard(
     onPauseResumeClick: (String) -> Unit,
     modifier: Modifier = Modifier,
     selectionMode: Boolean = false,
-    isSelected: Boolean = false,
-    canEdit: Boolean = true
+    isSelected: Boolean = false
 ) {
     val theme = PetWiseTheme.Light
     val interactionSource = remember { MutableInteractionSource() }
@@ -179,7 +178,7 @@ fun MedicationCard(
 
                 Spacer(modifier = Modifier.width(16.dp))
 
-                if (!selectionMode && canEdit) {
+                if (!selectionMode) {
                     Column(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
