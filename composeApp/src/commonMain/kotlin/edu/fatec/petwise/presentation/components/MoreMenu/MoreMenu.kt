@@ -52,6 +52,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import edu.fatec.petwise.navigation.NavigationManager
 import edu.fatec.petwise.presentation.theme.fromHex
+import edu.fatec.petwise.features.auth.presentation.viewmodel.AuthViewModel
+import edu.fatec.petwise.features.auth.domain.usecases.GetUserProfileUseCase
 
 data class MoreMenuItem(
     val title: String,
@@ -64,8 +66,8 @@ fun MoreMenu(
     isVisible: Boolean,
     navigationManager: NavigationManager,
     onClose: () -> Unit,
-    authViewModel: edu.fatec.petwise.features.auth.presentation.viewmodel.AuthViewModel,
-    getUserProfileUseCase: edu.fatec.petwise.features.auth.domain.usecases.GetUserProfileUseCase
+    authViewModel: AuthViewModel,
+    getUserProfileUseCase: GetUserProfileUseCase
 ) {
     var userProfile by remember(isVisible) { mutableStateOf<edu.fatec.petwise.core.network.dto.UserProfileDto?>(null) }
     var isLoadingProfile by remember(isVisible) { mutableStateOf(false) }
@@ -78,9 +80,11 @@ fun MoreMenu(
                 onSuccess = { profile ->
                     userProfile = profile
                     isLoadingProfile = false
+                    println("MoreMenu - userProfile loaded: ${profile.fullName}, userType: ${profile.userType}")
                 },
                 onFailure = {
                     isLoadingProfile = false
+                    println("MoreMenu - failed to load userProfile: ${it.message}")
                 }
             )
         }
@@ -173,33 +177,74 @@ fun MoreMenu(
                     color = Color.LightGray
                 )
 
-                val menuItems = listOf(
-                    MoreMenuItem(
-                        title = "Vacinas",
-                        icon = Icons.Default.HealthAndSafety,
-                        tabScreen = NavigationManager.TabScreen.Vaccines
-                    ),
-                    MoreMenuItem(
-                        title = "Veterinários",
-                        icon = Icons.Default.MedicalInformation,
-                        tabScreen = NavigationManager.TabScreen.Veterinarians
-                    ),
-                    MoreMenuItem(
-                        title = "Suprimentos",
-                        icon = Icons.Default.ShoppingCart,
-                        tabScreen = NavigationManager.TabScreen.Supplies
-                    ),
-                    MoreMenuItem(
-                        title = "Farmácias",
-                        icon = Icons.Default.LocalPharmacy,
-                        tabScreen = NavigationManager.TabScreen.Pharmacy
-                    ),
-                    MoreMenuItem(
-                        title = "Exames",
-                        icon = Icons.Default.MedicalInformation,
-                        tabScreen = NavigationManager.TabScreen.Labs
+                val menuItems = when (userProfile?.userType?.uppercase()) {
+                    "VETERINARY" -> listOf(
+                        MoreMenuItem(
+                            title = "Consultas",
+                            icon = Icons.Default.MedicalInformation,
+                            tabScreen = NavigationManager.TabScreen.Appointments
+                        ),
+                        MoreMenuItem(
+                            title = "Pets",
+                            icon = Icons.Default.Person,
+                            tabScreen = NavigationManager.TabScreen.Pets
+                        ),
+                        MoreMenuItem(
+                            title = "Medicamentos",
+                            icon = Icons.Default.LocalPharmacy,
+                            tabScreen = NavigationManager.TabScreen.Medication
+                        )
                     )
-                )
+                    "PHARMACY" -> listOf(
+                        MoreMenuItem(
+                            title = "Medicamentos",
+                            icon = Icons.Default.LocalPharmacy,
+                            tabScreen = NavigationManager.TabScreen.Medication
+                        ),
+                        MoreMenuItem(
+                            title = "Stock (will be created)",
+                            icon = Icons.Default.ShoppingCart,
+                            tabScreen = NavigationManager.TabScreen.Supplies
+                        ),
+                        MoreMenuItem(
+                            title = "Veterinários",
+                            icon = Icons.Default.MedicalInformation,
+                            tabScreen = NavigationManager.TabScreen.Veterinarians
+                        ),
+                        MoreMenuItem(
+                            title = "Vacinas",
+                            icon = Icons.Default.HealthAndSafety,
+                            tabScreen = NavigationManager.TabScreen.Vaccines
+                        )
+                    )
+                    else -> listOf(
+                        MoreMenuItem(
+                            title = "Vacinas",
+                            icon = Icons.Default.HealthAndSafety,
+                            tabScreen = NavigationManager.TabScreen.Vaccines
+                        ),
+                        MoreMenuItem(
+                            title = "Veterinários",
+                            icon = Icons.Default.MedicalInformation,
+                            tabScreen = NavigationManager.TabScreen.Veterinarians
+                        ),
+                        MoreMenuItem(
+                            title = "Suprimentos",
+                            icon = Icons.Default.ShoppingCart,
+                            tabScreen = NavigationManager.TabScreen.Supplies
+                        ),
+                        MoreMenuItem(
+                            title = "Farmácias",
+                            icon = Icons.Default.LocalPharmacy,
+                            tabScreen = NavigationManager.TabScreen.Pharmacy
+                        ),
+                        MoreMenuItem(
+                            title = "Exames",
+                            icon = Icons.Default.MedicalInformation,
+                            tabScreen = NavigationManager.TabScreen.Labs
+                        )
+                    )
+                }
 
                 Column(
                     modifier = Modifier.padding(vertical = 8.dp)

@@ -28,7 +28,6 @@ fun HomeScreen(
                 }
             },
             onFailure = {
-                // Default to OWNER if profile fetch fails
                 userType = UserType.OWNER
                 userName = ""
             }

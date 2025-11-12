@@ -16,6 +16,7 @@ import edu.fatec.petwise.features.vaccinations.domain.repository.VaccinationRepo
 import edu.fatec.petwise.features.dashboard.domain.usecases.GetCardsStatisticsUseCase
 import edu.fatec.petwise.features.dashboard.domain.usecases.GetUpcomingConsultasUseCase
 import edu.fatec.petwise.features.dashboard.domain.usecases.GetUserNameUseCase
+import edu.fatec.petwise.features.dashboard.domain.usecases.GetUserTypeUseCase
 import edu.fatec.petwise.features.dashboard.presentation.viewmodel.DashboardViewModel
 import edu.fatec.petwise.features.medications.data.datasource.MedicationDataSource
 import edu.fatec.petwise.features.medications.data.datasource.RemoteMedicationDataSourceImpl
@@ -134,7 +135,8 @@ object DashboardDepedencyContainer {
                 getMedicationRepository()
             ),
             GetUpcomingConsultasUseCase(getConsultaRemoteDataSource()),
-            GetUserNameUseCase(getAuthRepository())
+            GetUserNameUseCase(getAuthRepository()),
+            GetUserTypeUseCase(getAuthRepository())
         )
     }
 

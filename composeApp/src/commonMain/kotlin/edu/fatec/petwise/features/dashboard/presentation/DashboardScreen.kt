@@ -89,7 +89,6 @@ fun DashboardScreen(
             dashboardViewModel.onEvent(DashboardUiEvent.RefreshDashboard)
         }
         if (currentTabScreen != NavigationManager.TabScreen.Suprimentos) {
-            // Clear selected pet when leaving Suprimentos tab
             selectedPetIdForSuprimentos = null
         }
     }
@@ -121,15 +120,24 @@ fun DashboardScreen(
                 )
             },
             bottomBar = {
-                BottomNavigationBar(navigationManager = navigationManager)
+                BottomNavigationBar(
+                    navigationManager = navigationManager,
+                    userType = dashboardUiState.userType
+                )
             }
         ) { paddingValues ->
             when (currentTabScreen) {
                 NavigationManager.TabScreen.Home -> {
+                    val effectiveUserType = try {
+                        UserType.valueOf(dashboardUiState.userType.uppercase())
+                    } catch (e: IllegalArgumentException) {
+                        UserType.OWNER
+                    }
+                    
                     HomeTabContent(
                         paddingValues = paddingValues,
                         scrollState = scrollState,
-                        userType = userType,
+                        userType = effectiveUserType,
                         userName = dashboardUiState.userName.ifEmpty { userName },
                         dataProvider = dataProvider,
                         navigationManager = navigationManager,
@@ -145,11 +153,13 @@ fun DashboardScreen(
                             .fillMaxSize()
                             .padding(paddingValues)
                     ) {
+                        val isOwner = dashboardUiState.userType.uppercase() == "OWNER"
+                        println("DashboardScreen - Pets Tab - userType: ${dashboardUiState.userType}, isOwner: $isOwner")
                         
                         PetsScreen(
                             navigationKey = currentTabScreen,
-                            canAddPets = userType == UserType.OWNER,
-                            canEditPets = userType == UserType.OWNER
+                            canAddPets = isOwner,
+                            canEditPets = isOwner
                         )
                     }
                 }
@@ -162,8 +172,8 @@ fun DashboardScreen(
                         
                         ConsultasScreen(
                             navigationKey = currentTabScreen,
-                            canAddConsultas = userType == UserType.OWNER || userType == UserType.VETERINARY,
-                            canEditConsultas = userType == UserType.OWNER || userType == UserType.VETERINARY
+                            canAddConsultas = dashboardUiState.userType.uppercase() != "PHARMACY",
+                            canEditConsultas = dashboardUiState.userType.uppercase() != "PHARMACY"
                         )
                     }
                 }
@@ -173,12 +183,13 @@ fun DashboardScreen(
                             .fillMaxSize()
                             .padding(paddingValues)
                     ) {
-                        println("DashboardScreen - userType: $userType, canAdd: ${userType != UserType.OWNER}, canEdit: ${userType != UserType.OWNER}")
-                        
+                        val isOwner = dashboardUiState.userType.uppercase() == "OWNER"
+                        println("DashboardScreen - userType: ${dashboardUiState.userType}, canAdd: ${!isOwner}, canEdit: ${!isOwner}")
+
                         MedicationsScreen(
                             navigationKey = currentTabScreen,
-                            canAddMedications = userType != UserType.OWNER,
-                            canEditMedications = userType != UserType.OWNER
+                            canAddMedications = !isOwner,
+                            canEditMedications = !isOwner
                         )
                     }
                 }
@@ -203,7 +214,7 @@ fun DashboardScreen(
                         VaccinationsScreen(
                             viewModel = remember { VaccinationDependencyContainer.provideVaccinationsViewModel() },
                             navigationKey = currentTabScreen,
-                            canAddVaccinations = userType != UserType.OWNER
+                            canAddVaccinations = dashboardUiState.userType.uppercase() != "OWNER"
                         )
                     }
                 }
@@ -215,8 +226,8 @@ fun DashboardScreen(
                         SuprimentosScreen(
                             petId = selectedPetIdForSuprimentos!!,
                             navigationKey = currentTabScreen,
-                            canAddSuprimentos = userType != UserType.OWNER,
-                            canEditSuprimentos = userType != UserType.OWNER
+                            canAddSuprimentos = dashboardUiState.userType.uppercase() != "OWNER",
+                            canEditSuprimentos = dashboardUiState.userType.uppercase() != "OWNER"
                         )
                     } else {
                         SuprimentosPetSelectionScreen(
@@ -241,11 +252,17 @@ fun DashboardScreen(
                     )
                 }
                 else -> {
+                    val effectiveUserType = try {
+                        UserType.valueOf(dashboardUiState.userType.uppercase())
+                    } catch (e: IllegalArgumentException) {
+                        UserType.OWNER
+                    }
+                    
                     HomeTabContent(
                         paddingValues = paddingValues,
                         scrollState = scrollState,
-                        userType = userType,
-                        userName = userName,
+                        userType = effectiveUserType,
+                        userName = dashboardUiState.userName.ifEmpty { userName },
                         dataProvider = dataProvider,
                         navigationManager = navigationManager,
                         dashboardUiState = dashboardUiState,

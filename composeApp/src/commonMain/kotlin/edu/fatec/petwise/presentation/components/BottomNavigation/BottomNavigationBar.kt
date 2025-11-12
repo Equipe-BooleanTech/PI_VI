@@ -41,17 +41,35 @@ data class BottomNavItem(
 
 @Composable
 fun BottomNavigationBar(
-    navigationManager: NavigationManager
+    navigationManager: NavigationManager,
+    userType: String = "OWNER"
 ) {
     val currentTabScreen by navigationManager.currentTabScreen.collectAsState()
 
-    val navItems = listOf(
-        BottomNavItem("Início", Icons.Default.Home, NavigationManager.TabScreen.Home),
-        BottomNavItem("Pets", Icons.Default.Pets, NavigationManager.TabScreen.Pets),
-        BottomNavItem("Consultas", Icons.Default.MedicalServices, NavigationManager.TabScreen.Appointments),
-        BottomNavItem("Medicação", Icons.Default.Medication, NavigationManager.TabScreen.Medication),
-        BottomNavItem("Mais", Icons.Default.Menu, NavigationManager.TabScreen.More)
-    )
+    println("BottomNavigationBar - userType: $userType")
+
+    val navItems = when (userType.uppercase()) {
+        "VETERINARY" -> listOf(
+            BottomNavItem("Início", Icons.Default.Home, NavigationManager.TabScreen.Home),
+            BottomNavItem("Consultas", Icons.Default.MedicalServices, NavigationManager.TabScreen.Appointments),
+            BottomNavItem("Pets", Icons.Default.Pets, NavigationManager.TabScreen.Pets),
+            BottomNavItem("Medicação", Icons.Default.Medication, NavigationManager.TabScreen.Medication),
+            BottomNavItem("Mais", Icons.Default.Menu, NavigationManager.TabScreen.More)
+        )
+        "PHARMACY" -> listOf(
+            BottomNavItem("Início", Icons.Default.Home, NavigationManager.TabScreen.Home),
+            BottomNavItem("Medicação", Icons.Default.Medication, NavigationManager.TabScreen.Medication),
+            BottomNavItem("Veterinários", Icons.Default.MedicalServices, NavigationManager.TabScreen.Veterinarians),
+            BottomNavItem("Mais", Icons.Default.Menu, NavigationManager.TabScreen.More)
+        )
+        else -> listOf(
+            BottomNavItem("Início", Icons.Default.Home, NavigationManager.TabScreen.Home),
+            BottomNavItem("Pets", Icons.Default.Pets, NavigationManager.TabScreen.Pets),
+            BottomNavItem("Consultas", Icons.Default.MedicalServices, NavigationManager.TabScreen.Appointments),
+            BottomNavItem("Medicação", Icons.Default.Medication, NavigationManager.TabScreen.Medication),
+            BottomNavItem("Mais", Icons.Default.Menu, NavigationManager.TabScreen.More)
+        )
+    }
 
     Surface(
         modifier = Modifier

@@ -44,11 +44,12 @@ class AuthRepositoryImpl(
                             tokenStorage?.saveToken(result.data.token)
                         }
                         tokenStorage?.saveUserId(result.data.userId)
+                        tokenStorage?.saveUserType(result.data.userType)
                         
                         NetworkModule.setAuthTokenWithExpiration(result.data.token, result.data.expiresIn)
                     }
                     
-                    println("Repositório: Login realizado com sucesso - Usuário: ${result.data.userId}, Token expira em: ${result.data.expiresIn}s")
+                    println("Repositório: Login realizado com sucesso - Usuário: ${result.data.userId}, UserType: ${result.data.userType}, Token expira em: ${result.data.expiresIn}s")
                     
                     Result.success(result.data.userId)
                 }
@@ -241,5 +242,7 @@ interface AuthTokenStorage {
     fun getToken(): String?
     fun saveUserId(userId: String)
     fun getUserId(): String?
+    fun saveUserType(userType: String)
+    fun getUserType(): String?
     fun clearTokens()
 }
