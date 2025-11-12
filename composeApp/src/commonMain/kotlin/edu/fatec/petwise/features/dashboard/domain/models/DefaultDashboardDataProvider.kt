@@ -41,7 +41,7 @@ class DefaultDashboardDataProvider : DashboardDataProvider {
                     route = "reminders"
                 )
             )
-            UserType.ADMIN -> listOf(
+            UserType.PETSHOP -> listOf(
                 StatusCardData(
                     id = "appointments",
                     title = "Consultas Hoje",
@@ -208,7 +208,7 @@ class DefaultDashboardDataProvider : DashboardDataProvider {
                     background = "#FFC107"
                 )
             )
-            UserType.ADMIN -> listOf(
+            UserType.PETSHOP -> listOf(
                 QuickActionData(
                     id = "users",
                     title = "Usuários",
@@ -331,7 +331,7 @@ class DefaultDashboardDataProvider : DashboardDataProvider {
                     route = "vaccines/detail/1"
                 )
             )
-            UserType.ADMIN -> listOf(
+            UserType.PETSHOP -> listOf(
                 RecentActivityData(
                     id = "user1",
                     title = "Novo Usuário",
@@ -468,7 +468,7 @@ class DefaultDashboardDataProvider : DashboardDataProvider {
                     route = "meetings/detail/1"
                 )
             )
-            UserType.ADMIN -> listOf(
+            UserType.PETSHOP -> listOf(
                 ReminderData(
                     id = "report1",
                     title = "Fechamento Mensal",
@@ -551,7 +551,7 @@ class DefaultDashboardDataProvider : DashboardDataProvider {
                 }
             }
             UserType.VETERINARY -> "5 consultas agendadas hoje"
-            UserType.ADMIN -> "Gerenciando 3 clínicas ativas"
+            UserType.PETSHOP -> "Gerenciando 3 lojas ativas"
             UserType.PHARMACY -> "20 pedidos para processar"
         }
     }

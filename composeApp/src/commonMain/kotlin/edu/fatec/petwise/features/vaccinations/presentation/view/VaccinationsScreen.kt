@@ -37,9 +37,7 @@ fun VaccinationsScreen(
     onNavigateBack: () -> Unit = {},
     onAddVaccination: () -> Unit = {},
     onEditVaccination: (String) -> Unit = {},
-    onScheduleVaccination: (String) -> Unit = {},
-    canAddVaccinations: Boolean = true,
-    canEditVaccinations: Boolean = true
+    onScheduleVaccination: (String) -> Unit = {}
 ) {
     val updateVaccinationViewModel = remember { VaccinationDependencyContainer.provideUpdateVaccinationViewModel() }
     val uiState by viewModel.uiState.collectAsState()
@@ -76,8 +74,7 @@ fun VaccinationsScreen(
         VaccinationsHeader(
             vaccinationCount = vaccinations.size,
             pendingCount = pendingVaccinations.size,
-            onAddVaccinationClick = onAddVaccination,
-            canAddVaccinations = canAddVaccinations
+            onAddVaccinationClick = onAddVaccination
         )
 
         Box(modifier = Modifier.fillMaxSize()) {
@@ -87,8 +84,7 @@ fun VaccinationsScreen(
                 }
                 vaccinations.isEmpty() -> {
                     EmptyContent(
-                        onAddVaccinationClick = onAddVaccination,
-                        canAddVaccinations = canAddVaccinations
+                        onAddVaccinationClick = onAddVaccination
                     )
                 }
                 else -> {
@@ -96,13 +92,10 @@ fun VaccinationsScreen(
                         vaccinations = vaccinations,
                         pendingVaccinations = pendingVaccinations,
                         onEditVaccination = { vaccination ->
-                            if (canEditVaccinations) {
-                                vaccinationToEdit = vaccination
-                                showEditDialog = true
-                            }
+                            vaccinationToEdit = vaccination
+                            showEditDialog = true
                         },
-                        onScheduleVaccination = onScheduleVaccination,
-                        canEditVaccinations = canEditVaccinations
+                        onScheduleVaccination = onScheduleVaccination
                     )
                 }
             }
@@ -140,8 +133,7 @@ fun VaccinationsScreen(
                 },
                 onSuccess = {
                     viewModel.onEvent(VaccinationsUiEvent.LoadVaccinations)
-                },
-                canEditVaccinations = canEditVaccinations
+                }
             )
         }
     }
@@ -151,8 +143,7 @@ fun VaccinationsScreen(
 private fun VaccinationsHeader(
     vaccinationCount: Int,
     pendingCount: Int,
-    onAddVaccinationClick: () -> Unit,
-    canAddVaccinations: Boolean = true
+    onAddVaccinationClick: () -> Unit
 ) {
     val theme = PetWiseTheme.Light
 
@@ -224,8 +215,7 @@ private fun VaccinationsHeader(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            if (canAddVaccinations) {
-                Button(
+            Button(
                     onClick = onAddVaccinationClick,
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
@@ -250,7 +240,7 @@ private fun VaccinationsHeader(
             }
         }
     }
-}
+
 
 @Composable
 private fun LoadingContent() {
@@ -266,8 +256,7 @@ private fun LoadingContent() {
 
 @Composable
 private fun EmptyContent(
-    onAddVaccinationClick: () -> Unit,
-    canAddVaccinations: Boolean = true
+    onAddVaccinationClick: () -> Unit
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -297,11 +286,7 @@ private fun EmptyContent(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = if (canAddVaccinations) {
-                    "Registre a primeira vacina para começar!"
-                } else {
-                    "Não há vacinas registradas no momento."
-                },
+                text = "Registre a primeira vacina para começar!",
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = Color.Gray
                 )
@@ -309,8 +294,7 @@ private fun EmptyContent(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            if (canAddVaccinations) {
-                Button(
+            Button(
                     onClick = onAddVaccinationClick,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.fromHex("#4CAF50")
@@ -326,15 +310,13 @@ private fun EmptyContent(
             }
         }
     }
-}
 
 @Composable
 private fun VaccinationsListContent(
     vaccinations: List<Vaccination>,
     pendingVaccinations: List<Vaccination>,
     onEditVaccination: (Vaccination) -> Unit,
-    onScheduleVaccination: (String) -> Unit,
-    canEditVaccinations: Boolean = true
+    onScheduleVaccination: (String) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -361,8 +343,7 @@ private fun VaccinationsListContent(
             VaccinationCard(
                 vaccination = vaccination,
                 onEdit = { onEditVaccination(vaccination) },
-                onSchedule = { onScheduleVaccination(vaccination.id) },
-                canEditVaccinations = canEditVaccinations
+                onSchedule = { onScheduleVaccination(vaccination.id) }
             )
         }
     }
@@ -558,8 +539,7 @@ private fun StatCard(
 private fun VaccinationCard(
     vaccination: Vaccination,
     onEdit: () -> Unit,
-    onSchedule: () -> Unit,
-    canEditVaccinations: Boolean = true
+    onSchedule: () -> Unit
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -669,12 +649,11 @@ private fun VaccinationCard(
             
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = if (canEditVaccinations) Arrangement.spacedBy(8.dp) else Arrangement.Center
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                if (canEditVaccinations) {
-                    OutlinedButton(
-                        onClick = onEdit,
-                        modifier = Modifier.weight(1f),
+                OutlinedButton(
+                    onClick = onEdit,
+                    modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.outlinedButtonColors(
                             contentColor = Color(0xFF666666)
@@ -690,7 +669,7 @@ private fun VaccinationCard(
                 
                 Button(
                     onClick = onSchedule,
-                    modifier = if (canEditVaccinations) Modifier.weight(1f) else Modifier,
+                    modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF28A745)
@@ -705,7 +684,7 @@ private fun VaccinationCard(
             }
         }
     }
-}
+
 
 @Composable
 private fun VaccinationInfoRow(

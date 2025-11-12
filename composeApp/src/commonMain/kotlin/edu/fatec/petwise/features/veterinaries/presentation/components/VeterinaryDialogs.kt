@@ -109,12 +109,10 @@ fun VeterinaryDetailsDialog(
                     
                     Divider(color = Color.Gray.copy(alpha = 0.3f))
                     
-                    // Contact information
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        // Email
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
@@ -133,7 +131,6 @@ fun VeterinaryDetailsDialog(
                             )
                         }
                         
-                        // Phone (if available)
                         veterinary.phone?.let { phone ->
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -154,7 +151,6 @@ fun VeterinaryDetailsDialog(
                             }
                         }
                         
-                        // User type
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically

@@ -27,7 +27,6 @@ object VeterinaryDependencyContainer {
         return VeterinaryUseCases(
             getAllVeterinaries = GetAllVeterinariesUseCase(veterinaryRepository),
             getVeterinaryById = GetVeterinaryByIdUseCase(veterinaryRepository),
-            searchVeterinaries = SearchVeterinariesUseCase(veterinaryRepository),
             filterVeterinaries = FilterVeterinariesUseCase(veterinaryRepository),
             getVerifiedVeterinaries = GetVerifiedVeterinariesUseCase(veterinaryRepository)
         )
@@ -39,10 +38,6 @@ object VeterinaryDependencyContainer {
 
     fun provideGetVeterinaryByIdUseCase(): GetVeterinaryByIdUseCase {
         return GetVeterinaryByIdUseCase(veterinaryRepository)
-    }
-
-    fun provideSearchVeterinariesUseCase(): SearchVeterinariesUseCase {
-        return SearchVeterinariesUseCase(veterinaryRepository)
     }
 
     fun provideFilterVeterinariesUseCase(): FilterVeterinariesUseCase {

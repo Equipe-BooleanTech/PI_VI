@@ -27,11 +27,8 @@ import java.util.*
 @Composable
 fun SuprimentosScreen(
     petId: String,
-    navigationKey: Any? = null,
-    canAddSuprimentos: Boolean = true,
-    canEditSuprimentos: Boolean = true
+    navigationKey: Any? = null
 ) {
-    println("SuprimentosScreen - canAddSuprimentos: $canAddSuprimentos, canEditSuprimentos: $canEditSuprimentos")
     val suprimentosViewModel = remember { SuprimentoDependencyContainer.provideSuprimentosViewModel() }
     val addSuprimentoViewModel = remember { SuprimentoDependencyContainer.provideAddSuprimentoViewModel() }
     val updateSuprimentoViewModel = remember { SuprimentoDependencyContainer.provideUpdateSuprimentoViewModel() }
@@ -83,11 +80,8 @@ fun SuprimentosScreen(
             onSearchClick = { showSearchBar = !showSearchBar },
             onFilterClick = { showFilterSheet = true },
             onAddClick = { 
-                if (canAddSuprimentos) {
-                    showAddDialog = true
-                }
+                showAddDialog = true
             },
-            canAddSuprimentos = canAddSuprimentos
         )
 
         if (showSearchBar) {
@@ -121,11 +115,8 @@ fun SuprimentosScreen(
                 suprimentosState.filteredSuprimentos.isEmpty() -> {
                     EmptyContent(
                         onAddClick = { 
-                            if (canAddSuprimentos) {
-                                showAddDialog = true
-                            }
-                        },
-                        canAddSuprimentos = canAddSuprimentos
+                            showAddDialog = true
+                        }
                     )
                 }
                 else -> {
@@ -136,18 +127,13 @@ fun SuprimentosScreen(
                             showDetailsDialog = true
                         },
                         onEditClick = { suprimento ->
-                            if (canEditSuprimentos) {
-                                suprimentoToEdit = suprimento
-                                showEditDialog = true
-                            }
+                            suprimentoToEdit = suprimento
+                            showEditDialog = true
                         },
                         onDeleteClick = { suprimento ->
-                            if (canEditSuprimentos) {
-                                suprimentoToDelete = suprimento
-                                showDeleteConfirmation = true
-                            }
-                        },
-                        canEditSuprimentos = canEditSuprimentos
+                            suprimentoToDelete = suprimento
+                            showDeleteConfirmation = true
+                        }
                     )
                 }
             }
@@ -215,8 +201,7 @@ fun SuprimentosScreen(
                     showDetailsDialog = false
                     suprimentoToDelete = sup
                     showDeleteConfirmation = true
-                },
-                canEdit = canEditSuprimentos
+                }
             )
         }
     }
@@ -256,8 +241,7 @@ private fun SuprimentosHeader(
     suprimentoCount: Int,
     onSearchClick: () -> Unit,
     onFilterClick: () -> Unit,
-    onAddClick: () -> Unit,
-    canAddSuprimentos: Boolean = true
+    onAddClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -317,8 +301,7 @@ private fun SuprimentosHeader(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            if (canAddSuprimentos) {
-                Button(
+            Button(
                     onClick = onAddClick,
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
@@ -343,7 +326,7 @@ private fun SuprimentosHeader(
             }
         }
     }
-}
+
 
 @Composable
 private fun SuprimentosStatusCard(
@@ -516,8 +499,7 @@ private fun LoadingContent() {
 
 @Composable
 private fun EmptyContent(
-    onAddClick: () -> Unit,
-    canAddSuprimentos: Boolean = true
+    onAddClick: () -> Unit
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -547,11 +529,7 @@ private fun EmptyContent(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = if (canAddSuprimentos) {
-                    "Adicione seu primeiro item para começar!"
-                } else {
-                    "Não há suprimentos registrados no momento."
-                },
+                text = "Adicione seu primeiro item para começar!",
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = Color.Gray
                 )
@@ -559,8 +537,7 @@ private fun EmptyContent(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            if (canAddSuprimentos) {
-                Button(
+            Button(
                     onClick = onAddClick,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.fromHex("#00b942")
@@ -576,15 +553,13 @@ private fun EmptyContent(
             }
         }
     }
-}
 
 @Composable
 private fun SuprimentosListContent(
     suprimentos: List<Suprimento>,
     onSuprimentoClick: (Suprimento) -> Unit,
     onEditClick: (Suprimento) -> Unit,
-    onDeleteClick: (Suprimento) -> Unit,
-    canEditSuprimentos: Boolean = true
+    onDeleteClick: (Suprimento) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -596,8 +571,7 @@ private fun SuprimentosListContent(
                 suprimento = suprimento,
                 onClick = onSuprimentoClick,
                 onEditClick = onEditClick,
-                onDeleteClick = onDeleteClick,
-                canEdit = canEditSuprimentos
+                onDeleteClick = onDeleteClick
             )
         }
     }

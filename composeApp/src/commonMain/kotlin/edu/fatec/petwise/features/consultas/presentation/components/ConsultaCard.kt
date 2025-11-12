@@ -32,7 +32,6 @@ fun ConsultaCard(
     onMarkAsPaid: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier,
     selectionMode: Boolean = false,
-    canEdit: Boolean = true,
     isSelected: Boolean = false
 ) {
     val theme = PetWiseTheme.Light
@@ -205,19 +204,17 @@ fun ConsultaCard(
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            if (canEdit) {
-                                onEditClick?.let { editClick ->
-                                    IconButton(
-                                        onClick = { editClick(consulta) },
-                                        modifier = Modifier.size(36.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Edit,
-                                            contentDescription = "Editar",
-                                            tint = Color.fromHex(theme.palette.primary),
-                                            modifier = Modifier.size(20.dp)
-                                        )
-                                    }
+                            onEditClick?.let { editClick ->
+                                IconButton(
+                                    onClick = { editClick(consulta) },
+                                    modifier = Modifier.size(36.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Edit,
+                                        contentDescription = "Editar",
+                                        tint = Color.fromHex(theme.palette.primary),
+                                        modifier = Modifier.size(20.dp)
+                                    )
                                 }
                             }
                         }

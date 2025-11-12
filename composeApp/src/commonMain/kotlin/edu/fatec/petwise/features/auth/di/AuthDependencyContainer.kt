@@ -100,6 +100,7 @@ object AuthDependencyContainer {
 class AuthTokenStorageImpl : AuthTokenStorage {
     private var token: String? = null
     private var userId: String? = null
+    private var userType: String? = null
     private var tokenExpirationTime: Long = 0
 
     override fun saveToken(token: String) {
@@ -127,10 +128,21 @@ class AuthTokenStorageImpl : AuthTokenStorage {
 
     override fun getUserId(): String? = userId
 
+    override fun saveUserType(userType: String) {
+        println("AuthTokenStorage: Saving userType: $userType")
+        this.userType = userType
+    }
+
+    override fun getUserType(): String? {
+        println("AuthTokenStorage: Returning userType: $userType")
+        return userType
+    }
+
     override fun clearTokens() {
         println("AuthTokenStorage: Clearing all tokens and user data")
         token = null
         userId = null
+        userType = null
         tokenExpirationTime = 0
     }
     

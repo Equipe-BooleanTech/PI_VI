@@ -54,7 +54,7 @@ val registerFormConfiguration: FormConfiguration = FormConfiguration(
                 SelectOption("OWNER", "Cliente"),
                 SelectOption("VETERINARY", "Veterinário"),
                 SelectOption("PHARMACY", "Farmácia"),
-                SelectOption("ADMIN", "Admin")
+                SelectOption("PETSHOP", "Pet Shop")
             ),
             validators = listOf(
                 ValidationRule(

@@ -33,8 +33,7 @@ fun EditVaccinationDialog(
     isLoading: Boolean = false,
     errorMessage: String? = null,
     onDismiss: () -> Unit,
-    onSuccess: () -> Unit,
-    canEditVaccinations: Boolean = true
+    onSuccess: () -> Unit
 ) {
     val theme = PetWiseTheme.Light
     val formConfiguration = remember(vaccination) { 
@@ -43,11 +42,6 @@ fun EditVaccinationDialog(
     
     val formViewModel = remember(vaccination) {
         DynamicFormViewModel(formConfiguration)
-    }
-    
-    if (!canEditVaccinations) {
-        onDismiss()
-        return
     }
 
     Dialog(

@@ -78,10 +78,6 @@ fun VeterinariesScreen(
     Scaffold(
         topBar = {
             VeterinariesTopBar(
-                searchQuery = veterinariesState.searchQuery,
-                onSearchQueryChange = { query ->
-                    veterinariesViewModel.handleEvent(VeterinariesUiEvent.SearchVeterinaries(query))
-                },
                 onSearchClick = { showSearchSheet = true },
                 onRefresh = {
                     veterinariesViewModel.handleEvent(VeterinariesUiEvent.LoadVeterinaries)
@@ -114,7 +110,6 @@ fun VeterinariesScreen(
                         isSearching = veterinariesState.searchQuery.isNotBlank() || 
                                     veterinariesState.filterOptions.searchQuery.isNotBlank(),
                         onClearSearch = {
-                            veterinariesViewModel.handleEvent(VeterinariesUiEvent.SearchVeterinaries(""))
                             veterinariesViewModel.handleEvent(
                                 VeterinariesUiEvent.FilterVeterinaries(VeterinaryFilterOptions())
                             )
@@ -188,8 +183,6 @@ fun VeterinariesScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun VeterinariesTopBar(
-    searchQuery: String,
-    onSearchQueryChange: (String) -> Unit,
     onSearchClick: () -> Unit,
     onRefresh: () -> Unit
 ) {

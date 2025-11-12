@@ -45,3 +45,28 @@ class GetUserNameUseCase(
         }
     }
 }
+
+class GetUserTypeUseCase(
+    private val authRepository: AuthRepository
+) {
+    suspend operator fun invoke(): Result<String> {
+        return try {
+            val tokenStorage = edu.fatec.petwise.features.auth.di.AuthDependencyContainer.getTokenStorage()
+            val userType = tokenStorage.getUserType()
+            
+            if (userType != null) {
+                println("GetUserTypeUseCase: Retornando userType do cache: $userType")
+                Result.success(userType)
+            } else {
+                println("GetUserTypeUseCase: UserType não encontrado no cache, buscando via API")
+                val profileResult = authRepository.getUserProfile()
+                profileResult.map { profile -> 
+                    tokenStorage.saveUserType(profile.userType)
+                    profile.userType
+                }
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+}

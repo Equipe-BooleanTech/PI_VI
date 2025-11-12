@@ -96,7 +96,7 @@ fun QuickActionsSection(
                 background = "#FF9800"
             )
         )
-        UserType.ADMIN -> listOf(
+        UserType.PETSHOP -> listOf(
             QuickActionData(
                 id = "manage_pets",
                 title = "Gerenciar Pets",

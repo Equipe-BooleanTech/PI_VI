@@ -16,7 +16,7 @@ class AuthRepositoryImpl(
     private val tokenStorage: AuthTokenStorage? = null
 ) : AuthRepository {
 
-    private fun createDedicatedAuthService(): AuthApiService {
+    private fun getAuthService(): AuthApiService {
         println("Repositório: Criando AuthApiService dedicado para operação de autenticação.")
         return AuthApiServiceImpl(NetworkModule.getDedicatedNetworkRequestHandler())
     }
@@ -25,8 +25,8 @@ class AuthRepositoryImpl(
         return try {
             println("Repositório: Iniciando login para email '$email' via API")
             
-            val dedicatedAuthService = createDedicatedAuthService()
-            val result = dedicatedAuthService.login(
+            val authService = getAuthService()
+            val result = authService.login(
                 LoginRequest(
                     email = email,
                     password = password,
@@ -44,11 +44,12 @@ class AuthRepositoryImpl(
                             tokenStorage?.saveToken(result.data.token)
                         }
                         tokenStorage?.saveUserId(result.data.userId)
+                        tokenStorage?.saveUserType(result.data.userType)
                         
                         NetworkModule.setAuthTokenWithExpiration(result.data.token, result.data.expiresIn)
                     }
                     
-                    println("Repositório: Login realizado com sucesso - Usuário: ${result.data.userId}, Token expira em: ${result.data.expiresIn}s")
+                    println("Repositório: Login realizado com sucesso - Usuário: ${result.data.userId}, UserType: ${result.data.userType}, Token expira em: ${result.data.expiresIn}s")
                     
                     Result.success(result.data.userId)
                 }
@@ -144,9 +145,9 @@ class AuthRepositoryImpl(
 
     override suspend fun getUserProfile(): Result<edu.fatec.petwise.core.network.dto.UserProfileDto> {
         return try {
-            val dedicatedAuthService = createDedicatedAuthService()
+            val authService = getAuthService()
             println("Repositório: Buscando perfil do usuário via API")
-            when (val result = dedicatedAuthService.getUserProfile()) {
+            when (val result = authService.getUserProfile()) {
                 is NetworkResult.Success -> {
                     println("Repositório: Perfil do usuário obtido com sucesso")
                     Result.success(result.data)
@@ -187,11 +188,11 @@ class AuthRepositoryImpl(
         return try {
             println("Repositório: Iniciando logout - chamando API")
             
-            val dedicatedAuthService = createDedicatedAuthService()
+            val authService = getAuthService()
             
             val apiResult = try {
                 withContext(NonCancellable) {
-                    dedicatedAuthService.logout()
+                    authService.logout()
                 }
             } catch (e: Exception) {
                 println("Repositório: Erro ao chamar API de logout (continuando limpeza local) - ${e.message}")
@@ -241,5 +242,7 @@ interface AuthTokenStorage {
     fun getToken(): String?
     fun saveUserId(userId: String)
     fun getUserId(): String?
+    fun saveUserType(userType: String)
+    fun getUserType(): String?
     fun clearTokens()
 }

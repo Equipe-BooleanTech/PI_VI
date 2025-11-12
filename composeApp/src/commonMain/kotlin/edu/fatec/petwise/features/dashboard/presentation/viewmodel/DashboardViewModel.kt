@@ -8,6 +8,7 @@ import edu.fatec.petwise.features.consultas.domain.models.Consulta
 import edu.fatec.petwise.features.dashboard.domain.usecases.GetCardsStatisticsUseCase
 import edu.fatec.petwise.features.dashboard.domain.usecases.GetUpcomingConsultasUseCase
 import edu.fatec.petwise.features.dashboard.domain.usecases.GetUserNameUseCase
+import edu.fatec.petwise.features.dashboard.domain.usecases.GetUserTypeUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,6 +16,7 @@ import kotlinx.coroutines.launch
 
 data class DashboardUiState(
     val userName: String = "",
+    val userType: String = "OWNER",
     val petCount: Int = 0,
     val consultasCount: Int = 0,
     val vacinasCount: Int = 0,
@@ -32,7 +34,8 @@ sealed class DashboardUiEvent {
 class DashboardViewModel(
     private val getCardsStatisticsUseCase: GetCardsStatisticsUseCase,
     private val getUpcomingConsultasUseCase: GetUpcomingConsultasUseCase,
-    private val getUserNameUseCase: GetUserNameUseCase
+    private val getUserNameUseCase: GetUserNameUseCase,
+    private val getUserTypeUseCase: GetUserTypeUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DashboardUiState())
@@ -75,19 +78,25 @@ class DashboardViewModel(
                 val userNameResult = getUserNameUseCase()
                 val userName = userNameResult.getOrNull() ?: ""
                 
+                val userTypeResult = getUserTypeUseCase()
+                val userType = userTypeResult.getOrNull() ?: "OWNER"
+                
+                println("DashboardViewModel - getUserTypeUseCase result: success=${userTypeResult.isSuccess}, userType=$userType")
+                
                 val statistics = getCardsStatisticsUseCase()
                 val petCount = statistics.getOrElse(0) { 0 }
                 val consultasCount = statistics.getOrElse(1) { 0 }
                 val vacinasCount = statistics.getOrElse(2) { 0 }
                 val medicamentosCount = statistics.getOrElse(3) { 0 }
 
-                println("Estatísticas carregadas: pets=$petCount, consultas=$consultasCount, vacinas=$vacinasCount, medicamentos=$medicamentosCount, userName=$userName")
+                println("Estatísticas carregadas: pets=$petCount, consultas=$consultasCount, vacinas=$vacinasCount, medicamentos=$medicamentosCount, userName=$userName, userType=$userType")
 
                 val consultas = getUpcomingConsultasUseCase()
                 println("Consultas próximas carregadas: ${consultas.size}")
                 
                 _uiState.value = _uiState.value.copy(
                     userName = userName,
+                    userType = userType,
                     petCount = petCount,
                     consultasCount = consultasCount,
                     vacinasCount = vacinasCount,

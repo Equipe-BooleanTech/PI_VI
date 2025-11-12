@@ -95,7 +95,7 @@ fun StatusCardsSection(
                 color = "#F44336"
             )
         )
-        UserType.ADMIN -> listOf(
+        UserType.PETSHOP -> listOf(
             StatusCardData(
                 title = "Total Pets",
                 value = petCount.toString(),
