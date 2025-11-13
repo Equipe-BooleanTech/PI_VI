@@ -63,6 +63,32 @@ val registerFormConfiguration: FormConfiguration = FormConfiguration(
                 )
             )
         ),
+        FormFieldDefinition(
+            id = "phone",
+            label = "Telefone",
+            type = FormFieldType.PHONE,
+            placeholder = "(00) 00000-0000",
+            visibility = VisibilityRule(
+                conditions = listOf(
+                    VisibilityCondition(
+                        fieldId = "userType",
+                        operator = ComparisonOperator.NOT_EMPTY,
+                        value = JsonPrimitive("")
+                    )
+                )
+            ),
+            validators = listOf(
+                ValidationRule(
+                    type = ValidationType.REQUIRED,
+                    message = "Telefone é obrigatório"
+                ),
+                ValidationRule(
+                    type = ValidationType.PHONE,
+                    message = "Formato de telefone inválido"
+                )
+            ),
+            formatting = FieldFormatting(mask = "(##) #####-####")
+        ),
 
         FormFieldDefinition(
             id = "cpf",
@@ -158,8 +184,8 @@ val registerFormConfiguration: FormConfiguration = FormConfiguration(
                 conditions = listOf(
                     VisibilityCondition(
                         fieldId = "userType",
-                        operator = ComparisonOperator.EQUALS,
-                        value = JsonPrimitive("PHARMACY")
+                        operator = ComparisonOperator.IN,
+                        value = JsonPrimitive("PHARMACY,PETSHOP")
                     )
                 )
             ),
@@ -183,8 +209,8 @@ val registerFormConfiguration: FormConfiguration = FormConfiguration(
                 conditions = listOf(
                     VisibilityCondition(
                         fieldId = "userType",
-                        operator = ComparisonOperator.EQUALS,
-                        value = JsonPrimitive("PHARMACY")
+                        operator = ComparisonOperator.IN,
+                        value = JsonPrimitive("PHARMACY,PETSHOP")
                     )
                 )
             ),
@@ -198,27 +224,18 @@ val registerFormConfiguration: FormConfiguration = FormConfiguration(
         ),
 
         FormFieldDefinition(
-            id = "phone",
-            label = "Telefone",
-            type = FormFieldType.PHONE,
-            placeholder = "(00) 00000-0000",
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Telefone é obrigatório"
-                ),
-                ValidationRule(
-                    type = ValidationType.PHONE,
-                    message = "Formato de telefone inválido"
-                )
-            ),
-            formatting = FieldFormatting(mask = "(##) #####-####")
-        ),
-
-        FormFieldDefinition(
             id = "password",
             label = "Senha",
             type = FormFieldType.PASSWORD,
+            visibility = VisibilityRule(
+                conditions = listOf(
+                    VisibilityCondition(
+                        fieldId = "userType",
+                        operator = ComparisonOperator.NOT_EMPTY,
+                        value = JsonPrimitive("")
+                    )
+                )
+            ),
             validators = listOf(
                 ValidationRule(
                     type = ValidationType.REQUIRED,
@@ -239,6 +256,15 @@ val registerFormConfiguration: FormConfiguration = FormConfiguration(
             id = "confirmPassword",
             label = "Confirmar Senha",
             type = FormFieldType.PASSWORD,
+            visibility = VisibilityRule(
+                conditions = listOf(
+                    VisibilityCondition(
+                        fieldId = "userType",
+                        operator = ComparisonOperator.NOT_EMPTY,
+                        value = JsonPrimitive("")
+                    )
+                )
+            ),
             validators = listOf(
                 ValidationRule(
                     type = ValidationType.REQUIRED,

@@ -1,46 +1,104 @@
 package edu.fatec.petwise.features.exams.data.datasource
 
+import edu.fatec.petwise.core.network.NetworkResult
+import edu.fatec.petwise.core.network.api.ExamApiService
+import edu.fatec.petwise.core.network.dto.*
 import edu.fatec.petwise.features.exams.domain.models.Exam
 
-class RemoteExamDataSourceImpl : RemoteExamDataSource {
+class RemoteExamDataSourceImpl(
+    private val examApiService: ExamApiService
+) : RemoteExamDataSource {
 
     override suspend fun getAllExams(): List<Exam> {
-        println("API: Buscando todos os exames")
-        throw NotImplementedError("API endpoint not implemented yet")
+        return when (val result = examApiService.getAllExams()) {
+            is NetworkResult.Success -> result.data.exams.map { it.toExam() }
+            is NetworkResult.Error -> {
+                println("API Error: ${result.exception.message}")
+                emptyList()
+            }
+            is NetworkResult.Loading -> emptyList()
+        }
     }
 
     override suspend fun getExamById(id: String): Exam? {
-        println("API: Buscando exame por ID: $id")
-        throw NotImplementedError("API endpoint not implemented yet")
+        return when (val result = examApiService.getExamById(id)) {
+            is NetworkResult.Success -> result.data.toExam()
+            is NetworkResult.Error -> {
+                println("API Error: ${result.exception.message}")
+                null
+            }
+            is NetworkResult.Loading -> null
+        }
     }
 
     override suspend fun createExam(exam: Exam): Exam {
-        println("API: Criando novo exame - ${exam.examType}")
-        throw NotImplementedError("API endpoint not implemented yet")
+        val request = CreateExamRequest(
+            petId = exam.petId,
+            veterinaryId = exam.veterinaryId,
+            examType = exam.examType,
+            examDate = exam.examDate,
+            results = exam.results,
+            status = exam.status,
+            notes = exam.notes,
+            attachmentUrl = exam.attachmentUrl
+        )
+        return when (val result = examApiService.createExam(request)) {
+            is NetworkResult.Success -> result.data.toExam()
+            is NetworkResult.Error -> throw Exception(result.exception.message)
+            is NetworkResult.Loading -> throw Exception("Request in progress")
+        }
     }
 
     override suspend fun updateExam(exam: Exam): Exam {
-        println("API: Atualizando exame - ${exam.examType} (ID: ${exam.id})")
-        throw NotImplementedError("API endpoint not implemented yet")
+        val request = UpdateExamRequest(
+            examType = exam.examType,
+            examDate = exam.examDate,
+            results = exam.results,
+            status = exam.status,
+            notes = exam.notes,
+            attachmentUrl = exam.attachmentUrl
+        )
+        return when (val result = examApiService.updateExam(exam.id, request)) {
+            is NetworkResult.Success -> result.data.toExam()
+            is NetworkResult.Error -> throw Exception(result.exception.message)
+            is NetworkResult.Loading -> throw Exception("Request in progress")
+        }
     }
 
     override suspend fun deleteExam(id: String) {
-        println("API: Excluindo exame com ID: $id")
-        throw NotImplementedError("API endpoint not implemented yet")
+        when (val result = examApiService.deleteExam(id)) {
+            is NetworkResult.Success -> Unit
+            is NetworkResult.Error -> throw Exception(result.exception.message)
+            is NetworkResult.Loading -> throw Exception("Request in progress")
+        }
     }
 
     override suspend fun searchExams(query: String): List<Exam> {
-        println("API: Buscando exames com query: '$query'")
-        throw NotImplementedError("API endpoint not implemented yet")
+        return getAllExams().filter { 
+            it.examType.contains(query, ignoreCase = true) ||
+            it.notes?.contains(query, ignoreCase = true) == true
+        }
     }
 
     override suspend fun getExamsByPetId(petId: String): List<Exam> {
-        println("API: Buscando exames do pet: $petId")
-        throw NotImplementedError("API endpoint not implemented yet")
+        return when (val result = examApiService.getExamsByPetId(petId)) {
+            is NetworkResult.Success -> result.data.map { it.toExam() }
+            is NetworkResult.Error -> {
+                println("API Error: ${result.exception.message}")
+                emptyList()
+            }
+            is NetworkResult.Loading -> emptyList()
+        }
     }
 
     override suspend fun getExamsByVeterinaryId(veterinaryId: String): List<Exam> {
-        println("API: Buscando exames do veterinário: $veterinaryId")
-        throw NotImplementedError("API endpoint not implemented yet")
+        return when (val result = examApiService.getExamsByVeterinaryId(veterinaryId)) {
+            is NetworkResult.Success -> result.data.map { it.toExam() }
+            is NetworkResult.Error -> {
+                println("API Error: ${result.exception.message}")
+                emptyList()
+            }
+            is NetworkResult.Loading -> emptyList()
+        }
     }
 }

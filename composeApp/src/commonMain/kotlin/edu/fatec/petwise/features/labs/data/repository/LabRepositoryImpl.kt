@@ -1,7 +1,5 @@
 package edu.fatec.petwise.features.labs.data.repository
 
-import edu.fatec.petwise.core.config.AppConfig
-import edu.fatec.petwise.core.data.MockDataProvider
 import edu.fatec.petwise.features.labs.data.datasource.RemoteLabDataSource
 import edu.fatec.petwise.features.labs.domain.models.Lab
 import edu.fatec.petwise.features.labs.domain.repository.LabRepository
@@ -19,19 +17,9 @@ class LabRepositoryImpl(
             println("Repositório: ${labs.size} resultados carregados com sucesso da API")
             emit(labs)
         } catch (e: Exception) {
-            if (AppConfig.useMockDataFallback) {
-                println("Repositório: Erro ao buscar resultados da API - ${e.message}. Usando dados mock como fallback")
-                try {
-                    val mockLabs = MockDataProvider.getMockLabs()
-                    emit(mockLabs)
-                } catch (emitError: Exception) {
-                    println("Repositório: Erro ao emitir dados mock - ${emitError.message}")
-                }
-            } else {
                 println("Repositório: Erro ao buscar resultados da API - ${e.message}")
                 throw e
             }
-        }
     }
 
     override fun getLabById(id: String): Flow<Lab?> = flow {
@@ -45,18 +33,8 @@ class LabRepositoryImpl(
             }
             emit(lab)
         } catch (e: Exception) {
-            if (AppConfig.useMockDataFallback) {
-                println("Repositório: Erro ao buscar resultado por ID '$id' - ${e.message}. Usando dados mock como fallback")
-                try {
-                    val mockLab = MockDataProvider.getMockLabs().find { it.id == id }
-                    emit(mockLab)
-                } catch (emitError: Exception) {
-                    println("Repositório: Erro ao emitir dados mock - ${emitError.message}")
-                }
-            } else {
                 println("Repositório: Erro ao buscar resultado por ID '$id' - ${e.message}")
                 throw e
-            }
         }
     }
 
@@ -67,21 +45,10 @@ class LabRepositoryImpl(
             println("Repositório: Busca concluída - ${labs.size} resultados encontrados")
             emit(labs)
         } catch (e: Exception) {
-            if (AppConfig.useMockDataFallback) {
-                println("Repositório: Erro ao buscar resultados na API - ${e.message}. Usando dados mock como fallback")
-                try {
-                    val mockLabs = MockDataProvider.getMockLabs()
-                        .filter { it.testType.contains(query, ignoreCase = true) || it.labName.contains(query, ignoreCase = true) }
-                    emit(mockLabs)
-                } catch (emitError: Exception) {
-                    println("Repositório: Erro ao emitir dados mock - ${emitError.message}")
-                }
-            } else {
                 println("Repositório: Erro ao buscar resultados na API - ${e.message}")
                 throw e
             }
         }
-    }
 
     override fun getLabsByVeterinaryId(veterinaryId: String): Flow<List<Lab>> = flow {
         try {
@@ -90,20 +57,9 @@ class LabRepositoryImpl(
             println("Repositório: ${labs.size} resultados encontrados")
             emit(labs)
         } catch (e: Exception) {
-            if (AppConfig.useMockDataFallback) {
-                println("Repositório: Erro ao buscar resultados do veterinário - ${e.message}. Usando dados mock como fallback")
-                try {
-                    val mockLabs = MockDataProvider.getMockLabs()
-                        .filter { it.veterinaryId == veterinaryId }
-                    emit(mockLabs)
-                } catch (emitError: Exception) {
-                    println("Repositório: Erro ao emitir dados mock - ${emitError.message}")
-                }
-            } else {
                 println("Repositório: Erro ao buscar resultados do veterinário - ${e.message}")
                 throw e
             }
-        }
     }
 
     override suspend fun addLab(lab: Lab): Result<Lab> {
@@ -142,3 +98,4 @@ class LabRepositoryImpl(
         }
     }
 }
+

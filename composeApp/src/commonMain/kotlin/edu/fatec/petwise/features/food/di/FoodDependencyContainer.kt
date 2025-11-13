@@ -1,5 +1,6 @@
 package edu.fatec.petwise.features.food.di
 
+import edu.fatec.petwise.core.network.di.NetworkModule
 import edu.fatec.petwise.features.food.data.datasource.RemoteFoodDataSource
 import edu.fatec.petwise.features.food.data.datasource.RemoteFoodDataSourceImpl
 import edu.fatec.petwise.features.food.data.repository.FoodRepositoryImpl
@@ -9,7 +10,7 @@ import edu.fatec.petwise.features.food.domain.usecases.*
 object FoodDependencyContainer {
     
     private val remoteDataSource: RemoteFoodDataSource by lazy {
-        RemoteFoodDataSourceImpl()
+        RemoteFoodDataSourceImpl(NetworkModule.foodApiService)
     }
 
     private val repository: FoodRepository by lazy {

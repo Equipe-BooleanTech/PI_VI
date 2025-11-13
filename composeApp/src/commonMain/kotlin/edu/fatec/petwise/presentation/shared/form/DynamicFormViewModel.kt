@@ -737,6 +737,12 @@ class DynamicFormViewModel(
             ComparisonOperator.NOT_IN_LIST -> {
                 !expectedValue.split(",").map { it.trim() }.contains(actualValue)
             }
+            ComparisonOperator.NOT_EMPTY -> {
+                actualValue.isNotBlank()
+            }
+            ComparisonOperator.IN -> {
+                expectedValue.split(",").map { it.trim() }.contains(actualValue)
+            }
         }
     }
 

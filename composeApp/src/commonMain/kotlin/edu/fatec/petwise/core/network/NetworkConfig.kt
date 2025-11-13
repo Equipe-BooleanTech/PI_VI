@@ -55,12 +55,36 @@ object ApiEndpoints {
     fun completeMedication(id: String) = "$MEDICATIONS/$id/complete"
 
     const val USER_PROFILE = "/api/auth/profile"
+    const val PROFILE = "/api/profile"
 
-    const val VETERINARIES = "/api/veterinaries"
-    fun getVeterinary(id: String) = "$VETERINARIES/$id"
+    const val EXAMS = "/api/exams"
+    fun getExam(id: String) = "$EXAMS/$id"
+    fun getExamsByPet(petId: String) = "/api/pets/$petId/exams"
+    fun getExamsByVeterinary(veterinaryId: String) = "/api/veterinaries/$veterinaryId/exams"
 
-    const val PHARMACIES = "/api/pharmacies"
-    fun getPharmacy(id: String) = "$PHARMACIES/$id"
+    const val PRESCRIPTIONS = "/api/prescriptions"
+    fun getPrescription(id: String) = "$PRESCRIPTIONS/$id"
+    fun getPrescriptionsByPet(petId: String) = "/api/pets/$petId/prescriptions"
+    fun getPrescriptionsByVeterinary(veterinaryId: String) = "/api/veterinaries/$veterinaryId/prescriptions"
+
+    const val LABS = "/api/labs"
+    fun getLab(id: String) = "$LABS/$id"
+    fun getLabsByVeterinary(veterinaryId: String) = "/api/veterinaries/$veterinaryId/labs"
+
+    const val FOOD = "/api/food"
+    fun getFood(id: String) = "$FOOD/$id"
+    const val FOOD_SEARCH = "$FOOD/search"
+    const val FOOD_BY_CATEGORY = "$FOOD/category"
+
+    const val HYGIENE = "/api/hygiene"
+    fun getHygieneProduct(id: String) = "$HYGIENE/$id"
+    const val HYGIENE_SEARCH = "$HYGIENE/search"
+    const val HYGIENE_BY_CATEGORY = "$HYGIENE/category"
+
+    const val TOYS = "/api/toys"
+    fun getToy(id: String) = "$TOYS/$id"
+    const val TOYS_SEARCH = "$TOYS/search"
+    const val TOYS_BY_CATEGORY = "$TOYS/category"
 
     const val SUPRIMENTOS = "/api/supplies"
     fun getSuprimento(id: String) = "$SUPRIMENTOS/$id"

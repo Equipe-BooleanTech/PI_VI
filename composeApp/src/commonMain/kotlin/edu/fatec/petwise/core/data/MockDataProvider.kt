@@ -4,8 +4,6 @@ import edu.fatec.petwise.features.pets.domain.models.*
 import edu.fatec.petwise.features.consultas.domain.models.*
 import edu.fatec.petwise.features.vaccinations.domain.models.*
 import edu.fatec.petwise.features.medications.domain.models.*
-import edu.fatec.petwise.features.veterinaries.domain.models.Veterinary
-import edu.fatec.petwise.features.pharmacies.domain.models.Pharmacy
 import edu.fatec.petwise.features.suprimentos.domain.models.Suprimento
 import edu.fatec.petwise.features.suprimentos.domain.models.SuprimentCategory
 import edu.fatec.petwise.features.prescriptions.domain.models.Prescription
@@ -162,56 +160,6 @@ object MockDataProvider {
             sideEffects = "",
             createdAt = "2025-11-12T10:00:00",
             updatedAt = "2025-11-12T10:00:00"
-        )
-    )
-
-    fun getMockVeterinaries(): List<Veterinary> = listOf(
-        Veterinary(
-            id = "mock-vet-1",
-            fullName = "Dr. João Silva",
-            email = "joao.silva@vetclinic.com",
-            phone = "(11) 98765-4321",
-            userType = "VETERINARY",
-            profileImageUrl = null,
-            verified = true,
-            createdAt = "2024-01-15T10:00:00",
-            updatedAt = "2024-01-15T10:00:00"
-        ),
-        Veterinary(
-            id = "mock-vet-2",
-            fullName = "Dra. Maria Santos",
-            email = "maria.santos@vetclinic.com",
-            phone = "(11) 98765-1234",
-            userType = "VETERINARY",
-            profileImageUrl = null,
-            verified = true,
-            createdAt = "2024-02-20T11:00:00",
-            updatedAt = "2024-02-20T11:00:00"
-        )
-    )
-
-    fun getMockPharmacies(): List<Pharmacy> = listOf(
-        Pharmacy(
-            id = "mock-pharm-1",
-            fullName = "Farmácia PetCare",
-            email = "contato@petcarepharm.com",
-            phone = "(11) 3456-7890",
-            userType = "PHARMACY",
-            profileImageUrl = null,
-            verified = true,
-            createdAt = "2024-03-10T09:00:00",
-            updatedAt = "2024-03-10T09:00:00"
-        ),
-        Pharmacy(
-            id = "mock-pharm-2",
-            fullName = "Vet Pharma Express",
-            email = "vendas@vetpharmaexpress.com",
-            phone = "(11) 3456-1234",
-            userType = "PHARMACY",
-            profileImageUrl = null,
-            verified = true,
-            createdAt = "2024-04-05T10:00:00",
-            updatedAt = "2024-04-05T10:00:00"
         )
     )
 

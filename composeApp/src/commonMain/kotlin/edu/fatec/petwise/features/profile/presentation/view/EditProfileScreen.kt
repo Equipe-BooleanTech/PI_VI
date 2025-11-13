@@ -1,0 +1,222 @@
+package edu.fatec.petwise.features.profile.presentation.view
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import edu.fatec.petwise.core.network.dto.UpdateProfileRequest
+import edu.fatec.petwise.features.profile.di.ProfileDependencyContainer
+import edu.fatec.petwise.features.profile.presentation.forms.editProfileFormConfiguration
+import edu.fatec.petwise.features.profile.presentation.viewmodel.EditProfileViewModel
+import edu.fatec.petwise.navigation.NavigationManager
+import edu.fatec.petwise.presentation.shared.form.DynamicForm
+import edu.fatec.petwise.presentation.shared.form.DynamicFormViewModel
+import edu.fatec.petwise.presentation.shared.form.FormFieldDefinition
+import edu.fatec.petwise.presentation.theme.PetWiseTheme
+import edu.fatec.petwise.presentation.theme.fromHex
+import kotlinx.serialization.json.JsonPrimitive
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EditProfileScreen(
+    navigationManager: NavigationManager,
+    viewModel: EditProfileViewModel = remember { ProfileDependencyContainer.provideEditProfileViewModel() }
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val theme = PetWiseTheme.Light
+    
+    val formConfiguration = remember(uiState.userProfile?.userType) {
+        uiState.userProfile?.let { profile ->
+            val fieldsToInclude = when (profile.userType.uppercase()) {
+                "OWNER" -> listOf("fullName", "email", "phone", "cpf", "submitEditProfile")
+                "VETERINARY" -> listOf("fullName", "email", "phone", "crmv", "specialization", "submitEditProfile")
+                "PHARMACY", "PETSHOP" -> listOf("fullName", "email", "phone", "cnpj", "companyName", "submitEditProfile")
+                else -> listOf("fullName", "email", "phone", "submitEditProfile")
+            }
+            
+            editProfileFormConfiguration.copy(
+                fields = editProfileFormConfiguration.fields.filter { field ->
+                    field.id in fieldsToInclude
+                }
+            )
+        } ?: editProfileFormConfiguration
+    }
+    
+    val formViewModel = remember(formConfiguration) {
+        DynamicFormViewModel(initialConfiguration = formConfiguration)
+    }
+
+    LaunchedEffect(uiState.userProfile) {
+        uiState.userProfile?.let { profile ->
+            println("EditProfileScreen: Loading user data into form - ${profile.fullName}")
+            
+            formViewModel.updateFieldValue("fullName", profile.fullName)
+            formViewModel.updateFieldValue("email", profile.email)
+            formViewModel.updateFieldValue("phone", profile.phone ?: "")
+        }
+    }
+
+    LaunchedEffect(uiState.successMessage, uiState.errorMessage) {
+        if (uiState.successMessage != null) {
+            kotlinx.coroutines.delay(2000)
+            viewModel.clearMessages()
+        }
+    }
+
+    Scaffold(
+        containerColor = Color.White,
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Editar Perfil",
+                        style = theme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = Color.fromHex("#1a1a1a")
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navigationManager.navigateToTab(NavigationManager.TabScreen.Home) }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Voltar",
+                            tint = Color.fromHex("#1a1a1a")
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.White
+                )
+            )
+        }
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .background(Color(0xFFF7F7F7))
+        ) {
+            if (uiState.isLoading && uiState.userProfile == null) {
+                // Initial loading state
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        color = Color.fromHex("#00b942")
+                    )
+                }
+            } else {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                ) {
+                    // Success message
+                    uiState.successMessage?.let { message ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color.fromHex("#34C759").copy(alpha = 0.1f)
+                            )
+                        ) {
+                            Text(
+                                text = message,
+                                color = Color.fromHex("#34C759"),
+                                style = theme.typography.bodyMedium,
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
+                    }
+
+                    // Error message
+                    uiState.errorMessage?.let { message ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color.fromHex("#FF3B30").copy(alpha = 0.1f)
+                            )
+                        ) {
+                            Text(
+                                text = message,
+                                color = Color.fromHex("#FF3B30"),
+                                style = theme.typography.bodyMedium,
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
+                    }
+
+                    // Dynamic Form
+                    DynamicForm(
+                        viewModel = formViewModel,
+                        modifier = Modifier.fillMaxWidth(),
+                        onSubmitSuccess = { values ->
+                            println("EditProfileScreen: Form submitted with values: $values")
+                            
+                            val updateRequest = UpdateProfileRequest(
+                                fullName = values["fullName"]?.toString(),
+                                email = values["email"]?.toString(),
+                                phone = values["phone"]?.toString()?.takeIf { it.isNotBlank() },
+                                cpf = values["cpf"]?.toString()?.takeIf { it.isNotBlank() },
+                                crmv = values["crmv"]?.toString()?.takeIf { it.isNotBlank() },
+                                specialization = values["specialization"]?.toString()?.takeIf { it.isNotBlank() },
+                                cnpj = values["cnpj"]?.toString()?.takeIf { it.isNotBlank() },
+                                companyName = values["companyName"]?.toString()?.takeIf { it.isNotBlank() }
+                            )
+                            
+                            viewModel.updateProfile(updateRequest)
+                        },
+                        onSubmitError = { error ->
+                            println("EditProfileScreen: Form submission error - ${error.message}")
+                        }
+                    )
+                }
+            }
+
+            // Loading overlay during update
+            if (uiState.isLoading && uiState.userProfile != null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.3f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Card(
+                        modifier = Modifier.padding(32.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(24.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = Color.fromHex("#00b942")
+                            )
+                            Text(
+                                text = "Atualizando perfil...",
+                                style = theme.typography.bodyMedium
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

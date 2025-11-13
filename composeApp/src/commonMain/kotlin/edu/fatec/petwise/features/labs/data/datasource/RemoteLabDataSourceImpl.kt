@@ -1,41 +1,93 @@
 package edu.fatec.petwise.features.labs.data.datasource
 
+import edu.fatec.petwise.core.network.NetworkResult
+import edu.fatec.petwise.core.network.api.LabApiService
+import edu.fatec.petwise.core.network.dto.*
 import edu.fatec.petwise.features.labs.domain.models.Lab
 
-class RemoteLabDataSourceImpl : RemoteLabDataSource {
+class RemoteLabDataSourceImpl(
+    private val labApiService: LabApiService
+) : RemoteLabDataSource {
 
     override suspend fun getAllLabs(): List<Lab> {
-        println("API: Buscando todos os resultados laboratoriais")
-        throw NotImplementedError("API endpoint not implemented yet")
+        return when (val result = labApiService.getAllLabs()) {
+            is NetworkResult.Success -> result.data.labs.map { it.toLab() }
+            is NetworkResult.Error -> {
+                println("API Error: ${result.exception.message}")
+                emptyList()
+            }
+            is NetworkResult.Loading -> emptyList()
+        }
     }
 
     override suspend fun getLabById(id: String): Lab? {
-        println("API: Buscando resultado laboratorial por ID: $id")
-        throw NotImplementedError("API endpoint not implemented yet")
+        return when (val result = labApiService.getLabById(id)) {
+            is NetworkResult.Success -> result.data.toLab()
+            is NetworkResult.Error -> {
+                println("API Error: ${result.exception.message}")
+                null
+            }
+            is NetworkResult.Loading -> null
+        }
     }
 
     override suspend fun createLab(lab: Lab): Lab {
-        println("API: Criando novo resultado laboratorial - ${lab.testType}")
-        throw NotImplementedError("API endpoint not implemented yet")
+        val request = CreateLabRequest(
+            veterinaryId = lab.veterinaryId,
+            labName = lab.labName,
+            testType = lab.testType,
+            testDate = lab.testDate,
+            results = lab.results,
+            status = lab.status,
+            notes = lab.notes
+        )
+        return when (val result = labApiService.createLab(request)) {
+            is NetworkResult.Success -> result.data.toLab()
+            is NetworkResult.Error -> throw Exception(result.exception.message)
+            is NetworkResult.Loading -> throw Exception("Request in progress")
+        }
     }
 
     override suspend fun updateLab(lab: Lab): Lab {
-        println("API: Atualizando resultado laboratorial - ${lab.testType} (ID: ${lab.id})")
-        throw NotImplementedError("API endpoint not implemented yet")
+        val request = UpdateLabRequest(
+            labName = lab.labName,
+            testType = lab.testType,
+            testDate = lab.testDate,
+            results = lab.results,
+            status = lab.status,
+            notes = lab.notes
+        )
+        return when (val result = labApiService.updateLab(lab.id, request)) {
+            is NetworkResult.Success -> result.data.toLab()
+            is NetworkResult.Error -> throw Exception(result.exception.message)
+            is NetworkResult.Loading -> throw Exception("Request in progress")
+        }
     }
 
     override suspend fun deleteLab(id: String) {
-        println("API: Excluindo resultado laboratorial com ID: $id")
-        throw NotImplementedError("API endpoint not implemented yet")
+        when (val result = labApiService.deleteLab(id)) {
+            is NetworkResult.Success -> Unit
+            is NetworkResult.Error -> throw Exception(result.exception.message)
+            is NetworkResult.Loading -> throw Exception("Request in progress")
+        }
     }
 
     override suspend fun searchLabs(query: String): List<Lab> {
-        println("API: Buscando resultados laboratoriais com query: '$query'")
-        throw NotImplementedError("API endpoint not implemented yet")
+        return getAllLabs().filter {
+            it.labName.contains(query, ignoreCase = true) ||
+            it.testType.contains(query, ignoreCase = true) ||
+            it.notes?.contains(query, ignoreCase = true) == true
+        }
     }
 
     override suspend fun getLabsByVeterinaryId(veterinaryId: String): List<Lab> {
-        println("API: Buscando resultados laboratoriais do veterinário: $veterinaryId")
-        throw NotImplementedError("API endpoint not implemented yet")
+        return when (val result = labApiService.getLabsByVeterinaryId(veterinaryId)) {
+            is NetworkResult.Success -> result.data.map { it.toLab() }
+            is NetworkResult.Error -> {
+                println("API Error: ${result.exception.message}")
+                emptyList()
+            }
+            is NetworkResult.Loading -> emptyList()
+        }
     }
 }

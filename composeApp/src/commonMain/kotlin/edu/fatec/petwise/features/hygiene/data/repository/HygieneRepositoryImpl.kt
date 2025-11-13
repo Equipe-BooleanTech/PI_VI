@@ -1,7 +1,5 @@
 package edu.fatec.petwise.features.hygiene.data.repository
 
-import edu.fatec.petwise.core.config.AppConfig
-import edu.fatec.petwise.core.data.MockDataProvider
 import edu.fatec.petwise.features.hygiene.data.datasource.RemoteHygieneDataSource
 import edu.fatec.petwise.features.hygiene.domain.models.HygieneProduct
 import edu.fatec.petwise.features.hygiene.domain.repository.HygieneRepository
@@ -19,19 +17,9 @@ class HygieneRepositoryImpl(
             println("Repositório: ${products.size} produtos carregados com sucesso da API")
             emit(products)
         } catch (e: Exception) {
-            if (AppConfig.useMockDataFallback) {
-                println("Repositório: Erro ao buscar produtos da API - ${e.message}. Usando dados mock como fallback")
-                try {
-                    val mockProducts = MockDataProvider.getMockHygieneProducts()
-                    emit(mockProducts)
-                } catch (emitError: Exception) {
-                    println("Repositório: Erro ao emitir dados mock - ${emitError.message}")
-                }
-            } else {
                 println("Repositório: Erro ao buscar produtos da API - ${e.message}")
                 throw e
             }
-        }
     }
 
     override fun getHygieneProductById(id: String): Flow<HygieneProduct?> = flow {
@@ -45,18 +33,8 @@ class HygieneRepositoryImpl(
             }
             emit(product)
         } catch (e: Exception) {
-            if (AppConfig.useMockDataFallback) {
-                println("Repositório: Erro ao buscar produto por ID '$id' - ${e.message}. Usando dados mock como fallback")
-                try {
-                    val mockProduct = MockDataProvider.getMockHygieneProducts().find { it.id == id }
-                    emit(mockProduct)
-                } catch (emitError: Exception) {
-                    println("Repositório: Erro ao emitir dados mock - ${emitError.message}")
-                }
-            } else {
                 println("Repositório: Erro ao buscar produto por ID '$id' - ${e.message}")
                 throw e
-            }
         }
     }
 
@@ -67,20 +45,9 @@ class HygieneRepositoryImpl(
             println("Repositório: Busca concluída - ${products.size} produtos encontrados")
             emit(products)
         } catch (e: Exception) {
-            if (AppConfig.useMockDataFallback) {
-                println("Repositório: Erro ao buscar produtos na API - ${e.message}. Usando dados mock como fallback")
-                try {
-                    val mockProducts = MockDataProvider.getMockHygieneProducts()
-                        .filter { it.name.contains(query, ignoreCase = true) || it.brand.contains(query, ignoreCase = true) }
-                    emit(mockProducts)
-                } catch (emitError: Exception) {
-                    println("Repositório: Erro ao emitir dados mock - ${emitError.message}")
-                }
-            } else {
                 println("Repositório: Erro ao buscar produtos na API - ${e.message}")
                 throw e
             }
-        }
     }
 
     override fun getHygieneProductsByCategory(category: String): Flow<List<HygieneProduct>> = flow {
@@ -90,19 +57,8 @@ class HygieneRepositoryImpl(
             println("Repositório: ${products.size} produtos encontrados")
             emit(products)
         } catch (e: Exception) {
-            if (AppConfig.useMockDataFallback) {
-                println("Repositório: Erro ao buscar produtos da categoria - ${e.message}. Usando dados mock como fallback")
-                try {
-                    val mockProducts = MockDataProvider.getMockHygieneProducts()
-                        .filter { it.category.equals(category, ignoreCase = true) }
-                    emit(mockProducts)
-                } catch (emitError: Exception) {
-                    println("Repositório: Erro ao emitir dados mock - ${emitError.message}")
-                }
-            } else {
                 println("Repositório: Erro ao buscar produtos da categoria - ${e.message}")
                 throw e
-            }
         }
     }
 
@@ -142,3 +98,4 @@ class HygieneRepositoryImpl(
         }
     }
 }
+

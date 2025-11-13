@@ -1,5 +1,6 @@
 package edu.fatec.petwise.features.prescriptions.di
 
+import edu.fatec.petwise.core.network.di.NetworkModule
 import edu.fatec.petwise.features.prescriptions.data.datasource.RemotePrescriptionDataSource
 import edu.fatec.petwise.features.prescriptions.data.datasource.RemotePrescriptionDataSourceImpl
 import edu.fatec.petwise.features.prescriptions.data.repository.PrescriptionRepositoryImpl
@@ -9,7 +10,7 @@ import edu.fatec.petwise.features.prescriptions.domain.usecases.*
 object PrescriptionDependencyContainer {
     
     private val remoteDataSource: RemotePrescriptionDataSource by lazy {
-        RemotePrescriptionDataSourceImpl()
+        RemotePrescriptionDataSourceImpl(NetworkModule.prescriptionApiService)
     }
 
     private val repository: PrescriptionRepository by lazy {

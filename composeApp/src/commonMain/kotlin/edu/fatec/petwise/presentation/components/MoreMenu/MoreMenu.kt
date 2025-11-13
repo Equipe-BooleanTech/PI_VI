@@ -166,7 +166,10 @@ fun MoreMenu(
 
                 MoreMenuOption(
                     text = "Editar Perfil",
-                    onClick = { navigationManager.navigateToTab(NavigationManager.TabScreen.Settings) }
+                    onClick = {
+                        navigationManager.navigateToTab(NavigationManager.TabScreen.EditProfile)
+                        onClose()
+                    }
                 )
 
                 Divider(
@@ -234,26 +237,6 @@ fun MoreMenu(
                             title = "Pets",
                             icon = Icons.Default.Person,
                             tabScreen = NavigationManager.TabScreen.Pets
-                        ),
-                        MoreMenuItem(
-                            title = "Vacinas",
-                            icon = Icons.Default.HealthAndSafety,
-                            tabScreen = NavigationManager.TabScreen.Vaccines
-                        ),
-                        MoreMenuItem(
-                            title = "Veterinários",
-                            icon = Icons.Default.MedicalInformation,
-                            tabScreen = NavigationManager.TabScreen.Veterinarians
-                        ),
-                        MoreMenuItem(
-                            title = "Suprimentos",
-                            icon = Icons.Default.ShoppingCart,
-                            tabScreen = NavigationManager.TabScreen.Supplies
-                        ),
-                        MoreMenuItem(
-                            title = "Farmácias",
-                            icon = Icons.Default.LocalPharmacy,
-                            tabScreen = NavigationManager.TabScreen.Pharmacy
                         )
                     )
                 }

@@ -1,7 +1,5 @@
 package edu.fatec.petwise.features.exams.data.repository
 
-import edu.fatec.petwise.core.config.AppConfig
-import edu.fatec.petwise.core.data.MockDataProvider
 import edu.fatec.petwise.features.exams.data.datasource.RemoteExamDataSource
 import edu.fatec.petwise.features.exams.domain.models.Exam
 import edu.fatec.petwise.features.exams.domain.repository.ExamRepository
@@ -19,18 +17,8 @@ class ExamRepositoryImpl(
             println("Repositório: ${exams.size} exames carregados com sucesso da API")
             emit(exams)
         } catch (e: Exception) {
-            if (AppConfig.useMockDataFallback) {
-                println("Repositório: Erro ao buscar exames da API - ${e.message}. Usando dados mock como fallback")
-                try {
-                    val mockExams = MockDataProvider.getMockExams()
-                    emit(mockExams)
-                } catch (emitError: Exception) {
-                    println("Repositório: Erro ao emitir dados mock - ${emitError.message}")
-                }
-            } else {
-                println("Repositório: Erro ao buscar exames da API - ${e.message}")
-                throw e
-            }
+            println("Repositório: Erro ao buscar exames da API - ${e.message}")
+            emit(emptyList())
         }
     }
 
@@ -45,18 +33,8 @@ class ExamRepositoryImpl(
             }
             emit(exam)
         } catch (e: Exception) {
-            if (AppConfig.useMockDataFallback) {
-                println("Repositório: Erro ao buscar exame por ID '$id' - ${e.message}. Usando dados mock como fallback")
-                try {
-                    val mockExam = MockDataProvider.getMockExams().find { it.id == id }
-                    emit(mockExam)
-                } catch (emitError: Exception) {
-                    println("Repositório: Erro ao emitir dados mock - ${emitError.message}")
-                }
-            } else {
-                println("Repositório: Erro ao buscar exame por ID '$id' - ${e.message}")
-                throw e
-            }
+            println("Repositório: Erro ao buscar exame por ID '$id' - ${e.message}")
+            emit(null)
         }
     }
 
@@ -67,19 +45,8 @@ class ExamRepositoryImpl(
             println("Repositório: Busca concluída - ${exams.size} exames encontrados")
             emit(exams)
         } catch (e: Exception) {
-            if (AppConfig.useMockDataFallback) {
-                println("Repositório: Erro ao buscar exames na API - ${e.message}. Usando dados mock como fallback")
-                try {
-                    val mockExams = MockDataProvider.getMockExams()
-                        .filter { it.examType.contains(query, ignoreCase = true) }
-                    emit(mockExams)
-                } catch (emitError: Exception) {
-                    println("Repositório: Erro ao emitir dados mock - ${emitError.message}")
-                }
-            } else {
-                println("Repositório: Erro ao buscar exames na API - ${e.message}")
-                throw e
-            }
+            println("Repositório: Erro ao buscar exames na API - ${e.message}")
+            emit(emptyList())
         }
     }
 
@@ -90,19 +57,8 @@ class ExamRepositoryImpl(
             println("Repositório: ${exams.size} exames encontrados")
             emit(exams)
         } catch (e: Exception) {
-            if (AppConfig.useMockDataFallback) {
-                println("Repositório: Erro ao buscar exames do pet - ${e.message}. Usando dados mock como fallback")
-                try {
-                    val mockExams = MockDataProvider.getMockExams()
-                        .filter { it.petId == petId }
-                    emit(mockExams)
-                } catch (emitError: Exception) {
-                    println("Repositório: Erro ao emitir dados mock - ${emitError.message}")
-                }
-            } else {
-                println("Repositório: Erro ao buscar exames do pet - ${e.message}")
-                throw e
-            }
+            println("Repositório: Erro ao buscar exames do pet - ${e.message}")
+            emit(emptyList())
         }
     }
 
@@ -113,19 +69,8 @@ class ExamRepositoryImpl(
             println("Repositório: ${exams.size} exames encontrados")
             emit(exams)
         } catch (e: Exception) {
-            if (AppConfig.useMockDataFallback) {
-                println("Repositório: Erro ao buscar exames do veterinário - ${e.message}. Usando dados mock como fallback")
-                try {
-                    val mockExams = MockDataProvider.getMockExams()
-                        .filter { it.veterinaryId == veterinaryId }
-                    emit(mockExams)
-                } catch (emitError: Exception) {
-                    println("Repositório: Erro ao emitir dados mock - ${emitError.message}")
-                }
-            } else {
-                println("Repositório: Erro ao buscar exames do veterinário - ${e.message}")
-                throw e
-            }
+            println("Repositório: Erro ao buscar exames do veterinário - ${e.message}")
+            emit(emptyList())
         }
     }
 
