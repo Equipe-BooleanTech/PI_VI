@@ -1,5 +1,6 @@
 package edu.fatec.petwise.features.toys.di
 
+import edu.fatec.petwise.core.network.di.NetworkModule
 import edu.fatec.petwise.features.toys.data.datasource.RemoteToyDataSource
 import edu.fatec.petwise.features.toys.data.datasource.RemoteToyDataSourceImpl
 import edu.fatec.petwise.features.toys.data.repository.ToyRepositoryImpl
@@ -9,7 +10,7 @@ import edu.fatec.petwise.features.toys.domain.usecases.*
 object ToyDependencyContainer {
     
     private val remoteDataSource: RemoteToyDataSource by lazy {
-        RemoteToyDataSourceImpl()
+        RemoteToyDataSourceImpl(NetworkModule.toyApiService)
     }
 
     private val repository: ToyRepository by lazy {

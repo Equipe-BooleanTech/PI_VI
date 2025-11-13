@@ -1,55 +1,111 @@
 package edu.fatec.petwise.features.prescriptions.data.datasource
 
 import edu.fatec.petwise.core.network.NetworkResult
+import edu.fatec.petwise.core.network.api.PrescriptionApiService
+import edu.fatec.petwise.core.network.dto.*
 import edu.fatec.petwise.features.prescriptions.domain.models.Prescription
 
-class RemotePrescriptionDataSourceImpl : RemotePrescriptionDataSource {
+class RemotePrescriptionDataSourceImpl(
+    private val prescriptionApiService: PrescriptionApiService
+) : RemotePrescriptionDataSource {
 
     override suspend fun getAllPrescriptions(): List<Prescription> {
-        println("API: Buscando todas as prescrições")
-        // TODO: Implement API call when backend is ready
-        throw NotImplementedError("API endpoint not implemented yet")
+        return when (val result = prescriptionApiService.getAllPrescriptions()) {
+            is NetworkResult.Success -> result.data.prescriptions.map { it.toPrescription() }
+            is NetworkResult.Error -> {
+                println("API Error: ${result.exception.message}")
+                emptyList()
+            }
+            is NetworkResult.Loading -> emptyList()
+        }
     }
 
     override suspend fun getPrescriptionById(id: String): Prescription? {
-        println("API: Buscando prescrição por ID: $id")
-        // TODO: Implement API call when backend is ready
-        throw NotImplementedError("API endpoint not implemented yet")
+        return when (val result = prescriptionApiService.getPrescriptionById(id)) {
+            is NetworkResult.Success -> result.data.toPrescription()
+            is NetworkResult.Error -> {
+                println("API Error: ${result.exception.message}")
+                null
+            }
+            is NetworkResult.Loading -> null
+        }
     }
 
     override suspend fun createPrescription(prescription: Prescription): Prescription {
-        println("API: Criando nova prescrição - ${prescription.medicationName}")
-        // TODO: Implement API call when backend is ready
-        throw NotImplementedError("API endpoint not implemented yet")
+        val request = CreatePrescriptionRequest(
+            petId = prescription.petId,
+            veterinaryId = prescription.veterinaryId,
+            medicationName = prescription.medicationName,
+            dosage = prescription.dosage,
+            frequency = prescription.frequency,
+            duration = prescription.duration,
+            instructions = prescription.instructions,
+            startDate = prescription.startDate,
+            endDate = prescription.endDate,
+            status = prescription.status,
+            notes = prescription.notes
+        )
+        return when (val result = prescriptionApiService.createPrescription(request)) {
+            is NetworkResult.Success -> result.data.toPrescription()
+            is NetworkResult.Error -> throw Exception(result.exception.message)
+            is NetworkResult.Loading -> throw Exception("Request in progress")
+        }
     }
 
     override suspend fun updatePrescription(prescription: Prescription): Prescription {
-        println("API: Atualizando prescrição - ${prescription.medicationName} (ID: ${prescription.id})")
-        // TODO: Implement API call when backend is ready
-        throw NotImplementedError("API endpoint not implemented yet")
+        val request = UpdatePrescriptionRequest(
+            medicationName = prescription.medicationName,
+            dosage = prescription.dosage,
+            frequency = prescription.frequency,
+            duration = prescription.duration,
+            instructions = prescription.instructions,
+            startDate = prescription.startDate,
+            endDate = prescription.endDate,
+            status = prescription.status,
+            notes = prescription.notes
+        )
+        return when (val result = prescriptionApiService.updatePrescription(prescription.id, request)) {
+            is NetworkResult.Success -> result.data.toPrescription()
+            is NetworkResult.Error -> throw Exception(result.exception.message)
+            is NetworkResult.Loading -> throw Exception("Request in progress")
+        }
     }
 
     override suspend fun deletePrescription(id: String) {
-        println("API: Excluindo prescrição com ID: $id")
-        // TODO: Implement API call when backend is ready
-        throw NotImplementedError("API endpoint not implemented yet")
+        when (val result = prescriptionApiService.deletePrescription(id)) {
+            is NetworkResult.Success -> Unit
+            is NetworkResult.Error -> throw Exception(result.exception.message)
+            is NetworkResult.Loading -> throw Exception("Request in progress")
+        }
     }
 
     override suspend fun searchPrescriptions(query: String): List<Prescription> {
-        println("API: Buscando prescrições com query: '$query'")
-        // TODO: Implement API call when backend is ready
-        throw NotImplementedError("API endpoint not implemented yet")
+        return getAllPrescriptions().filter {
+            it.medicationName.contains(query, ignoreCase = true) ||
+            it.dosage.contains(query, ignoreCase = true) ||
+            it.notes?.contains(query, ignoreCase = true) == true
+        }
     }
 
     override suspend fun getPrescriptionsByPetId(petId: String): List<Prescription> {
-        println("API: Buscando prescrições do pet: $petId")
-        // TODO: Implement API call when backend is ready
-        throw NotImplementedError("API endpoint not implemented yet")
+        return when (val result = prescriptionApiService.getPrescriptionsByPetId(petId)) {
+            is NetworkResult.Success -> result.data.map { it.toPrescription() }
+            is NetworkResult.Error -> {
+                println("API Error: ${result.exception.message}")
+                emptyList()
+            }
+            is NetworkResult.Loading -> emptyList()
+        }
     }
 
     override suspend fun getPrescriptionsByVeterinaryId(veterinaryId: String): List<Prescription> {
-        println("API: Buscando prescrições do veterinário: $veterinaryId")
-        // TODO: Implement API call when backend is ready
-        throw NotImplementedError("API endpoint not implemented yet")
+        return when (val result = prescriptionApiService.getPrescriptionsByVeterinaryId(veterinaryId)) {
+            is NetworkResult.Success -> result.data.map { it.toPrescription() }
+            is NetworkResult.Error -> {
+                println("API Error: ${result.exception.message}")
+                emptyList()
+            }
+            is NetworkResult.Loading -> emptyList()
+        }
     }
 }

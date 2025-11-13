@@ -77,26 +77,43 @@ object NetworkModule {
     val medicationApiService: MedicationApiService
         get() = MedicationApiServiceImpl(getNetworkRequestHandler())
 
-    val veterinaryApiService: VeterinaryApiService
-        get() = VeterinaryApiServiceImpl(getNetworkRequestHandler())
-
-    val pharmacyApiService: PharmacyApiService
-        get() = PharmacyApiServiceImpl(getNetworkRequestHandler())
+    val profileApiService: ProfileApiService
+        get() = ProfileApiServiceImpl(getNetworkRequestHandler())
 
     val suprimentoApiService: SuprimentoApiService
         get() = SuprimentoApiServiceImpl(getNetworkRequestHandler())
+
+    val examApiService: ExamApiService
+        get() = ExamApiServiceImpl(getNetworkRequestHandler())
+
+    val prescriptionApiService: PrescriptionApiService
+        get() = PrescriptionApiServiceImpl(getNetworkRequestHandler())
+
+    val labApiService: LabApiService
+        get() = LabApiServiceImpl(getNetworkRequestHandler())
+
+    val foodApiService: FoodApiService
+        get() = FoodApiServiceImpl(getNetworkRequestHandler())
+
+    val hygieneApiService: HygieneApiService
+        get() = HygieneApiServiceImpl(getNetworkRequestHandler())
+
+    val toyApiService: ToyApiService
+        get() = ToyApiServiceImpl(getNetworkRequestHandler())
 
     fun clear() {
         println("NetworkModule: Limpando recursos de rede")
         println("NetworkModule: Mantendo HttpClient ativo para evitar erros de coroutine")
         tokenManager.clearTokens()
-        println("NetworkModule: Tokens limpos - HttpClient permanece ativo e reutilizável")
+        _networkRequestHandler = null
+        println("NetworkModule: Tokens e NetworkRequestHandler limpos - HttpClient permanece ativo e reutilizável")
     }
 
     fun setAuthToken(token: String) {
         println("NetworkModule: Definindo token de autenticação: ${token.take(10)}...")
         tokenManager.setAccessToken(token)
-        println("NetworkModule: Token atualizado, cliente HTTP reutilizará automaticamente")
+        _networkRequestHandler = null
+        println("NetworkModule: Token atualizado, NetworkRequestHandler limpo para recriar com novo token")
     }
     
     fun setAuthTokenWithExpiration(token: String, expiresInSeconds: Long) {
@@ -106,7 +123,8 @@ object NetworkModule {
         } else {
             tokenManager.setAccessToken(token)
         }
-        println("NetworkModule: Token atualizado, cliente HTTP reutilizará automaticamente")
+        _networkRequestHandler = null
+        println("NetworkModule: Token atualizado, NetworkRequestHandler limpo para recriar com novo token")
     }
 
     fun getAuthToken(): String? {

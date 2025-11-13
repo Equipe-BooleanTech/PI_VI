@@ -1,5 +1,6 @@
 package edu.fatec.petwise.features.labs.di
 
+import edu.fatec.petwise.core.network.di.NetworkModule
 import edu.fatec.petwise.features.labs.data.datasource.RemoteLabDataSource
 import edu.fatec.petwise.features.labs.data.datasource.RemoteLabDataSourceImpl
 import edu.fatec.petwise.features.labs.data.repository.LabRepositoryImpl
@@ -9,7 +10,7 @@ import edu.fatec.petwise.features.labs.domain.usecases.*
 object LabDependencyContainer {
     
     private val remoteDataSource: RemoteLabDataSource by lazy {
-        RemoteLabDataSourceImpl()
+        RemoteLabDataSourceImpl(NetworkModule.labApiService)
     }
 
     private val repository: LabRepository by lazy {

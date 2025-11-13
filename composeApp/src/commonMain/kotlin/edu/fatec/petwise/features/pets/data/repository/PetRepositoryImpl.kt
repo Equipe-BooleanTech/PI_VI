@@ -1,8 +1,7 @@
 package edu.fatec.petwise.features.pets.data.repository
 
-import edu.fatec.petwise.core.config.AppConfig
 import edu.fatec.petwise.core.data.DataRefreshManager
-import edu.fatec.petwise.core.data.MockDataProvider
+
 import edu.fatec.petwise.features.pets.data.datasource.RemotePetDataSourceImpl
 import edu.fatec.petwise.features.pets.domain.models.Pet
 import edu.fatec.petwise.features.pets.domain.models.PetFilterOptions
@@ -23,18 +22,8 @@ class PetRepositoryImpl(
             println("Repositório: ${pets.size} pets carregados com sucesso da API")
             emit(pets)
         } catch (e: Exception) {
-            if (AppConfig.useMockDataFallback) {
-                println("Repositório: Erro ao buscar pets da API - ${e.message}. Usando dados mock como fallback")
-                try {
-                    val mockPets = MockDataProvider.getMockPets()
-                    emit(mockPets)
-                } catch (emitError: Exception) {
-                    println("Repositório: Erro ao emitir dados mock - ${emitError.message}")
-                }
-            } else {
                 println("Repositório: Erro ao buscar pets da API - ${e.message}")
                 throw e
-            }
         }
     }
 
@@ -49,18 +38,8 @@ class PetRepositoryImpl(
             }
             emit(pet)
         } catch (e: Exception) {
-            if (AppConfig.useMockDataFallback) {
-                println("Repositório: Erro ao buscar pet por ID '$id' - ${e.message}. Usando dados mock como fallback")
-                try {
-                    val mockPet = MockDataProvider.getMockPets().find { it.id == id }
-                    emit(mockPet)
-                } catch (emitError: Exception) {
-                    println("Repositório: Erro ao emitir dados mock - ${emitError.message}")
-                }
-            } else {
                 println("Repositório: Erro ao buscar pet por ID '$id' - ${e.message}")
                 throw e
-            }
         }
     }
 
@@ -71,20 +50,9 @@ class PetRepositoryImpl(
             println("Repositório: Busca concluída - ${pets.size} pets encontrados")
             emit(pets)
         } catch (e: Exception) {
-            if (AppConfig.useMockDataFallback) {
-                println("Repositório: Erro ao buscar pets na API - ${e.message}. Usando dados mock como fallback")
-                try {
-                    val mockPets = MockDataProvider.getMockPets()
-                        .filter { it.name.contains(query, ignoreCase = true) || it.breed.contains(query, ignoreCase = true) }
-                    emit(mockPets)
-                } catch (emitError: Exception) {
-                    println("Repositório: Erro ao emitir dados mock - ${emitError.message}")
-                }
-            } else {
                 println("Repositório: Erro ao buscar pets na API - ${e.message}")
                 throw e
             }
-        }
     }
 
     override fun filterPets(options: PetFilterOptions): Flow<List<Pet>> = flow {
@@ -106,31 +74,9 @@ class PetRepositoryImpl(
             println("Repositório: Filtros aplicados - ${filteredPets.size} pets encontrados")
             emit(filteredPets)
         } catch (e: Exception) {
-            if (AppConfig.useMockDataFallback) {
-                println("Repositório: Erro ao filtrar pets - ${e.message}. Usando dados mock como fallback")
-                try {
-                    val mockPets = MockDataProvider.getMockPets()
-                    val filteredPets = mockPets.filter { pet ->
-                        val speciesMatch = options.species?.let { pet.species == it } ?: true
-                        val healthMatch = options.healthStatus?.let { pet.healthStatus == it } ?: true
-                        val favoriteMatch = if (options.favoritesOnly) pet.isFavorite else true
-                        val searchMatch = if (options.searchQuery.isNotBlank()) {
-                            pet.name.contains(options.searchQuery, ignoreCase = true) ||
-                            pet.breed.contains(options.searchQuery, ignoreCase = true) ||
-                            pet.ownerName.contains(options.searchQuery, ignoreCase = true)
-                        } else true
-
-                        speciesMatch && healthMatch && favoriteMatch && searchMatch
-                    }
-                    emit(filteredPets)
-                } catch (emitError: Exception) {
-                    println("Repositório: Erro ao emitir dados mock - ${emitError.message}")
-                }
-            } else {
                 println("Repositório: Erro ao filtrar pets - ${e.message}")
                 throw e
             }
-        }
     }
 
     override fun getFavoritePets(): Flow<List<Pet>> = flow {
@@ -140,20 +86,10 @@ class PetRepositoryImpl(
             println("Repositório: ${favoritePets.size} pets favoritos encontrados")
             emit(favoritePets)
         } catch (e: Exception) {
-            if (AppConfig.useMockDataFallback) {
-                println("Repositório: Erro ao buscar pets favoritos - ${e.message}. Usando dados mock como fallback")
-                try {
-                    val mockPets = MockDataProvider.getMockPets().filter { it.isFavorite }
-                    emit(mockPets)
-                } catch (emitError: Exception) {
-                    println("Repositório: Erro ao emitir dados mock - ${emitError.message}")
-                }
-            } else {
                 println("Repositório: Erro ao buscar pets favoritos - ${e.message}")
                 throw e
             }
         }
-    }
 
     override suspend fun addPet(pet: Pet): Result<Pet> {
         return try {
@@ -226,3 +162,4 @@ class PetRepositoryImpl(
     }
 
 }
+

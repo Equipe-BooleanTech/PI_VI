@@ -49,8 +49,6 @@ import edu.fatec.petwise.features.suprimentos.presentation.view.SuprimentosPetSe
 import edu.fatec.petwise.features.suprimentos.presentation.view.SuprimentosScreen
 import edu.fatec.petwise.features.vaccinations.di.VaccinationDependencyContainer
 import edu.fatec.petwise.features.vaccinations.presentation.view.VaccinationsScreen
-import edu.fatec.petwise.features.veterinaries.presentation.view.VeterinariesScreen
-import edu.fatec.petwise.features.pharmacies.presentation.view.PharmaciesScreen
 import edu.fatec.petwise.navigation.NavigationManager
 import edu.fatec.petwise.presentation.components.BottomNavigation.BottomNavigationBar
 import edu.fatec.petwise.presentation.components.MoreMenu.MoreMenu
@@ -219,9 +217,6 @@ fun DashboardScreen(
                         UnauthorizedScreen(paddingValues, "Você não tem permissão para acessar Vacinas")
                     }
                 }
-                NavigationManager.TabScreen.Veterinarians -> {
-                    VeterinariesScreen()
-                }
                 NavigationManager.TabScreen.Suprimentos -> {
                     if (selectedPetIdForSuprimentos != null) {
                         SuprimentosScreen(
@@ -238,11 +233,6 @@ fun DashboardScreen(
                             }
                         )
                     }
-                }
-                NavigationManager.TabScreen.Pharmacy -> {
-                    PharmaciesScreen(
-                        navigationKey = currentTabScreen
-                    )
                 }
                 NavigationManager.TabScreen.Labs -> {
                     if (dashboardUiState.userType.uppercase() == "VETERINARY") {
@@ -320,6 +310,17 @@ fun DashboardScreen(
                         }
                     } else {
                         UnauthorizedScreen(paddingValues, "Você não tem permissão para acessar Brinquedos")
+                    }
+                }
+                NavigationManager.TabScreen.EditProfile -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues)
+                    ) {
+                        edu.fatec.petwise.features.profile.presentation.view.EditProfileScreen(
+                            navigationManager = navigationManager
+                        )
                     }
                 }
                 else -> {

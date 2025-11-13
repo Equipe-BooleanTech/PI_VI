@@ -1,7 +1,5 @@
 package edu.fatec.petwise.features.food.data.repository
 
-import edu.fatec.petwise.core.config.AppConfig
-import edu.fatec.petwise.core.data.MockDataProvider
 import edu.fatec.petwise.features.food.data.datasource.RemoteFoodDataSource
 import edu.fatec.petwise.features.food.domain.models.Food
 import edu.fatec.petwise.features.food.domain.repository.FoodRepository
@@ -19,20 +17,10 @@ class FoodRepositoryImpl(
             println("Repositório: ${food.size} alimentos carregados com sucesso da API")
             emit(food)
         } catch (e: Exception) {
-            if (AppConfig.useMockDataFallback) {
-                println("Repositório: Erro ao buscar alimentos da API - ${e.message}. Usando dados mock como fallback")
-                try {
-                    val mockFood = MockDataProvider.getMockFood()
-                    emit(mockFood)
-                } catch (emitError: Exception) {
-                    println("Repositório: Erro ao emitir dados mock - ${emitError.message}")
-                }
-            } else {
                 println("Repositório: Erro ao buscar alimentos da API - ${e.message}")
                 throw e
             }
         }
-    }
 
     override fun getFoodById(id: String): Flow<Food?> = flow {
         try {
@@ -45,20 +33,10 @@ class FoodRepositoryImpl(
             }
             emit(food)
         } catch (e: Exception) {
-            if (AppConfig.useMockDataFallback) {
-                println("Repositório: Erro ao buscar alimento por ID '$id' - ${e.message}. Usando dados mock como fallback")
-                try {
-                    val mockFood = MockDataProvider.getMockFood().find { it.id == id }
-                    emit(mockFood)
-                } catch (emitError: Exception) {
-                    println("Repositório: Erro ao emitir dados mock - ${emitError.message}")
-                }
-            } else {
                 println("Repositório: Erro ao buscar alimento por ID '$id' - ${e.message}")
                 throw e
             }
         }
-    }
 
     override fun searchFood(query: String): Flow<List<Food>> = flow {
         try {
@@ -67,21 +45,10 @@ class FoodRepositoryImpl(
             println("Repositório: Busca concluída - ${food.size} alimentos encontrados")
             emit(food)
         } catch (e: Exception) {
-            if (AppConfig.useMockDataFallback) {
-                println("Repositório: Erro ao buscar alimentos na API - ${e.message}. Usando dados mock como fallback")
-                try {
-                    val mockFood = MockDataProvider.getMockFood()
-                        .filter { it.name.contains(query, ignoreCase = true) || it.brand.contains(query, ignoreCase = true) }
-                    emit(mockFood)
-                } catch (emitError: Exception) {
-                    println("Repositório: Erro ao emitir dados mock - ${emitError.message}")
-                }
-            } else {
                 println("Repositório: Erro ao buscar alimentos na API - ${e.message}")
                 throw e
             }
         }
-    }
 
     override fun getFoodByCategory(category: String): Flow<List<Food>> = flow {
         try {
@@ -90,19 +57,8 @@ class FoodRepositoryImpl(
             println("Repositório: ${food.size} alimentos encontrados")
             emit(food)
         } catch (e: Exception) {
-            if (AppConfig.useMockDataFallback) {
-                println("Repositório: Erro ao buscar alimentos da categoria - ${e.message}. Usando dados mock como fallback")
-                try {
-                    val mockFood = MockDataProvider.getMockFood()
-                        .filter { it.category.equals(category, ignoreCase = true) }
-                    emit(mockFood)
-                } catch (emitError: Exception) {
-                    println("Repositório: Erro ao emitir dados mock - ${emitError.message}")
-                }
-            } else {
                 println("Repositório: Erro ao buscar alimentos da categoria - ${e.message}")
                 throw e
-            }
         }
     }
 
@@ -142,3 +98,4 @@ class FoodRepositoryImpl(
         }
     }
 }
+

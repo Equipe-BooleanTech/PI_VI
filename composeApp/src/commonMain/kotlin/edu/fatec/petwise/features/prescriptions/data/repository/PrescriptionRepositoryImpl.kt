@@ -1,7 +1,5 @@
 package edu.fatec.petwise.features.prescriptions.data.repository
 
-import edu.fatec.petwise.core.config.AppConfig
-import edu.fatec.petwise.core.data.MockDataProvider
 import edu.fatec.petwise.features.prescriptions.data.datasource.RemotePrescriptionDataSource
 import edu.fatec.petwise.features.prescriptions.domain.models.Prescription
 import edu.fatec.petwise.features.prescriptions.domain.repository.PrescriptionRepository
@@ -19,18 +17,8 @@ class PrescriptionRepositoryImpl(
             println("Repositório: ${prescriptions.size} prescrições carregadas com sucesso da API")
             emit(prescriptions)
         } catch (e: Exception) {
-            if (AppConfig.useMockDataFallback) {
-                println("Repositório: Erro ao buscar prescrições da API - ${e.message}. Usando dados mock como fallback")
-                try {
-                    val mockPrescriptions = MockDataProvider.getMockPrescriptions()
-                    emit(mockPrescriptions)
-                } catch (emitError: Exception) {
-                    println("Repositório: Erro ao emitir dados mock - ${emitError.message}")
-                }
-            } else {
                 println("Repositório: Erro ao buscar prescrições da API - ${e.message}")
                 throw e
-            }
         }
     }
 
@@ -45,18 +33,8 @@ class PrescriptionRepositoryImpl(
             }
             emit(prescription)
         } catch (e: Exception) {
-            if (AppConfig.useMockDataFallback) {
-                println("Repositório: Erro ao buscar prescrição por ID '$id' - ${e.message}. Usando dados mock como fallback")
-                try {
-                    val mockPrescription = MockDataProvider.getMockPrescriptions().find { it.id == id }
-                    emit(mockPrescription)
-                } catch (emitError: Exception) {
-                    println("Repositório: Erro ao emitir dados mock - ${emitError.message}")
-                }
-            } else {
                 println("Repositório: Erro ao buscar prescrição por ID '$id' - ${e.message}")
                 throw e
-            }
         }
     }
 
@@ -67,19 +45,8 @@ class PrescriptionRepositoryImpl(
             println("Repositório: Busca concluída - ${prescriptions.size} prescrições encontradas")
             emit(prescriptions)
         } catch (e: Exception) {
-            if (AppConfig.useMockDataFallback) {
-                println("Repositório: Erro ao buscar prescrições na API - ${e.message}. Usando dados mock como fallback")
-                try {
-                    val mockPrescriptions = MockDataProvider.getMockPrescriptions()
-                        .filter { it.medicationName.contains(query, ignoreCase = true) }
-                    emit(mockPrescriptions)
-                } catch (emitError: Exception) {
-                    println("Repositório: Erro ao emitir dados mock - ${emitError.message}")
-                }
-            } else {
                 println("Repositório: Erro ao buscar prescrições na API - ${e.message}")
                 throw e
-            }
         }
     }
 
@@ -90,19 +57,8 @@ class PrescriptionRepositoryImpl(
             println("Repositório: ${prescriptions.size} prescrições encontradas")
             emit(prescriptions)
         } catch (e: Exception) {
-            if (AppConfig.useMockDataFallback) {
-                println("Repositório: Erro ao buscar prescrições do pet - ${e.message}. Usando dados mock como fallback")
-                try {
-                    val mockPrescriptions = MockDataProvider.getMockPrescriptions()
-                        .filter { it.petId == petId }
-                    emit(mockPrescriptions)
-                } catch (emitError: Exception) {
-                    println("Repositório: Erro ao emitir dados mock - ${emitError.message}")
-                }
-            } else {
                 println("Repositório: Erro ao buscar prescrições do pet - ${e.message}")
                 throw e
-            }
         }
     }
 
@@ -113,19 +69,8 @@ class PrescriptionRepositoryImpl(
             println("Repositório: ${prescriptions.size} prescrições encontradas")
             emit(prescriptions)
         } catch (e: Exception) {
-            if (AppConfig.useMockDataFallback) {
-                println("Repositório: Erro ao buscar prescrições do veterinário - ${e.message}. Usando dados mock como fallback")
-                try {
-                    val mockPrescriptions = MockDataProvider.getMockPrescriptions()
-                        .filter { it.veterinaryId == veterinaryId }
-                    emit(mockPrescriptions)
-                } catch (emitError: Exception) {
-                    println("Repositório: Erro ao emitir dados mock - ${emitError.message}")
-                }
-            } else {
                 println("Repositório: Erro ao buscar prescrições do veterinário - ${e.message}")
                 throw e
-            }
         }
     }
 
@@ -165,3 +110,4 @@ class PrescriptionRepositoryImpl(
         }
     }
 }
+

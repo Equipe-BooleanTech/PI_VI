@@ -158,7 +158,9 @@ enum class ComparisonOperator {
     GREATER_THAN,
     LESS_THAN,
     IN_LIST,
-    NOT_IN_LIST
+    NOT_IN_LIST,
+    NOT_EMPTY,
+    IN
 }
 
 @Serializable

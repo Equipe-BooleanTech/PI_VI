@@ -1,7 +1,5 @@
 package edu.fatec.petwise.features.toys.data.repository
 
-import edu.fatec.petwise.core.config.AppConfig
-import edu.fatec.petwise.core.data.MockDataProvider
 import edu.fatec.petwise.features.toys.data.datasource.RemoteToyDataSource
 import edu.fatec.petwise.features.toys.domain.models.Toy
 import edu.fatec.petwise.features.toys.domain.repository.ToyRepository
@@ -19,18 +17,8 @@ class ToyRepositoryImpl(
             println("Repositório: ${toys.size} brinquedos carregados com sucesso da API")
             emit(toys)
         } catch (e: Exception) {
-            if (AppConfig.useMockDataFallback) {
-                println("Repositório: Erro ao buscar brinquedos da API - ${e.message}. Usando dados mock como fallback")
-                try {
-                    val mockToys = MockDataProvider.getMockToys()
-                    emit(mockToys)
-                } catch (emitError: Exception) {
-                    println("Repositório: Erro ao emitir dados mock - ${emitError.message}")
-                }
-            } else {
                 println("Repositório: Erro ao buscar brinquedos da API - ${e.message}")
                 throw e
-            }
         }
     }
 
@@ -45,18 +33,8 @@ class ToyRepositoryImpl(
             }
             emit(toy)
         } catch (e: Exception) {
-            if (AppConfig.useMockDataFallback) {
-                println("Repositório: Erro ao buscar brinquedo por ID '$id' - ${e.message}. Usando dados mock como fallback")
-                try {
-                    val mockToy = MockDataProvider.getMockToys().find { it.id == id }
-                    emit(mockToy)
-                } catch (emitError: Exception) {
-                    println("Repositório: Erro ao emitir dados mock - ${emitError.message}")
-                }
-            } else {
                 println("Repositório: Erro ao buscar brinquedo por ID '$id' - ${e.message}")
                 throw e
-            }
         }
     }
 
@@ -67,20 +45,9 @@ class ToyRepositoryImpl(
             println("Repositório: Busca concluída - ${toys.size} brinquedos encontrados")
             emit(toys)
         } catch (e: Exception) {
-            if (AppConfig.useMockDataFallback) {
-                println("Repositório: Erro ao buscar brinquedos na API - ${e.message}. Usando dados mock como fallback")
-                try {
-                    val mockToys = MockDataProvider.getMockToys()
-                        .filter { it.name.contains(query, ignoreCase = true) || it.brand.contains(query, ignoreCase = true) }
-                    emit(mockToys)
-                } catch (emitError: Exception) {
-                    println("Repositório: Erro ao emitir dados mock - ${emitError.message}")
-                }
-            } else {
                 println("Repositório: Erro ao buscar brinquedos na API - ${e.message}")
                 throw e
             }
-        }
     }
 
     override fun getToysByCategory(category: String): Flow<List<Toy>> = flow {
@@ -90,20 +57,10 @@ class ToyRepositoryImpl(
             println("Repositório: ${toys.size} brinquedos encontrados")
             emit(toys)
         } catch (e: Exception) {
-            if (AppConfig.useMockDataFallback) {
-                println("Repositório: Erro ao buscar brinquedos da categoria - ${e.message}. Usando dados mock como fallback")
-                try {
-                    val mockToys = MockDataProvider.getMockToys()
-                        .filter { it.category.equals(category, ignoreCase = true) }
-                    emit(mockToys)
-                } catch (emitError: Exception) {
-                    println("Repositório: Erro ao emitir dados mock - ${emitError.message}")
-                }
-            } else {
+
                 println("Repositório: Erro ao buscar brinquedos da categoria - ${e.message}")
                 throw e
             }
-        }
     }
 
     override suspend fun addToy(toy: Toy): Result<Toy> {
@@ -142,3 +99,4 @@ class ToyRepositoryImpl(
         }
     }
 }
+
