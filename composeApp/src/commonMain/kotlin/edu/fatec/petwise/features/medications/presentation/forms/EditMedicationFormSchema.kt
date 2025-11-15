@@ -136,19 +136,6 @@ fun createEditMedicationFormConfiguration(medication: Medication): FormConfigura
             )
         ),
         FormFieldDefinition(
-            id = "veterinarianId",
-            label = "Veterinário",
-            type = FormFieldType.SELECT,
-            options = emptyList(), // Will be populated dynamically
-            default = JsonPrimitive(medication.veterinarianId),
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Selecione o veterinário"
-                )
-            )
-        ),
-        FormFieldDefinition(
             id = "prescriptionId",
             label = "ID da Prescrição",
             type = FormFieldType.TEXT,

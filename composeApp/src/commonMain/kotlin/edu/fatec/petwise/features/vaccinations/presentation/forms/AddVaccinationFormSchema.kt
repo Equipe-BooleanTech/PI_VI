@@ -27,18 +27,6 @@ val addVaccinationFormConfiguration: FormConfiguration = FormConfiguration(
             )
         ),
         FormFieldDefinition(
-            id = "veterinarianId",
-            label = "Selecione o Veterinário",
-            type = FormFieldType.SELECT,
-            placeholder = "Selecione o veterinário",
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Selecione o veterinário"
-                )
-            )
-        ),
-        FormFieldDefinition(
             id = "vaccineType",
             label = "Tipo de Vacina",
             type = FormFieldType.SELECT,
@@ -65,7 +53,7 @@ val addVaccinationFormConfiguration: FormConfiguration = FormConfiguration(
         FormFieldDefinition(
             id = "vaccinationDate",
             label = "Data de Vacinação",
-            type = FormFieldType.DATE,
+            type = FormFieldType.TEXT,
             placeholder = "DD/MM/AAAA",
             validators = listOf(
                 ValidationRule(
@@ -81,7 +69,7 @@ val addVaccinationFormConfiguration: FormConfiguration = FormConfiguration(
         FormFieldDefinition(
             id = "nextDoseDate",
             label = "Próxima Dose (opcional)",
-            type = FormFieldType.DATE,
+            type = FormFieldType.TEXT,
             placeholder = "DD/MM/AAAA",
             validators = listOf(
                 ValidationRule(

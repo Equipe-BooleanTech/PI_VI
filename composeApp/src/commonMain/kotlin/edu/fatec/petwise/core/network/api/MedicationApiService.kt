@@ -49,7 +49,6 @@ class MedicationApiServiceImpl(
             parameter("page", page)
             parameter("pageSize", pageSize)
             filter.petId?.let { parameter("petId", it) }
-            filter.veterinarianId?.let { parameter("veterinarianId", it) }
             filter.status?.let { parameter("status", it) }
             filter.medicationName?.let { parameter("medicationName", it) }
             if (filter.searchQuery.isNotBlank()) {

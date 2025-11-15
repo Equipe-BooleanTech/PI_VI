@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import edu.fatec.petwise.features.hygiene.domain.models.HygieneProduct
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.fromHex
+import edu.fatec.petwise.presentation.shared.NumberFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,7 +49,7 @@ fun HygieneScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.fromHex("#F7F7F7"))
+            .background(fromHex("#F7F7F7"))
     ) {
         HygieneHeader(
             productCount = filteredProducts.size,
@@ -125,7 +126,7 @@ private fun HygieneHeader(
             .fillMaxWidth()
             .padding(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (selectionMode) Color.fromHex("#d32f2f") else Color.fromHex("#9C27B0")
+            containerColor = if (selectionMode) fromHex("#d32f2f") else fromHex("#9C27B0")
         ),
         shape = RoundedCornerShape(16.dp)
     ) {
@@ -212,7 +213,7 @@ private fun HygieneHeader(
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.White,
-                        contentColor = Color.fromHex("#9C27B0")
+                        contentColor = fromHex("#9C27B0")
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
@@ -235,7 +236,7 @@ private fun HygieneHeader(
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.White,
-                        contentColor = Color.fromHex("#d32f2f")
+                        contentColor = fromHex("#d32f2f")
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
@@ -282,7 +283,7 @@ private fun SearchBar(
                 Text(
                     "Buscar por nome ou marca...",
                     style = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color.fromHex(theme.palette.textSecondary)
+                        color = fromHex(theme.palette.textSecondary)
                     )
                 )
             },
@@ -290,7 +291,7 @@ private fun SearchBar(
                 Icon(
                     imageVector = Icons.Default.Search,
                     contentDescription = "Buscar",
-                    tint = Color.fromHex("#9C27B0")
+                    tint = fromHex("#9C27B0")
                 )
             },
             trailingIcon = {
@@ -299,7 +300,7 @@ private fun SearchBar(
                         Icon(
                             imageVector = Icons.Default.Clear,
                             contentDescription = "Limpar",
-                            tint = Color.fromHex(theme.palette.textSecondary)
+                            tint = fromHex(theme.palette.textSecondary)
                         )
                     }
                 }
@@ -307,8 +308,8 @@ private fun SearchBar(
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color.fromHex("#9C27B0"),
-                unfocusedBorderColor = Color.fromHex(theme.palette.textSecondary).copy(alpha = 0.3f),
+                focusedBorderColor = fromHex("#9C27B0"),
+                unfocusedBorderColor = fromHex(theme.palette.textSecondary).copy(alpha = 0.3f),
                 focusedContainerColor = Color.White,
                 unfocusedContainerColor = Color.White
             )
@@ -323,7 +324,7 @@ private fun LoadingContent() {
         contentAlignment = Alignment.Center
     ) {
         CircularProgressIndicator(
-            color = Color.fromHex("#9C27B0")
+            color = fromHex("#9C27B0")
         )
     }
 }
@@ -371,7 +372,7 @@ private fun EmptyContent(
             Button(
                 onClick = onAddProductClick,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.fromHex("#9C27B0")
+                    containerColor = fromHex("#9C27B0")
                 )
             ) {
                 Icon(
@@ -426,7 +427,7 @@ private fun NoResultsContent(
             Spacer(modifier = Modifier.height(24.dp))
 
             TextButton(onClick = onClearSearch) {
-                Text("Limpar busca", color = Color.fromHex("#9C27B0"))
+                Text("Limpar busca", color = fromHex("#9C27B0"))
             }
         }
     }
@@ -480,7 +481,7 @@ fun HygieneCard(
             ) { onClick(product) },
         colors = CardDefaults.cardColors(
             containerColor = when {
-                isSelected -> Color.fromHex("#9C27B0").copy(alpha = 0.1f)
+                isSelected -> fromHex("#9C27B0").copy(alpha = 0.1f)
                 isHovered -> Color.White.copy(alpha = 0.9f)
                 else -> Color.White
             }
@@ -489,7 +490,7 @@ fun HygieneCard(
             defaultElevation = if (isHovered) 3.dp else 1.dp
         ),
         border = if (isSelected) {
-            androidx.compose.foundation.BorderStroke(2.dp, Color.fromHex("#9C27B0"))
+            androidx.compose.foundation.BorderStroke(2.dp, fromHex("#9C27B0"))
         } else null,
         shape = RoundedCornerShape(12.dp)
     ) {
@@ -507,7 +508,7 @@ fun HygieneCard(
                         checked = isSelected,
                         onCheckedChange = { onClick(product) },
                         colors = CheckboxDefaults.colors(
-                            checkedColor = Color.fromHex("#9C27B0")
+                            checkedColor = fromHex("#9C27B0")
                         )
                     )
                 }
@@ -523,7 +524,7 @@ fun HygieneCard(
                         Icon(
                             imageVector = Icons.Default.Edit,
                             contentDescription = "Editar",
-                            tint = Color.fromHex("#9C27B0"),
+                            tint = fromHex("#9C27B0"),
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -534,28 +535,28 @@ fun HygieneCard(
                 text = product.name,
                 style = MaterialTheme.typography.titleSmall.copy(
                     fontWeight = FontWeight.Bold,
-                    color = Color.fromHex(theme.palette.textPrimary)
+                    color = fromHex(theme.palette.textPrimary)
                 )
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = product.brand,
                 style = MaterialTheme.typography.bodySmall.copy(
-                    color = Color.fromHex(theme.palette.textSecondary)
+                    color = fromHex(theme.palette.textSecondary)
                 )
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "R$ ${String.format("%.2f", product.price)}",
+                text = NumberFormatter.formatCurrency(product.price),
                 style = MaterialTheme.typography.bodyMedium.copy(
-                    color = Color.fromHex("#9C27B0"),
+                    color = fromHex("#9C27B0"),
                     fontWeight = FontWeight.Bold
                 )
             )
             Text(
                 text = "Estoque: ${product.stock} ${product.unit}",
                 style = MaterialTheme.typography.bodySmall.copy(
-                    color = Color.fromHex(theme.palette.textSecondary)
+                    color = fromHex(theme.palette.textSecondary)
                 )
             )
         }

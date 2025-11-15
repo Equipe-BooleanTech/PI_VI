@@ -128,18 +128,6 @@ val addMedicationFormConfiguration: FormConfiguration = FormConfiguration(
             )
         ),
         FormFieldDefinition(
-            id = "veterinarianId",
-            label = "Veterinário",
-            type = FormFieldType.SELECT,
-            options = emptyList(), // Will be populated dynamically
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Selecione o veterinário"
-                )
-            )
-        ),
-        FormFieldDefinition(
             id = "prescriptionId",
             label = "ID da Prescrição",
             type = FormFieldType.TEXT,

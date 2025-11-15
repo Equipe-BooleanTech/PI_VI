@@ -20,11 +20,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import edu.fatec.petwise.features.vaccinations.domain.models.Vaccination
 import edu.fatec.petwise.features.vaccinations.domain.models.VaccinationStatus
+import edu.fatec.petwise.features.vaccinations.presentation.components.AddVaccinationDialog
 import edu.fatec.petwise.features.vaccinations.presentation.components.EditVaccinationDialog
 import edu.fatec.petwise.features.vaccinations.presentation.viewmodel.VaccinationsViewModel
 import edu.fatec.petwise.features.vaccinations.presentation.viewmodel.VaccinationsUiEvent
 import edu.fatec.petwise.features.vaccinations.presentation.viewmodel.UpdateVaccinationViewModel
 import edu.fatec.petwise.features.vaccinations.presentation.viewmodel.UpdateVaccinationUiEvent
+import edu.fatec.petwise.features.vaccinations.presentation.viewmodel.AddVaccinationViewModel
+import edu.fatec.petwise.features.vaccinations.presentation.viewmodel.AddVaccinationUiEvent
 import edu.fatec.petwise.features.vaccinations.di.VaccinationDependencyContainer
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.fromHex
@@ -33,28 +36,35 @@ import edu.fatec.petwise.presentation.theme.fromHex
 @Composable
 fun VaccinationsScreen(
     viewModel: VaccinationsViewModel,
-    navigationKey: Any? = null,
-    onNavigateBack: () -> Unit = {},
-    onAddVaccination: () -> Unit = {},
-    onEditVaccination: (String) -> Unit = {},
-    onScheduleVaccination: (String) -> Unit = {}
+    navigationKey: Any? = null
 ) {
+    val addVaccinationViewModel = remember { VaccinationDependencyContainer.provideAddVaccinationViewModel() }
     val updateVaccinationViewModel = remember { VaccinationDependencyContainer.provideUpdateVaccinationViewModel() }
     val uiState by viewModel.uiState.collectAsState()
+    val addUiState by addVaccinationViewModel.uiState.collectAsState()
     val updateUiState by updateVaccinationViewModel.uiState.collectAsState()
     val vaccinations = uiState.vaccinations
     val pendingVaccinations = remember(vaccinations) {
-        vaccinations.filter { 
-            it.status == VaccinationStatus.ATRASADA || it.status == VaccinationStatus.AGENDADA 
+        vaccinations.filter {
+            it.status == VaccinationStatus.ATRASADA || it.status == VaccinationStatus.AGENDADA
         }
     }
     val theme = PetWiseTheme.Light
-    
+
+    var showAddDialog by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
     var vaccinationToEdit by remember { mutableStateOf<Vaccination?>(null) }
     
     LaunchedEffect(navigationKey) {
         viewModel.onEvent(VaccinationsUiEvent.LoadVaccinations)
+    }
+
+    LaunchedEffect(addUiState.isSuccess) {
+        if (addUiState.isSuccess) {
+            showAddDialog = false
+            viewModel.onEvent(VaccinationsUiEvent.LoadVaccinations)
+            addVaccinationViewModel.onEvent(AddVaccinationUiEvent.ClearState)
+        }
     }
 
     LaunchedEffect(updateUiState.isSuccess) {
@@ -74,7 +84,7 @@ fun VaccinationsScreen(
         VaccinationsHeader(
             vaccinationCount = vaccinations.size,
             pendingCount = pendingVaccinations.size,
-            onAddVaccinationClick = onAddVaccination
+            onAddVaccinationClick = { showAddDialog = true }
         )
 
         Box(modifier = Modifier.fillMaxSize()) {
@@ -84,7 +94,7 @@ fun VaccinationsScreen(
                 }
                 vaccinations.isEmpty() -> {
                     EmptyContent(
-                        onAddVaccinationClick = onAddVaccination
+                        onAddVaccinationClick = { showAddDialog = true }
                     )
                 }
                 else -> {
@@ -95,7 +105,7 @@ fun VaccinationsScreen(
                             vaccinationToEdit = vaccination
                             showEditDialog = true
                         },
-                        onScheduleVaccination = onScheduleVaccination
+                        onScheduleVaccination = { /* TODO: Implement scheduling */ }
                     )
                 }
             }
@@ -118,6 +128,22 @@ fun VaccinationsScreen(
         }
     }
     
+    // Add Dialog
+    if (showAddDialog) {
+        AddVaccinationDialog(
+            addVaccinationViewModel = addVaccinationViewModel,
+            isLoading = addUiState.isLoading,
+            errorMessage = addUiState.errorMessage,
+            onDismiss = {
+                showAddDialog = false
+                addVaccinationViewModel.onEvent(AddVaccinationUiEvent.ClearState)
+            },
+            onSuccess = {
+                viewModel.onEvent(VaccinationsUiEvent.LoadVaccinations)
+            }
+        )
+    }
+
     // Edit Dialog
     vaccinationToEdit?.let { vaccination ->
         if (showEditDialog) {

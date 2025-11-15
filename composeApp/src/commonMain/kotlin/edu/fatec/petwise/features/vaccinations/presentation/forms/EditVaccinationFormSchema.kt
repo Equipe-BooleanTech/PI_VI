@@ -18,28 +18,9 @@ fun createEditVaccinationFormConfiguration(vaccination: Vaccination): FormConfig
     ),
     fields = listOf(
         FormFieldDefinition(
-            id = "vaccineType",
-            label = "Tipo de Vacina",
-            type = FormFieldType.SELECT,
-            placeholder = "Selecione o tipo de vacina",
-            default = JsonPrimitive(vaccination.vaccineType.name),
-            selectOptions = VaccineType.values().map { vaccineType ->
-                SelectOption(
-                    key = vaccineType.name,
-                    value = vaccineType.getDisplayName()
-                )
-            },
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Tipo de vacina é obrigatório"
-                )
-            )
-        ),
-        FormFieldDefinition(
             id = "vaccinationDate",
             label = "Data de Aplicação",
-            type = FormFieldType.DATE,
+            type = FormFieldType.TEXT,
             placeholder = "DD/MM/AAAA",
             default = JsonPrimitive(vaccination.vaccinationDate),
             validators = listOf(
@@ -56,7 +37,7 @@ fun createEditVaccinationFormConfiguration(vaccination: Vaccination): FormConfig
         FormFieldDefinition(
             id = "nextDoseDate",
             label = "Data do Próximo Reforço (Opcional)",
-            type = FormFieldType.DATE,
+            type = FormFieldType.TEXT,
             placeholder = "DD/MM/AAAA",
             default = vaccination.nextDoseDate?.let { JsonPrimitive(it) },
             validators = listOf(
@@ -100,15 +81,9 @@ fun createEditVaccinationFormConfiguration(vaccination: Vaccination): FormConfig
         FormFieldDefinition(
             id = "status",
             label = "Status da Vacinação",
-            type = FormFieldType.SELECT,
-            placeholder = "Selecione o status",
+            type = FormFieldType.TEXT,
+            placeholder = "Digite o status atual",
             default = JsonPrimitive(vaccination.status.name),
-            selectOptions = VaccinationStatus.values().map { status ->
-                SelectOption(
-                    key = status.name,
-                    value = status.getDisplayName()
-                )
-            },
             validators = listOf(
                 ValidationRule(
                     type = ValidationType.REQUIRED,

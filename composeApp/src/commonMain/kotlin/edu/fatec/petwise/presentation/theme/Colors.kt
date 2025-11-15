@@ -32,3 +32,10 @@ fun Color.Companion.fromHex(hex: String): Color {
         else -> Color.Black
     }
 }
+
+/**
+ * Converte uma string hexadecimal para um objeto Color.
+ * Suporta formatos com e sem canal alfa (ARGB ou RGB).
+ * Se a string não for válida, retorna Color.Black.
+ */
+fun fromHex(hex: String): Color = Color.fromHex(hex)

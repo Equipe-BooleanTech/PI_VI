@@ -15,8 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import edu.fatec.petwise.features.suprimentos.domain.models.Suprimento
 import edu.fatec.petwise.features.suprimentos.domain.models.SuprimentCategory
-import java.text.NumberFormat
-import java.util.*
+import edu.fatec.petwise.presentation.shared.NumberFormatter
 
 /**
  * Dialog to show suprimento details
@@ -85,8 +84,7 @@ fun SuprimentoDetailsDialog(
                 ) {
                     SuprimentoDetailRow(
                         label = "Preço",
-                        value = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
-                            .format(suprimento.price),
+                        value = NumberFormatter.formatCurrency(suprimento.price.toDouble()),
                         icon = Icons.Filled.AttachMoney,
                         valueColor = MaterialTheme.colorScheme.primary
                     )

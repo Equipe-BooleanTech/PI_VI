@@ -2,6 +2,7 @@ package edu.fatec.petwise.features.vaccinations.di
 
 import androidx.lifecycle.viewModelScope
 import edu.fatec.petwise.core.network.di.NetworkModule
+import edu.fatec.petwise.features.auth.di.AuthDependencyContainer
 import edu.fatec.petwise.features.vaccinations.data.datasource.RemoteVaccinationDataSourceImpl
 import edu.fatec.petwise.features.vaccinations.data.repository.VaccinationRepositoryImpl
 import edu.fatec.petwise.features.vaccinations.domain.repository.VaccinationRepository
@@ -70,7 +71,8 @@ object VaccinationDependencyContainer {
     private fun buildAddVaccinationViewModel(): AddVaccinationViewModel {
         val repo = getRepository()
         return AddVaccinationViewModel(
-            addVaccinationUseCase = AddVaccinationUseCase(repo)
+            addVaccinationUseCase = AddVaccinationUseCase(repo),
+            getUserProfileUseCase = AuthDependencyContainer.provideGetUserProfileUseCase()
         )
     }
 

@@ -22,9 +22,6 @@ class GetMedicationsUseCase(
     fun getMedicationsByPetId(petId: String): Flow<List<Medication>> = 
         repository.getMedicationsByPetId(petId)
 
-    fun getMedicationsByVeterinarianId(veterinarianId: String): Flow<List<Medication>> = 
-        repository.getMedicationsByVeterinarianId(veterinarianId)
-
     fun getMedicationsByPrescriptionId(prescriptionId: String): Flow<List<Medication>> = 
         repository.getMedicationsByPrescriptionId(prescriptionId)
 }
@@ -53,8 +50,7 @@ class AddMedicationUseCase(
                medication.durationDays > 0 &&
                medication.startDate.isNotBlank() &&
                medication.endDate.isNotBlank() &&
-               medication.petId.isNotBlank() &&
-               medication.veterinarianId.isNotBlank()
+               medication.petId.isNotBlank()
     }
 }
 

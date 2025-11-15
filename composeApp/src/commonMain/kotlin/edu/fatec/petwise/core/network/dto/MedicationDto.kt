@@ -10,7 +10,6 @@ data class MedicationDto(
     val id: String,
     val userId: String,
     val petId: String,
-    val veterinarianId: String,
     val prescriptionId: String? = null,
     val medicationName: String,
     val dosage: String,
@@ -26,7 +25,6 @@ data class MedicationDto(
 @Serializable
 data class CreateMedicationRequest(
     val petId: String,
-    val veterinarianId: String,
     val prescriptionId: String? = null,
     val medicationName: String,
     val dosage: String,
@@ -57,7 +55,6 @@ data class MedicationListResponse(
 @Serializable
 data class MedicationFilterRequest(
     val petId: String? = null,
-    val veterinarianId: String? = null,
     val status: String? = null,
     val medicationName: String? = null,
     val searchQuery: String = ""
@@ -78,7 +75,6 @@ fun Medication.toDto(): MedicationDto = MedicationDto(
     id = id,
     userId = userId,
     petId = petId,
-    veterinarianId = veterinarianId,
     prescriptionId = prescriptionId.takeIf { it.isNotBlank() },
     medicationName = medicationName,
     dosage = dosage,
@@ -95,7 +91,6 @@ fun MedicationDto.toDomain(): Medication = Medication(
     id = id,
     userId = userId,
     petId = petId,
-    veterinarianId = veterinarianId,
     prescriptionId = prescriptionId ?: "",
     medicationName = medicationName,
     dosage = dosage,

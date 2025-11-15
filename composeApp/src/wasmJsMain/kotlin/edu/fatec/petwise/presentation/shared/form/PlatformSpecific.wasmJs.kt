@@ -93,7 +93,7 @@ actual fun PlatformDatePicker(
                     val y = year
                     val m = month.coerceIn(1, 12)
                     val d = day.coerceIn(1, 31)
-                    val formatted = "%04d-%02d-%02d".format(y, m, d)
+                    val formatted = "${y.toString().padStart(4, '0')}-${m.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}"
                     showDialog = false
                     onValueChange(formatted)
                 }) { androidx.compose.material3.Text("OK") }
@@ -154,7 +154,7 @@ actual fun PlatformTimePicker(
                 androidx.compose.material3.TextButton(onClick = {
                     val h = hour.coerceIn(0,23)
                     val m = minute.coerceIn(0,59)
-                    val formatted = "%02d:%02d".format(h,m)
+                    val formatted = "${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}"
                     showDialog = false
                     onValueChange(formatted)
                 }) { androidx.compose.material3.Text("OK") }

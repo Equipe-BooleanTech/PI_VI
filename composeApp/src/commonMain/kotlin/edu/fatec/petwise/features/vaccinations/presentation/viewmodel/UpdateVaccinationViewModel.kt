@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import kotlinx.serialization.json.JsonPrimitive
 
 data class UpdateVaccinationUiState(
@@ -98,7 +99,7 @@ class UpdateVaccinationViewModel(
                 }
 
                 // Create updated vaccination object
-                val currentTime = System.currentTimeMillis().toString()
+                val currentTime = Clock.System.now().toEpochMilliseconds().toString()
                 val updatedVaccination = Vaccination(
                     id = vaccinationId,
                     petId = "", // This should be filled from original vaccination
