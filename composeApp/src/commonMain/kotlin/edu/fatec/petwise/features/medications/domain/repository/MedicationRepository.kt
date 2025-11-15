@@ -9,8 +9,6 @@ interface MedicationRepository {
 
     fun getMedicationById(id: String): Flow<Medication?>
 
-    fun getMedicationsByPetId(petId: String): Flow<List<Medication>>
-
     fun getMedicationsByPrescriptionId(prescriptionId: String): Flow<List<Medication>>
 
     fun searchMedications(query: String): Flow<List<Medication>>

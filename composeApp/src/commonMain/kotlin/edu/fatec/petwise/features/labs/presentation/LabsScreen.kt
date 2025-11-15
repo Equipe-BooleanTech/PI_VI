@@ -38,9 +38,8 @@ fun LabsScreen() {
             labs
         } else {
             labs.filter {
-                it.testType.contains(searchQuery, ignoreCase = true) ||
-                it.labName.contains(searchQuery, ignoreCase = true) ||
-                it.status.contains(searchQuery, ignoreCase = true)
+                it.name.contains(searchQuery, ignoreCase = true) ||
+                it.contactInfo?.contains(searchQuery, ignoreCase = true) == true
             }
         }
     }
@@ -141,7 +140,7 @@ private fun LabsHeader(
             ) {
                 Column {
                     Text(
-                        text = if (selectionMode) "Selecionados" else "Laboratório",
+                        text = if (selectionMode) "Selecionados" else "Laboratórios",
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold,
                             color = Color.White
@@ -149,9 +148,9 @@ private fun LabsHeader(
                     )
                     Text(
                         text = if (selectionMode) {
-                            "$selectedCount resultado(s) selecionado(s)"
+                            "$selectedCount laboratório(s) selecionado(s)"
                         } else {
-                            if (labCount > 0) "$labCount resultados registrados" else "Nenhum resultado cadastrado"
+                            if (labCount > 0) "$labCount laboratórios registrados" else "Nenhum laboratório cadastrado"
                         },
                         style = MaterialTheme.typography.bodyMedium.copy(
                             color = Color.White.copy(alpha = 0.9f)
@@ -223,7 +222,7 @@ private fun LabsHeader(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Adicionar Resultado",
+                        text = "Adicionar Laboratório",
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontWeight = FontWeight.SemiBold
                         )
@@ -280,7 +279,7 @@ private fun SearchBar(
             modifier = Modifier.fillMaxWidth(),
             placeholder = {
                 Text(
-                    "Buscar por tipo de teste ou laboratório...",
+                    "Buscar por nome ou contato...",
                     style = MaterialTheme.typography.bodyMedium.copy(
                         color = Color.fromHex(theme.palette.textSecondary)
                     )
@@ -350,7 +349,7 @@ private fun EmptyContent(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Nenhum resultado de laboratório cadastrado",
+                text = "Nenhum laboratório cadastrado",
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
                     color = Color.Gray
@@ -360,7 +359,7 @@ private fun EmptyContent(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Adicione seu primeiro resultado para começar!",
+                text = "Adicione seu primeiro laboratório para começar!",
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = Color.Gray
                 )
@@ -379,7 +378,7 @@ private fun EmptyContent(
                     contentDescription = "Adicionar"
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Adicionar Resultado")
+                Text("Adicionar Laboratório")
             }
         }
     }
@@ -513,51 +512,20 @@ fun LabCard(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = lab.testType,
+                    text = lab.name,
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
                         color = Color.fromHex(theme.palette.textPrimary)
                     )
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Laboratório: ${lab.labName}",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color.fromHex(theme.palette.textSecondary)
+                if (lab.contactInfo != null) {
+                    Text(
+                        text = "Contato: ${lab.contactInfo}",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = Color.fromHex(theme.palette.textSecondary)
+                        )
                     )
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = Color.fromHex("#009688").copy(alpha = 0.1f),
-                        modifier = Modifier.wrapContentWidth()
-                    ) {
-                        Text(
-                            text = lab.testDate,
-                            color = Color.fromHex("#009688"),
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontWeight = FontWeight.Medium
-                            ),
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                        )
-                    }
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = Color.fromHex("#4CAF50").copy(alpha = 0.1f),
-                        modifier = Modifier.wrapContentWidth()
-                    ) {
-                        Text(
-                            text = lab.status,
-                            color = Color.fromHex("#4CAF50"),
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontWeight = FontWeight.Medium
-                            ),
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                        )
-                    }
                 }
             }
 

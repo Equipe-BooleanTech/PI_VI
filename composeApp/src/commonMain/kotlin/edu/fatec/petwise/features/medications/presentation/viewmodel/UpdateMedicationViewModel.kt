@@ -82,7 +82,6 @@ class UpdateMedicationViewModel(
                 val durationDaysStr = formData["durationDays"] as? String ?: currentMedication.durationDays.toString()
                 val startDate = formData["startDate"] as? String ?: currentMedication.startDate
                 val endDate = formData["endDate"] as? String ?: currentMedication.endDate
-                val petId = formData["petId"] as? String ?: currentMedication.petId
                 val prescriptionId = formData["prescriptionId"] as? String ?: currentMedication.prescriptionId
                 val sideEffects = formData["sideEffects"] as? String ?: currentMedication.sideEffects
 
@@ -107,7 +106,6 @@ class UpdateMedicationViewModel(
                     durationDays = durationDays,
                     startDate = startDate,
                     endDate = endDate,
-                    petId = petId,
                     prescriptionId = prescriptionId,
                     sideEffects = sideEffects,
                     updatedAt = now

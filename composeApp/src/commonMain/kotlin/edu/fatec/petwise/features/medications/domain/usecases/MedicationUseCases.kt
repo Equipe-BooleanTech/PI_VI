@@ -19,9 +19,6 @@ class GetMedicationsUseCase(
     fun getActiveMedications(): Flow<List<Medication>> = 
         repository.getActiveMedications()
 
-    fun getMedicationsByPetId(petId: String): Flow<List<Medication>> = 
-        repository.getMedicationsByPetId(petId)
-
     fun getMedicationsByPrescriptionId(prescriptionId: String): Flow<List<Medication>> = 
         repository.getMedicationsByPrescriptionId(prescriptionId)
 }
@@ -50,7 +47,7 @@ class AddMedicationUseCase(
                medication.durationDays > 0 &&
                medication.startDate.isNotBlank() &&
                medication.endDate.isNotBlank() &&
-               medication.petId.isNotBlank()
+               medication.prescriptionId.isNotBlank()
     }
 }
 

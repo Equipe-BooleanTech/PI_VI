@@ -9,8 +9,7 @@ import kotlinx.serialization.Serializable
 data class MedicationDto(
     val id: String,
     val userId: String,
-    val petId: String,
-    val prescriptionId: String? = null,
+    val prescriptionId: String,
     val medicationName: String,
     val dosage: String,
     val frequency: String,
@@ -18,14 +17,14 @@ data class MedicationDto(
     val startDate: String,
     val endDate: String,
     val sideEffects: String = "",
+    val status: String = "ACTIVE",
     val createdAt: String,
     val updatedAt: String
 )
 
 @Serializable
 data class CreateMedicationRequest(
-    val petId: String,
-    val prescriptionId: String? = null,
+    val prescriptionId: String,
     val medicationName: String,
     val dosage: String,
     val frequency: String,
@@ -74,8 +73,7 @@ data class CompleteMedicationRequest(
 fun Medication.toDto(): MedicationDto = MedicationDto(
     id = id,
     userId = userId,
-    petId = petId,
-    prescriptionId = prescriptionId.takeIf { it.isNotBlank() },
+    prescriptionId = prescriptionId,
     medicationName = medicationName,
     dosage = dosage,
     frequency = frequency,
@@ -83,6 +81,7 @@ fun Medication.toDto(): MedicationDto = MedicationDto(
     startDate = startDate,
     endDate = endDate,
     sideEffects = sideEffects,
+    status = status.name,
     createdAt = createdAt,
     updatedAt = updatedAt
 )
@@ -90,8 +89,7 @@ fun Medication.toDto(): MedicationDto = MedicationDto(
 fun MedicationDto.toDomain(): Medication = Medication(
     id = id,
     userId = userId,
-    petId = petId,
-    prescriptionId = prescriptionId ?: "",
+    prescriptionId = prescriptionId,
     medicationName = medicationName,
     dosage = dosage,
     frequency = frequency,
@@ -99,6 +97,7 @@ fun MedicationDto.toDomain(): Medication = Medication(
     startDate = startDate,
     endDate = endDate,
     sideEffects = sideEffects,
+    status = MedicationStatus.valueOf(status),
     createdAt = createdAt,
     updatedAt = updatedAt
 )

@@ -46,8 +46,6 @@ object ApiEndpoints {
 
     const val MEDICATIONS = "/api/medications"
     fun getMedication(id: String) = "$MEDICATIONS/$id"
-    fun getMedicationsByPet(petId: String) = "$MEDICATIONS/pet/$petId"
-    fun getActiveMedicationsByPet(petId: String) = "$MEDICATIONS/pet/$petId/active"
     const val MEDICATIONS_SEARCH = "$MEDICATIONS/search"
     const val MEDICATIONS_UPCOMING = "$MEDICATIONS/upcoming"
     const val MEDICATIONS_EXPIRED = "$MEDICATIONS/expired"
@@ -69,7 +67,6 @@ object ApiEndpoints {
 
     const val LABS = "/api/labs"
     fun getLab(id: String) = "$LABS/$id"
-    fun getLabsByVeterinary(veterinaryId: String) = "/api/veterinaries/$veterinaryId/labs"
 
     const val FOOD = "/api/food"
     fun getFood(id: String) = "$FOOD/$id"

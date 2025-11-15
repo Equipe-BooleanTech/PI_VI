@@ -6,7 +6,6 @@ import kotlinx.serialization.Serializable
 data class Medication(
     val id: String,
     val userId: String,
-    val petId: String,
     val prescriptionId: String,
     val medicationName: String,
     val dosage: String,
@@ -15,6 +14,7 @@ data class Medication(
     val startDate: String,
     val endDate: String,
     val sideEffects: String = "",
+    val status: MedicationStatus = MedicationStatus.ACTIVE,
     val createdAt: String,
     val updatedAt: String
 )
