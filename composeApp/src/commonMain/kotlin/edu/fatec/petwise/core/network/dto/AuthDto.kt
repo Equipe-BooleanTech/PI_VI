@@ -1,6 +1,13 @@
 package edu.fatec.petwise.core.network.dto
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.boolean
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonPrimitive
 
 
 @Serializable
@@ -65,8 +72,7 @@ data class ForgotPasswordRequest(
 
 @Serializable
 data class ForgotPasswordResponse(
-    val message: String,
-    val resetTokenSent: Boolean
+    val message: String
 )
 
 @Serializable
@@ -92,4 +98,35 @@ data class UserProfileDto(
     val verified: Boolean = false,
     val createdAt: String,
     val updatedAt: String
-)
+) {
+    companion object {
+        fun fromJson(json: String): UserProfileDto {
+            val jsonElement = Json.parseToJsonElement(json)
+            return fromJsonElement(jsonElement)
+        }
+
+        private fun fromJsonElement(jsonElement: JsonElement): UserProfileDto {
+            val obj = jsonElement as JsonObject
+            
+            return UserProfileDto(
+                id = obj["id"]?.jsonPrimitive?.contentOrNull ?: "",
+                email = extractValue(obj["email"]) ?: "",
+                fullName = obj["fullName"]?.jsonPrimitive?.contentOrNull ?: "",
+                userType = obj["userType"]?.jsonPrimitive?.contentOrNull ?: "",
+                phone = extractValue(obj["phone"]),
+                profileImageUrl = obj["profileImageUrl"]?.jsonPrimitive?.contentOrNull,
+                verified = obj["verified"]?.jsonPrimitive?.boolean ?: false,
+                createdAt = obj["createdAt"]?.jsonPrimitive?.contentOrNull ?: "",
+                updatedAt = obj["updatedAt"]?.jsonPrimitive?.contentOrNull ?: ""
+            )
+        }
+
+        private fun extractValue(jsonElement: JsonElement?): String? {
+            return when (jsonElement) {
+                is JsonObject -> jsonElement["value"]?.jsonPrimitive?.contentOrNull
+                is JsonPrimitive -> jsonElement.contentOrNull
+                else -> null
+            }
+        }
+    }
+}

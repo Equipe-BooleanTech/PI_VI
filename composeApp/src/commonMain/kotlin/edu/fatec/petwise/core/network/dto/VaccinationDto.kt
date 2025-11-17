@@ -3,6 +3,7 @@ package edu.fatec.petwise.core.network.dto
 import edu.fatec.petwise.features.vaccinations.domain.models.Vaccination
 import edu.fatec.petwise.features.vaccinations.domain.models.VaccinationStatus
 import edu.fatec.petwise.features.vaccinations.domain.models.VaccineType
+import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -49,7 +50,7 @@ data class UpdateVaccinationRequest(
 
 @Serializable
 data class VaccinationListResponse(
-    val vaccinations: List<VaccinationDto>,
+    val vaccinations: List<VaccinationDto>? = null,
     val total: Int,
     val page: Int,
     val pageSize: Int

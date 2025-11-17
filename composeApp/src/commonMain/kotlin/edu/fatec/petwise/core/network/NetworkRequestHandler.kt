@@ -11,8 +11,29 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.SerializationException
 
 class NetworkRequestHandler(
-    private val httpClient: HttpClient
+    val httpClient: HttpClient
 ) {
+    suspend inline fun <reified T> getWithCustomDeserializer(
+        urlString: String,
+        crossinline deserializer: (String) -> T,
+        crossinline block: HttpRequestBuilder.() -> Unit = {}
+    ): NetworkResult<T> {
+        return try {
+            val response = httpClient.get(urlString) {
+                block()
+            }
+            when (response.status.value) {
+                in 200..299 -> {
+                    val jsonString = response.bodyAsText()
+                    val data = deserializer(jsonString)
+                    NetworkResult.Success(data)
+                }
+                else -> handleResponse(response)
+            }
+        } catch (e: Exception) {
+            handleException(e)
+        }
+    }
     internal suspend inline fun <reified T> safeRequest(
         crossinline request: suspend HttpClient.() -> HttpResponse
     ): NetworkResult<T> {
@@ -81,7 +102,7 @@ class NetworkRequestHandler(
         }
     }
 
-    internal suspend inline fun <reified T> handleResponse(response: HttpResponse): NetworkResult<T> {
+    suspend inline fun <reified T> handleResponse(response: HttpResponse): NetworkResult<T> {
         return try {
             when (response.status.value) {
                 in 200..299 -> {

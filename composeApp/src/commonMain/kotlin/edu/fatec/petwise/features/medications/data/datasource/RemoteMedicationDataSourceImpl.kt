@@ -4,6 +4,7 @@ import edu.fatec.petwise.core.network.NetworkResult
 import edu.fatec.petwise.core.network.api.MedicationApiService
 import edu.fatec.petwise.core.network.dto.*
 import edu.fatec.petwise.features.medications.domain.models.Medication
+import kotlinx.datetime.LocalDateTime
 import edu.fatec.petwise.features.medications.domain.models.MedicationFrequency
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
@@ -15,10 +16,10 @@ class RemoteMedicationDataSourceImpl(
 
     override suspend fun getAllMedications(): List<Medication> {
         println("API: Buscando todos os medicamentos")
-        return when (val result = medicationApiService.getAllMedications()) {
+        return when (val result = medicationApiService.getAllMedications(1, 1000)) {
             is NetworkResult.Success -> {
-                println("API: ${result.data.medications.size} medicamentos obtidos com sucesso")
-                result.data.medications.map { it.toDomain() }
+                println("API: ${result.data.size} medicamentos obtidos com sucesso")
+                result.data.map { it.toDomain() }
             }
             is NetworkResult.Error -> {
                 println("API: Erro ao buscar medicamentos - ${result.exception.message}")
@@ -45,9 +46,9 @@ class RemoteMedicationDataSourceImpl(
 
     override suspend fun getMedicationsByPrescriptionId(prescriptionId: String): List<Medication> {
         println("API: Buscando medicamentos por Prescription ID: $prescriptionId")
-        return when (val result = medicationApiService.getAllMedications()) {
+        return when (val result = medicationApiService.getAllMedications(1, 1000)) {
             is NetworkResult.Success -> {
-                val filtered = result.data.medications
+                val filtered = result.data
                     .filter { it.prescriptionId == prescriptionId }
                     .map { it.toDomain() }
                 println("API: ${filtered.size} medicamentos encontrados para a prescrição")
@@ -70,8 +71,8 @@ class RemoteMedicationDataSourceImpl(
             dosage = medication.dosage,
             frequency = medication.frequency,
             durationDays = medication.durationDays,
-            startDate = medication.startDate,
-            endDate = medication.endDate,
+            startDate = parseDateToIso(medication.startDate),
+            endDate = parseDateToIso(medication.endDate),
             sideEffects = medication.sideEffects
         )
 
@@ -95,7 +96,7 @@ class RemoteMedicationDataSourceImpl(
             dosage = medication.dosage,
             frequency = medication.frequency,
             durationDays = medication.durationDays,
-            endDate = medication.endDate,
+            endDate = parseDateToIso(medication.endDate),
             sideEffects = medication.sideEffects
         )
 
@@ -174,10 +175,10 @@ class RemoteMedicationDataSourceImpl(
     override suspend fun searchMedications(query: String): List<Medication> {
         println("API: Buscando medicamentos com query: '$query'")
         val filter = MedicationFilterRequest(searchQuery = query)
-        return when (val result = medicationApiService.searchMedications(filter)) {
+        return when (val result = medicationApiService.searchMedications(filter, 1, 1000)) {
             is NetworkResult.Success -> {
-                println("API: Busca concluída - ${result.data.medications.size} medicamentos encontrados")
-                result.data.medications.map { it.toDomain() }
+                println("API: Busca concluída - ${result.data.size} medicamentos encontrados")
+                result.data.map { it.toDomain() }
             }
             is NetworkResult.Error -> {
                 println("API: Erro na busca de medicamentos - ${result.exception.message}")
@@ -186,4 +187,18 @@ class RemoteMedicationDataSourceImpl(
             is NetworkResult.Loading -> emptyList()
         }
     }
+}
+
+private fun parseDateToIso(date: String): String {
+    val dateParts = if (date.contains("/")) {
+        date.split("/")
+    } else {
+        date.split("-").reversed() 
+    }
+    val day = dateParts[0].toInt()
+    val month = dateParts[1].toInt()
+    val year = dateParts[2].toInt()
+
+    val localDateTime = LocalDateTime(year, month, day, 0, 0, 0)
+    return localDateTime.toString()
 }

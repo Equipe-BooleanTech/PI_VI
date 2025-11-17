@@ -196,7 +196,7 @@ fun DashboardScreen(
                     }
                 }
                 NavigationManager.TabScreen.Medication -> {
-                    if (currentUserType == UserType.VETERINARY) {
+                    if (currentUserType == UserType.PHARMACY) {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -486,6 +486,7 @@ fun HomeTabContent(
                     petCount = dashboardUiState.petCount,
                     consultasCount = dashboardUiState.consultasCount,
                     vacinasCount = dashboardUiState.vacinasCount,
+                    medicamentosCount = dashboardUiState.medicamentosCount,
                     prescriptionsCount = dashboardUiState.prescriptionsCount,
                     examsCount = dashboardUiState.examsCount,
                     labsCount = dashboardUiState.labsCount,
@@ -497,6 +498,7 @@ fun HomeTabContent(
                             "pets" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Pets)
                             "appointments" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Appointments)
                             "vaccines" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Vaccines)
+                            "medications" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Medication)
                             "prescriptions" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Prescriptions)
                             "exams" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Exams)
                             "reminders" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Medication)
@@ -515,6 +517,9 @@ fun HomeTabContent(
                             "appointments" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Appointments)
                             "medications" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Medication)
                             "vaccines" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Vaccines)
+                            "prescriptions" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Prescriptions)
+                            "exams" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Exams)
+                            "labs" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Labs)
                             else -> { }
                         }
                     }

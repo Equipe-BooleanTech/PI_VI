@@ -45,7 +45,7 @@ data class UpdateMedicationRequest(
 
 @Serializable
 data class MedicationListResponse(
-    val medications: List<MedicationDto>,
+    val medications: List<MedicationDto>? = null,
     val total: Int,
     val page: Int,
     val pageSize: Int

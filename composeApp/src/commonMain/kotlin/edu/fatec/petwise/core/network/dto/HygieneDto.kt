@@ -22,10 +22,10 @@ data class HygieneDto(
 
 @Serializable
 data class HygieneListResponse(
-    val hygieneProducts: List<HygieneDto>,
-    val total: Int = hygieneProducts.size,
-    val page: Int = 1,
-    val pageSize: Int = 20
+    val hygieneProducts: List<HygieneDto>? = null,
+    val total: Int,
+    val page: Int,
+    val pageSize: Int
 )
 
 @Serializable

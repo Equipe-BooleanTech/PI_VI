@@ -45,6 +45,7 @@ class AuthRepositoryImpl(
                         }
                         tokenStorage?.saveUserId(result.data.userId)
                         tokenStorage?.saveUserType(result.data.userType)
+                        tokenStorage?.saveFullName(result.data.fullName)
                         
                         NetworkModule.setAuthTokenWithExpiration(result.data.token, result.data.expiresIn)
                     }
@@ -244,5 +245,7 @@ interface AuthTokenStorage {
     fun getUserId(): String?
     fun saveUserType(userType: String)
     fun getUserType(): String?
+    fun saveFullName(fullName: String)
+    fun getFullName(): String?
     fun clearTokens()
 }

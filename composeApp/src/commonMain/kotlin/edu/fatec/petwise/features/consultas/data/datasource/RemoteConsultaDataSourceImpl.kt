@@ -5,6 +5,7 @@ import edu.fatec.petwise.core.network.api.ConsultaApiService
 import edu.fatec.petwise.core.network.dto.*
 import edu.fatec.petwise.features.consultas.domain.models.Consulta
 import edu.fatec.petwise.features.consultas.domain.models.ConsultaStatus
+import kotlinx.datetime.LocalDateTime
 
 class RemoteConsultaDataSourceImpl(
     private val consultaApiService: ConsultaApiService
@@ -12,7 +13,7 @@ class RemoteConsultaDataSourceImpl(
 
     override suspend fun getAllConsultas(): List<Consulta> {
         return when (val result = consultaApiService.getAllConsultas()) {
-            is NetworkResult.Success -> result.data.consultas.map { it.toDomain() }
+            is NetworkResult.Success -> result.data.map { it.toDomain() }
             is NetworkResult.Error -> throw result.exception
             is NetworkResult.Loading -> emptyList()
         }
@@ -38,7 +39,7 @@ class RemoteConsultaDataSourceImpl(
             petName = consulta.petName,
             veterinarianName = consulta.veterinarianName,
             consultaType = consulta.consultaType.name,
-            consultaDate = consulta.consultaDate,
+            consultaDate = parseDateTimeToIso(consulta.consultaDate, consulta.consultaTime),
             consultaTime = consulta.consultaTime,
             symptoms = consulta.symptoms,
             notes = consulta.notes
@@ -55,7 +56,7 @@ class RemoteConsultaDataSourceImpl(
         val request = UpdateConsultaRequest(
             veterinarianName = consulta.veterinarianName,
             consultaType = consulta.consultaType.name,
-            consultaDate = consulta.consultaDate,
+            consultaDate = consulta.consultaDate?.let { parseDateTimeToIso(it, consulta.consultaTime ?: "") },
             consultaTime = consulta.consultaTime,
             status = consulta.status.name,
             symptoms = consulta.symptoms,
@@ -117,7 +118,7 @@ class RemoteConsultaDataSourceImpl(
 
     suspend fun searchConsultas(query: String): List<Consulta> {
         return when (val result = consultaApiService.searchConsultas(query)) {
-            is NetworkResult.Success -> result.data.consultas.map { it.toDomain() }
+            is NetworkResult.Success -> result.data.map { it.toDomain() }
             is NetworkResult.Error -> throw result.exception
             is NetworkResult.Loading -> emptyList()
         }
@@ -125,7 +126,7 @@ class RemoteConsultaDataSourceImpl(
 
     suspend fun getUpcomingConsultas(): List<Consulta> {
         return when (val result = consultaApiService.getUpcomingConsultas()) {
-            is NetworkResult.Success -> result.data.consultas.map { it.toDomain() }
+            is NetworkResult.Success -> result.data.map { it.toDomain() }
             is NetworkResult.Error -> throw result.exception
             is NetworkResult.Loading -> emptyList()
         }
@@ -133,9 +134,29 @@ class RemoteConsultaDataSourceImpl(
 
     suspend fun getConsultasByPet(petId: String): List<Consulta> {
         return when (val result = consultaApiService.getConsultasByPet(petId)) {
-            is NetworkResult.Success -> result.data.consultas.map { it.toDomain() }
+            is NetworkResult.Success -> result.data.map { it.toDomain() }
             is NetworkResult.Error -> throw result.exception
             is NetworkResult.Loading -> emptyList()
         }
     }
+}
+
+private fun parseDateTimeToIso(date: String, time: String): String {
+    val dateParts = if (date.contains("/")) {
+        // DD/MM/YYYY format
+        date.split("/")
+    } else {
+        // YYYY-MM-DD format
+        date.split("-").reversed() // Reverse to DD/MM/YYYY
+    }
+    val day = dateParts[0].toInt()
+    val month = dateParts[1].toInt()
+    val year = dateParts[2].toInt()
+
+    val timeParts = time.split(":")
+    val hour = timeParts[0].toInt()
+    val minute = timeParts[1].toInt()
+
+    val localDateTime = LocalDateTime(year, month, day, hour, minute)
+    return localDateTime.toString()
 }

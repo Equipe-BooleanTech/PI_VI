@@ -114,23 +114,41 @@ class DashboardViewModel(
                 
                 println("DashboardViewModel - getUserTypeUseCase result: success=${userTypeResult.isSuccess}, rawUserType=$rawUserType, normalizedUserType=$userType")
                 
-                val statistics = getCardsStatisticsUseCase()
+                val statistics = getCardsStatisticsUseCase(userType)
                 val petCount = statistics.getOrElse(0) { 0 }
                 val consultasCount = statistics.getOrElse(1) { 0 }
                 val vacinasCount = statistics.getOrElse(2) { 0 }
                 val medicamentosCount = statistics.getOrElse(3) { 0 }
 
-                // Get additional counts
-                val prescriptionsCount = getPrescriptionsCountUseCase()
-                val examsCount = getExamsCountUseCase()
-                val labsCount = getLabsCountUseCase()
-                val foodCount = getFoodCountUseCase()
-                val hygieneCount = getHygieneCountUseCase()
-                val toysCount = getToysCountUseCase()
+                // Get additional counts based on user type
+                val prescriptionsCount = when (userType) {
+                    "VETERINARY" -> getPrescriptionsCountUseCase()
+                    else -> 0
+                }
+                val examsCount = when (userType) {
+                    "VETERINARY" -> getExamsCountUseCase()
+                    else -> 0
+                }
+                val labsCount = when (userType) {
+                    "VETERINARY" -> getLabsCountUseCase()
+                    else -> 0
+                }
+                val foodCount = when (userType) {
+                    "PETSHOP" -> getFoodCountUseCase()
+                    else -> 0
+                }
+                val hygieneCount = when (userType) {
+                    "PETSHOP" -> getHygieneCountUseCase()
+                    else -> 0
+                }
+                val toysCount = when (userType) {
+                    "PETSHOP" -> getToysCountUseCase()
+                    else -> 0
+                }
 
                 println("Estatísticas carregadas: pets=$petCount, consultas=$consultasCount, vacinas=$vacinasCount, medicamentos=$medicamentosCount, prescriptions=$prescriptionsCount, exams=$examsCount, labs=$labsCount, food=$foodCount, hygiene=$hygieneCount, toys=$toysCount, userName=$userName, userType=$userType")
 
-                val consultas = getUpcomingConsultasUseCase()
+                val consultas = getUpcomingConsultasUseCase(userType)
                 println("Consultas próximas carregadas: ${consultas.size}")
                 
                 _uiState.value = _uiState.value.copy(

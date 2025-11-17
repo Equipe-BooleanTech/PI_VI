@@ -14,10 +14,10 @@ class RemotePetDataSourceImpl(
 
     override suspend fun getAllPets(): List<Pet> { 
         println("API: Buscando todos os pets")
-        return when (val result = petApiService.getAllPets()) {
+        return when (val result = petApiService.getAllPets(1, 1000)) {  // Large pageSize to get all
             is NetworkResult.Success -> {
-                println("API: ${result.data.pets.size} pets obtidos com sucesso")
-                result.data.pets.map { it.toDomain() }
+                println("API: ${result.data.size} pets obtidos com sucesso")
+                result.data.map { it.toDomain() }
             }
             is NetworkResult.Error -> {
                 println("API: Erro ao buscar pets - ${result.exception.message}")
@@ -205,10 +205,10 @@ class RemotePetDataSourceImpl(
 
     override suspend fun searchPets(query: String): List<Pet> {
         println("API: Buscando pets com query: '$query'")
-        return when (val result = petApiService.searchPets(query)) {
+        return when (val result = petApiService.searchPets(query, 1, 1000)) {
             is NetworkResult.Success -> {
-                println("API: Busca concluída - ${result.data.pets.size} pets encontrados")
-                result.data.pets.map { it.toDomain() }
+                println("API: Busca concluída - ${result.data.size} pets encontrados")
+                result.data.map { it.toDomain() }
             }
             is NetworkResult.Error -> {
                 println("API: Erro na busca - ${result.exception.message}")
@@ -220,10 +220,10 @@ class RemotePetDataSourceImpl(
 
     override suspend fun getFavoritePets(): List<Pet> {
         println("API: Buscando pets favoritos")
-        return when (val result = petApiService.getFavoritePets()) {
+        return when (val result = petApiService.getFavoritePets(1, 1000)) {
             is NetworkResult.Success -> {
-                println("API: Pets favoritos obtidos - ${result.data.pets.size} pets")
-                result.data.pets.map { it.toDomain() }
+                println("API: Pets favoritos obtidos - ${result.data.size} pets")
+                result.data.map { it.toDomain() }
             }
             is NetworkResult.Error -> {
                 println("API: Erro ao buscar favoritos - ${result.exception.message}")

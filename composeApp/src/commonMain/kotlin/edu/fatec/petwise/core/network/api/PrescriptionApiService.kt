@@ -5,9 +5,10 @@ import edu.fatec.petwise.core.network.NetworkRequestHandler
 import edu.fatec.petwise.core.network.NetworkResult
 import edu.fatec.petwise.core.network.dto.*
 import io.ktor.client.request.*
+import kotlinx.serialization.json.Json
 
 interface PrescriptionApiService {
-    suspend fun getAllPrescriptions(page: Int = 1, pageSize: Int = 20): NetworkResult<PrescriptionListResponse>
+    suspend fun getAllPrescriptions(page: Int = 1, pageSize: Int = 20): NetworkResult<List<PrescriptionDto>>
     suspend fun getPrescriptionById(id: String): NetworkResult<PrescriptionDto>
     suspend fun getPrescriptionsByPetId(petId: String): NetworkResult<List<PrescriptionDto>>
     suspend fun getPrescriptionsByVeterinaryId(veterinaryId: String): NetworkResult<List<PrescriptionDto>>
@@ -20,8 +21,21 @@ class PrescriptionApiServiceImpl(
     private val networkHandler: NetworkRequestHandler
 ) : PrescriptionApiService {
 
-    override suspend fun getAllPrescriptions(page: Int, pageSize: Int): NetworkResult<PrescriptionListResponse> {
-        return networkHandler.get<PrescriptionListResponse>(ApiEndpoints.PRESCRIPTIONS) {
+    override suspend fun getAllPrescriptions(page: Int, pageSize: Int): NetworkResult<List<PrescriptionDto>> {
+        return networkHandler.getWithCustomDeserializer(
+            urlString = ApiEndpoints.PRESCRIPTIONS,
+            deserializer = { jsonString ->
+                val json = Json { ignoreUnknownKeys = true }
+                try {
+                    // Try to parse as direct array first
+                    json.decodeFromString<List<PrescriptionDto>>(jsonString)
+                } catch (e: Exception) {
+                    // Fallback to wrapped object
+                    val wrapped = json.decodeFromString<PrescriptionListResponse>(jsonString)
+                    wrapped.prescriptions ?: emptyList()
+                }
+            }
+        ) {
             parameter("page", page)
             parameter("pageSize", pageSize)
         }

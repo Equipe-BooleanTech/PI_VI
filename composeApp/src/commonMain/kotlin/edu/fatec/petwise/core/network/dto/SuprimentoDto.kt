@@ -19,7 +19,7 @@ data class SuprimentoDto(
 
 @Serializable
 data class SuprimentoListResponse(
-    val suprimentos: List<SuprimentoDto>,
+    val suprimentos: List<SuprimentoDto>? = null,
     val total: Int
 )
 

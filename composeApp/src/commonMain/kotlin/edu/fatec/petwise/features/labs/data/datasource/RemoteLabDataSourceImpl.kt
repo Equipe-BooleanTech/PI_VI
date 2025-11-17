@@ -10,8 +10,8 @@ class RemoteLabDataSourceImpl(
 ) : RemoteLabDataSource {
 
     override suspend fun getAllLabs(): List<Lab> {
-        return when (val result = labApiService.getAllLabs()) {
-            is NetworkResult.Success -> result.data.labs.map { it.toLab() }
+        return when (val result = labApiService.getAllLabs(1, 1000)) {
+            is NetworkResult.Success -> result.data.map { it.toLab() }
             is NetworkResult.Error -> {
                 println("API Error: ${result.exception.message}")
                 emptyList()

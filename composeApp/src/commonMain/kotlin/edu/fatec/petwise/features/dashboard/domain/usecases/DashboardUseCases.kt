@@ -20,11 +20,23 @@ class GetCardsStatisticsUseCase(
     private val vacinaRepository: VaccinationRepository,
     private val medicamentoRepository: MedicationRepository
 ) {
-    suspend operator fun invoke(): List<Int> {
-        val petCount = petRepository.getAllPets().first().size
-        val consultaCount = consultaRepository.getAllConsultas().size
-        val vacinaCount = vacinaRepository.getAllVaccinations().first().size
-        val medicamentoCount = medicamentoRepository.getAllMedications().first().size
+    suspend operator fun invoke(userType: String): List<Int> {
+        val petCount = when (userType) {
+            "OWNER" -> petRepository.getAllPets().first().size
+            else -> 0
+        }
+        val consultaCount = when (userType) {
+            "OWNER", "VETERINARY" -> consultaRepository.getAllConsultas().size
+            else -> 0
+        }
+        val vacinaCount = when (userType) {
+            "VETERINARY" -> vacinaRepository.getAllVaccinations().first().size
+            else -> 0
+        }
+        val medicamentoCount = when (userType) {
+            "PHARMACY" -> medicamentoRepository.getAllMedications().first().size
+            else -> 0
+        }
         return listOf(petCount, consultaCount, vacinaCount, medicamentoCount)
     }
 }
@@ -32,8 +44,11 @@ class GetCardsStatisticsUseCase(
 class GetUpcomingConsultasUseCase(
     private val consultaRepository: RemoteConsultaDataSourceImpl
 ) {
-    suspend operator fun invoke(): List<Consulta> {
-        return consultaRepository.getUpcomingConsultas()
+    suspend operator fun invoke(userType: String): List<Consulta> {
+        return when (userType) {
+            "OWNER", "VETERINARY" -> consultaRepository.getUpcomingConsultas()
+            else -> emptyList()
+        }
     }
 }
 

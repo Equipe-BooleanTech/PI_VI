@@ -15,9 +15,9 @@ class DashboardDataSourceImpl (
         var totalPets = 0
         var totalConsultas = 0
         
-        when (val petsResult = petApiService.getAllPets()) {
+        when (val petsResult = petApiService.getAllPets(1, 1000)) {
             is NetworkResult.Success -> {
-                totalPets = petsResult.data.total
+                totalPets = petsResult.data.size
             }
             is NetworkResult.Error -> {
                 println("API: Erro ao buscar pets - ${petsResult.exception.message}")
@@ -26,9 +26,9 @@ class DashboardDataSourceImpl (
             is NetworkResult.Loading -> { }
         }
 
-        when (val consultasResult = consultaApiService.getAllConsultas()) {
+        when (val consultasResult = consultaApiService.getAllConsultas(1, 1000)) {
             is NetworkResult.Success -> {
-                totalConsultas = consultasResult.data.total
+                totalConsultas = consultasResult.data.size
             }
             is NetworkResult.Error -> {
                 println("API: Erro ao buscar consultas - ${consultasResult.exception.message}")
@@ -42,9 +42,9 @@ class DashboardDataSourceImpl (
 
     override suspend fun getUpcomingConsultas(): List<ConsultaDto> {
         var consultas = listOf<ConsultaDto>()
-        when  (val result = consultaApiService.getUpcomingConsultas()) {
+        when  (val result = consultaApiService.getUpcomingConsultas(1, 1000)) {
             is NetworkResult.Success -> {
-                consultas = result.data.consultas
+                consultas = result.data
             }
             is NetworkResult.Error -> {
                 println("API: Erro ao buscar pets - ${result.exception.message}")

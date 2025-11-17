@@ -23,10 +23,10 @@ data class PrescriptionDto(
 
 @Serializable
 data class PrescriptionListResponse(
-    val prescriptions: List<PrescriptionDto>,
-    val total: Int = prescriptions.size,
-    val page: Int = 1,
-    val pageSize: Int = 20
+    val prescriptions: List<PrescriptionDto>? = null,
+    val total: Int,
+    val page: Int,
+    val pageSize: Int
 )
 
 @Serializable

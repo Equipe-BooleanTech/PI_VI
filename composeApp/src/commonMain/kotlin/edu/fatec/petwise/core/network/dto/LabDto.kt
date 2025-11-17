@@ -14,10 +14,10 @@ data class LabDto(
 
 @Serializable
 data class LabListResponse(
-    val labs: List<LabDto>,
-    val total: Int = labs.size,
-    val page: Int = 1,
-    val pageSize: Int = 20
+    val labs: List<LabDto>? = null,
+    val total: Int,
+    val page: Int,
+    val pageSize: Int
 )
 
 @Serializable

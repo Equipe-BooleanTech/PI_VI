@@ -1,6 +1,7 @@
 package edu.fatec.petwise.features.auth.di
 
 import edu.fatec.petwise.core.network.di.NetworkModule
+import edu.fatec.petwise.core.storage.KeyValueStorage
 import kotlinx.datetime.Clock
 import edu.fatec.petwise.features.auth.data.datasource.RemoteAuthDataSource
 import edu.fatec.petwise.features.auth.data.datasource.RemoteAuthDataSourceImpl
@@ -20,7 +21,7 @@ import edu.fatec.petwise.features.auth.presentation.viewmodel.ResetPasswordViewM
 object AuthDependencyContainer {
 
     private val _tokenStorage: AuthTokenStorage by lazy {
-        AuthTokenStorageImpl()
+        AuthTokenStorageImpl(KeyValueStorage)
     }
 
     private val remoteDataSource: RemoteAuthDataSource by lazy {
@@ -97,16 +98,28 @@ object AuthDependencyContainer {
     }
 }
 
-class AuthTokenStorageImpl : AuthTokenStorage {
+class AuthTokenStorageImpl(private val storage: KeyValueStorage) : AuthTokenStorage {
     private var token: String? = null
     private var userId: String? = null
     private var userType: String? = null
+    private var fullName: String? = null
     private var tokenExpirationTime: Long = 0
+
+    init {
+        // Load from storage
+        token = storage.getString("access_token")
+        userId = storage.getString("user_id")
+        userType = storage.getString("user_type")
+        fullName = storage.getString("full_name")
+        tokenExpirationTime = storage.getLong("token_expiration") ?: 0
+    }
 
     override fun saveToken(token: String) {
         println("AuthTokenStorage: Saving token: ${token.take(10)}...")
         this.token = token
         this.tokenExpirationTime = currentTimeMs() + (60 * 60 * 1000)
+        storage.putString("access_token", token)
+        storage.putLong("token_expiration", tokenExpirationTime)
     }
 
     override fun getToken(): String? {
@@ -124,6 +137,7 @@ class AuthTokenStorageImpl : AuthTokenStorage {
     override fun saveUserId(userId: String) {
         println("AuthTokenStorage: Saving userId: $userId")
         this.userId = userId
+        storage.putString("user_id", userId)
     }
 
     override fun getUserId(): String? = userId
@@ -131,6 +145,7 @@ class AuthTokenStorageImpl : AuthTokenStorage {
     override fun saveUserType(userType: String) {
         println("AuthTokenStorage: Saving userType: $userType")
         this.userType = userType
+        storage.putString("user_type", userType)
     }
 
     override fun getUserType(): String? {
@@ -138,12 +153,30 @@ class AuthTokenStorageImpl : AuthTokenStorage {
         return userType
     }
 
+    override fun saveFullName(fullName: String) {
+        println("AuthTokenStorage: Saving fullName: $fullName")
+        this.fullName = fullName
+        storage.putString("full_name", fullName)
+    }
+
+    override fun getFullName(): String? {
+        println("AuthTokenStorage: Returning fullName: $fullName")
+        return fullName
+    }
+
     override fun clearTokens() {
         println("AuthTokenStorage: Clearing all tokens and user data")
         token = null
         userId = null
         userType = null
+        fullName = null
         tokenExpirationTime = 0
+        storage.remove("access_token")
+        storage.remove("user_id")
+        storage.remove("user_type")
+        storage.remove("full_name")
+        storage.remove("token_expiration")
+        storage.remove("token_set_time")
     }
     
     private fun isTokenExpired(): Boolean {
@@ -162,6 +195,9 @@ class AuthTokenStorageImpl : AuthTokenStorage {
         println("AuthTokenStorage: Saving token with ${expiresInSeconds}s expiration: ${token.take(10)}...")
         this.token = token
         this.tokenExpirationTime = currentTimeMs() + (expiresInSeconds * 1000)
+        storage.putString("access_token", token)
+        storage.putLong("token_expiration", tokenExpirationTime)
+        storage.putLong("token_set_time", currentTimeMs())
     }
 }
 

@@ -4,14 +4,15 @@ import edu.fatec.petwise.core.network.NetworkResult
 import edu.fatec.petwise.core.network.api.ExamApiService
 import edu.fatec.petwise.core.network.dto.*
 import edu.fatec.petwise.features.exams.domain.models.Exam
+import kotlinx.datetime.LocalDateTime
 
 class RemoteExamDataSourceImpl(
     private val examApiService: ExamApiService
 ) : RemoteExamDataSource {
 
     override suspend fun getAllExams(): List<Exam> {
-        return when (val result = examApiService.getAllExams()) {
-            is NetworkResult.Success -> result.data.exams.map { it.toExam() }
+        return when (val result = examApiService.getAllExams(1, 1000)) {
+            is NetworkResult.Success -> result.data.map { it.toExam() }
             is NetworkResult.Error -> {
                 println("API Error: ${result.exception.message}")
                 emptyList()
@@ -36,7 +37,7 @@ class RemoteExamDataSourceImpl(
             petId = exam.petId,
             veterinaryId = exam.veterinaryId,
             examType = exam.examType,
-            examDate = exam.examDate,
+            examDate = parseDateToIso(exam.examDate),
             results = exam.results,
             status = exam.status,
             notes = exam.notes,
@@ -52,7 +53,7 @@ class RemoteExamDataSourceImpl(
     override suspend fun updateExam(exam: Exam): Exam {
         val request = UpdateExamRequest(
             examType = exam.examType,
-            examDate = exam.examDate,
+            examDate = parseDateToIso(exam.examDate),
             results = exam.results,
             status = exam.status,
             notes = exam.notes,
@@ -101,4 +102,20 @@ class RemoteExamDataSourceImpl(
             is NetworkResult.Loading -> emptyList()
         }
     }
+}
+
+private fun parseDateToIso(date: String): String {
+    val dateParts = if (date.contains("/")) {
+        // DD/MM/YYYY format
+        date.split("/")
+    } else {
+        // YYYY-MM-DD format
+        date.split("-").reversed() // Reverse to DD/MM/YYYY
+    }
+    val day = dateParts[0].toInt()
+    val month = dateParts[1].toInt()
+    val year = dateParts[2].toInt()
+
+    val localDateTime = LocalDateTime(year, month, day, 0, 0, 0)
+    return localDateTime.toString()
 }

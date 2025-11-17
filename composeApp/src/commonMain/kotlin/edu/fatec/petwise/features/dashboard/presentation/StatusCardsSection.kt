@@ -29,6 +29,7 @@ fun StatusCardsSection(
     petCount: Int,
     consultasCount: Int,
     vacinasCount: Int,
+    medicamentosCount: Int,
     prescriptionsCount: Int,
     examsCount: Int,
     labsCount: Int,
@@ -94,38 +95,45 @@ fun StatusCardsSection(
                 color = "#FF9800"
             ),
             StatusCardData(
-                title = "Prescrições",
-                value = "0", // TODO: Add prescriptions count
+                title = "Medicações",
+                value = medicamentosCount.toString(),
                 icon = "medication",
-                route = "prescriptions",
+                route = "medications",
                 color = "#9C27B0"
             ),
             StatusCardData(
+                title = "Prescrições",
+                value = prescriptionsCount.toString(),
+                icon = "prescription",
+                route = "prescriptions",
+                color = "#607D8B"
+            ),
+            StatusCardData(
                 title = "Exames",
-                value = "0", // TODO: Add exams count
+                value = examsCount.toString(),
                 icon = "lab",
                 route = "exams",
-                color = "#607D8B"
+                color = "#4CAF50"
             )
         )
         "PETSHOP" -> listOf(
             StatusCardData(
                 title = "Ração em Estoque",
-                value = "0", // TODO: Add food count
+                value = foodCount.toString(),
                 icon = "food",
                 route = "food",
                 color = "#00b942"
             ),
             StatusCardData(
                 title = "Produtos Higiene",
-                value = "0", // TODO: Add hygiene count
+                value = hygieneCount.toString(),
                 icon = "hygiene",
                 route = "hygiene",
                 color = "#2196F3"
             ),
             StatusCardData(
                 title = "Brinquedos",
-                value = "0", // TODO: Add toys count
+                value = toysCount.toString(),
                 icon = "toys",
                 route = "toys",
                 color = "#FF9800"
@@ -134,7 +142,7 @@ fun StatusCardsSection(
         "PHARMACY" -> listOf(
             StatusCardData(
                 title = "Medicações",
-                value = vacinasCount.toString(), // TODO: Use medicationsCount when available
+                value = medicamentosCount.toString(),
                 icon = "medication",
                 route = "medications",
                 color = "#9C27B0"

@@ -20,10 +20,10 @@ data class ExamDto(
 
 @Serializable
 data class ExamListResponse(
-    val exams: List<ExamDto>,
-    val total: Int = exams.size,
-    val page: Int = 1,
-    val pageSize: Int = 20
+    val exams: List<ExamDto>? = null,
+    val total: Int,
+    val page: Int,
+    val pageSize: Int
 )
 
 @Serializable

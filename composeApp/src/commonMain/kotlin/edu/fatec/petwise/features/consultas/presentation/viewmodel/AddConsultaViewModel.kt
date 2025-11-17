@@ -2,6 +2,7 @@ package edu.fatec.petwise.features.consultas.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import edu.fatec.petwise.features.auth.di.AuthDependencyContainer
 import edu.fatec.petwise.features.consultas.domain.models.Consulta
 import edu.fatec.petwise.features.consultas.domain.models.ConsultaStatus
 import edu.fatec.petwise.features.consultas.domain.models.ConsultaType
@@ -60,11 +61,13 @@ class AddConsultaViewModel(
                     return@launch
                 }
 
+                val veterinarianName = AuthDependencyContainer.getTokenStorage().getFullName() ?: ""
+
                 val consulta = Consulta(
                     id = "",
                     petId = event.petId,
                     petName = event.petName,
-                    veterinarianName = "",
+                    veterinarianName = veterinarianName,
                     consultaType = event.consultaType,
                     consultaDate = event.consultaDate,
                     consultaTime = event.consultaTime,

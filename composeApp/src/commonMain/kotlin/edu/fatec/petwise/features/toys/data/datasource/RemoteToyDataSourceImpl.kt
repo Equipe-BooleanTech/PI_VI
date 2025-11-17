@@ -10,8 +10,8 @@ class RemoteToyDataSourceImpl(
 ) : RemoteToyDataSource {
 
     override suspend fun getAllToys(): List<Toy> {
-        return when (val result = toyApiService.getAllToys()) {
-            is NetworkResult.Success -> result.data.toys.map { it.toToy() }
+        return when (val result = toyApiService.getAllToys(1, 1000)) {
+            is NetworkResult.Success -> result.data.map { it.toToy() }
             is NetworkResult.Error -> {
                 println("API Error: ${result.exception.message}")
                 emptyList()

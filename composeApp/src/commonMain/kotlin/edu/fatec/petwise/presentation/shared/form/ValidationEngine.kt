@@ -294,7 +294,20 @@ class DefaultValidationEngine(
     }
 
     private fun validateCNPJ(cnpj: String): Boolean {
-       return cnpj.length != 14 || cnpj.all { it == cnpj[0] }
+        if (cnpj.length != 14) return false
+        if (cnpj.all { it == cnpj[0] }) return false
+
+        val weights1 = intArrayOf(5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2)
+        val sum1 = (0..11).sumOf { i -> cnpj[i].digitToInt() * weights1[i] }
+        val digit1 = ((sum1 % 11).let { if (it < 2) 0 else 11 - it })
+
+        if (digit1 != cnpj[12].digitToInt()) return false
+
+        val weights2 = intArrayOf(6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2)
+        val sum2 = (0..12).sumOf { i -> cnpj[i].digitToInt() * weights2[i] }
+        val digit2 = ((sum2 % 11).let { if (it < 2) 0 else 11 - it })
+
+        return digit2 == cnpj[13].digitToInt()
     }
 
     private fun parseDateToEpochMillis(dateString: String): Long? {

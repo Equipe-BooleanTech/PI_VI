@@ -17,12 +17,12 @@ class ProfileApiServiceImpl(
 
     override suspend fun updateProfile(request: UpdateProfileRequest): NetworkResult<UserProfileDto> {
         return networkHandler.put<UserProfileDto, UpdateProfileRequest>(
-            urlString = ApiEndpoints.PROFILE,
+            urlString = ApiEndpoints.USER_PROFILE,
             body = request
         )
     }
 
     override suspend fun getProfile(): NetworkResult<UserProfileDto> {
-        return networkHandler.get<UserProfileDto>(ApiEndpoints.PROFILE)
+        return networkHandler.get<UserProfileDto>(ApiEndpoints.USER_PROFILE)
     }
 }
