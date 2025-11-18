@@ -2,9 +2,15 @@ package edu.fatec.petwise.features.profile.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import edu.fatec.petwise.core.data.DataRefreshManager
+import edu.fatec.petwise.core.data.DataRefreshEvent
 import edu.fatec.petwise.core.network.dto.UpdateProfileRequest
+import edu.fatec.petwise.core.network.dto.UpdateProfileResponse
 import edu.fatec.petwise.core.network.dto.UserProfileDto
+import edu.fatec.petwise.features.auth.di.AuthDependencyContainer
 import edu.fatec.petwise.features.auth.domain.usecases.GetUserProfileUseCase
+import edu.fatec.petwise.features.auth.domain.usecases.LogoutUseCase
+import edu.fatec.petwise.features.profile.domain.usecases.DeleteProfileUseCase
 import edu.fatec.petwise.features.profile.domain.usecases.UpdateProfileUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,7 +26,9 @@ data class EditProfileUiState(
 
 class EditProfileViewModel(
     private val getUserProfileUseCase: GetUserProfileUseCase,
-    private val updateProfileUseCase: UpdateProfileUseCase
+    private val updateProfileUseCase: UpdateProfileUseCase,
+    private val logoutUseCase: LogoutUseCase,
+    private val deleteProfileUseCase: DeleteProfileUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(EditProfileUiState())
@@ -28,6 +36,18 @@ class EditProfileViewModel(
 
     init {
         loadUserProfile()
+        observeDataRefresh()
+    }
+
+    private fun observeDataRefresh() {
+        viewModelScope.launch {
+            DataRefreshManager.refreshEvents.collect { event ->
+                when (event) {
+                    is DataRefreshEvent.UserLoggedIn -> loadUserProfile()
+                    else -> {}
+                }
+            }
+        }
     }
 
     fun loadUserProfile() {
@@ -59,20 +79,66 @@ class EditProfileViewModel(
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null, successMessage = null)
             
             updateProfileUseCase.execute(updateRequest).fold(
-                onSuccess = { updatedProfile ->
+                onSuccess = { updateResponse ->
                     println("EditProfileViewModel: Profile updated successfully")
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        userProfile = updatedProfile,
-                        successMessage = "Perfil atualizado com sucesso!",
-                        errorMessage = null
-                    )
+                    
+                    if (updateResponse.requiresLogout) {
+                        println("EditProfileViewModel: Email changed, triggering logout")
+                        AuthDependencyContainer.provideAuthViewModel().logout()
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            successMessage = "Perfil atualizado com sucesso! Você será desconectado.",
+                            errorMessage = null
+                        )
+                    } else {
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            userProfile = UserProfileDto(
+                                id = updateResponse.user.id,
+                                email = updateResponse.user.email,
+                                fullName = updateResponse.user.fullName,
+                                userType = updateResponse.user.userType,
+                                phone = updateResponse.user.phone,
+                                profileImageUrl = null,
+                                verified = updateResponse.user.active,
+                                createdAt = updateResponse.user.createdAt,
+                                updatedAt = updateResponse.user.updatedAt
+                            ),
+                            successMessage = "Perfil atualizado com sucesso!",
+                            errorMessage = null
+                        )
+                    }
                 },
                 onFailure = { exception ->
                     println("EditProfileViewModel: Error updating profile - ${exception.message}")
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         errorMessage = exception.message ?: "Erro ao atualizar perfil"
+                    )
+                }
+            )
+        }
+    }
+
+    fun deleteProfile() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null, successMessage = null)
+            
+            deleteProfileUseCase.execute().fold(
+                onSuccess = {
+                    println("EditProfileViewModel: Profile deleted successfully")
+                    AuthDependencyContainer.provideAuthViewModel().logout()
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        successMessage = "Conta excluída com sucesso!",
+                        errorMessage = null
+                    )
+                },
+                onFailure = { exception ->
+                    println("EditProfileViewModel: Error deleting profile - ${exception.message}")
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        errorMessage = exception.message ?: "Erro ao excluir conta"
                     )
                 }
             )

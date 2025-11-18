@@ -75,8 +75,6 @@ class GetUserTypeUseCase(
             println("GetUserTypeUseCase: Buscando userType via API (sempre fresh)")
             val profileResult = authRepository.getUserProfile()
             profileResult.map { profile ->
-                val tokenStorage = edu.fatec.petwise.features.auth.di.AuthDependencyContainer.getTokenStorage()
-                tokenStorage.saveUserType(profile.userType)
                 println("GetUserTypeUseCase: UserType obtido da API: ${profile.userType}")
                 profile.userType
             }

@@ -237,8 +237,9 @@ class DefaultValidationEngine(
             ValidationType.DATE -> {
                 if (value.isBlank()) return null
                 try {
-                    value.matches(Regex("^\\d{2}/\\d{2}/\\d{4}$")) ||
-                    value.matches(Regex("^\\d{4}-\\d{2}-\\d{2}$"))
+                    // Use the same date parsing logic as parseDateToEpochMillis
+                    // This validates the date format and ensures it's a valid date
+                    parseDateToEpochMillis(value) != null
                 } catch (e: Exception) {
                     false
                 }

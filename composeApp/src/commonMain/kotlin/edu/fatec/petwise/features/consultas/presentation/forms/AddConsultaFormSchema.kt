@@ -51,7 +51,7 @@ fun createAddConsultaFormConfiguration(petOptions: List<SelectOption> = emptyLis
         FormFieldDefinition(
             id = "consultaDate",
             label = "Data da Consulta",
-            type = FormFieldType.TEXT,
+            type = FormFieldType.DATE,
             placeholder = "DD/MM/YYYY",
             validators = listOf(
                 ValidationRule(
@@ -67,7 +67,7 @@ fun createAddConsultaFormConfiguration(petOptions: List<SelectOption> = emptyLis
         FormFieldDefinition(
             id = "consultaTime",
             label = "Horário",
-            type = FormFieldType.TEXT,
+            type = FormFieldType.TIME,
             placeholder = "HH:MM",
             validators = listOf(
                 ValidationRule(
@@ -144,9 +144,9 @@ fun createEditConsultaFormConfiguration(consulta: Consulta, petOptions: List<Sel
         FormFieldDefinition(
             id = "consultaDate",
             label = "Data da Consulta",
-            type = FormFieldType.TEXT,
+            type = FormFieldType.DATE,
             placeholder = "DD/MM/YYYY",
-            default = JsonPrimitive(consulta.consultaDate),
+            default = JsonPrimitive(consulta.consultaDate.toString()),
             validators = listOf(
                 ValidationRule(
                     type = ValidationType.REQUIRED,
@@ -161,7 +161,7 @@ fun createEditConsultaFormConfiguration(consulta: Consulta, petOptions: List<Sel
         FormFieldDefinition(
             id = "consultaTime",
             label = "Horário",
-            type = FormFieldType.TEXT,
+            type = FormFieldType.TIME,
             placeholder = "HH:MM",
             default = JsonPrimitive(consulta.consultaTime),
             validators = listOf(

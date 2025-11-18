@@ -3,19 +3,17 @@ package edu.fatec.petwise.features.auth.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import edu.fatec.petwise.core.data.DataRefreshManager
+import edu.fatec.petwise.core.network.di.NetworkModule
 import edu.fatec.petwise.core.session.SessionResetManager
+import edu.fatec.petwise.features.auth.di.AuthDependencyContainer
 import edu.fatec.petwise.features.auth.domain.usecases.LoginUseCase
 import edu.fatec.petwise.features.auth.domain.usecases.LogoutUseCase
 import edu.fatec.petwise.features.auth.domain.usecases.RegisterUseCase
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.plus
 
 class AuthViewModel(
     private val loginUseCase: LoginUseCase,
@@ -24,10 +22,10 @@ class AuthViewModel(
 ) : ViewModel() {
 
     // Use SupervisorJob to prevent cascading cancellations
-    private val supervisorScope = viewModelScope + SupervisorJob()
+    private val supervisorScope = viewModelScope
 
     private val _uiState = MutableStateFlow(AuthUiState())
-    val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
+    val uiState: StateFlow<AuthUiState> = _uiState
     
     var onLogoutComplete: (() -> Unit)? = null
 
@@ -37,6 +35,14 @@ class AuthViewModel(
             
             println("AuthViewModel: Limpando dados do usuário anterior antes do login")
             DataRefreshManager.notifyAllDataUpdated()
+            
+            // Reset auth dependencies to ensure fresh instances
+            println("AuthViewModel: Resetando dependências de autenticação para login fresco")
+            AuthDependencyContainer.reset()
+            
+            // Clear existing authentication state to ensure fresh login
+            println("AuthViewModel: Resetando estado de autenticação para login fresco")
+            _uiState.value = AuthUiState()
             
             delay(100)
             
@@ -59,9 +65,13 @@ class AuthViewModel(
                         successMessage = null
                     )
 
+                    // Update NetworkModule with new token
+                    // Note: Token is already set in AuthRepositoryImpl.login()
+
                     DataRefreshManager.notifyPetsUpdated()
                     DataRefreshManager.notifyConsultasUpdated()
                     DataRefreshManager.notifyVaccinationsUpdated()
+                    DataRefreshManager.notifyUserLoggedIn()
                     println("AuthViewModel: Eventos de recarregamento emitidos após login")
                 },
                 onFailure = { error ->

@@ -99,6 +99,7 @@ class AddPetViewModel(
                     age = ageInMonths,
                     weight = weightInKg,
                     healthStatus = event.healthStatus,
+                    ownerId = "",
                     ownerName = "",
                     ownerPhone = "",
                     healthHistory = event.healthHistory,

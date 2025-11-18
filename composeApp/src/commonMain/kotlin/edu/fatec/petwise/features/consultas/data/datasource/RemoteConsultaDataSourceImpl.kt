@@ -39,7 +39,7 @@ class RemoteConsultaDataSourceImpl(
             petName = consulta.petName,
             veterinarianName = consulta.veterinarianName,
             consultaType = consulta.consultaType.name,
-            consultaDate = parseDateTimeToIso(consulta.consultaDate, consulta.consultaTime),
+            consultaDate = consulta.consultaDate.toString(),
             consultaTime = consulta.consultaTime,
             symptoms = consulta.symptoms,
             notes = consulta.notes
@@ -56,7 +56,7 @@ class RemoteConsultaDataSourceImpl(
         val request = UpdateConsultaRequest(
             veterinarianName = consulta.veterinarianName,
             consultaType = consulta.consultaType.name,
-            consultaDate = consulta.consultaDate?.let { parseDateTimeToIso(it, consulta.consultaTime ?: "") },
+            consultaDate = consulta.consultaDate.toString(),
             consultaTime = consulta.consultaTime,
             status = consulta.status.name,
             symptoms = consulta.symptoms,
@@ -64,7 +64,7 @@ class RemoteConsultaDataSourceImpl(
             treatment = consulta.treatment,
             prescriptions = consulta.prescriptions,
             notes = consulta.notes,
-            nextAppointment = consulta.nextAppointment,
+            nextAppointment = consulta.nextAppointment?.toString(),
             price = consulta.price,
             isPaid = consulta.isPaid
         )
@@ -141,22 +141,4 @@ class RemoteConsultaDataSourceImpl(
     }
 }
 
-private fun parseDateTimeToIso(date: String, time: String): String {
-    val dateParts = if (date.contains("/")) {
-        // DD/MM/YYYY format
-        date.split("/")
-    } else {
-        // YYYY-MM-DD format
-        date.split("-").reversed() // Reverse to DD/MM/YYYY
-    }
-    val day = dateParts[0].toInt()
-    val month = dateParts[1].toInt()
-    val year = dateParts[2].toInt()
 
-    val timeParts = time.split(":")
-    val hour = timeParts[0].toInt()
-    val minute = timeParts[1].toInt()
-
-    val localDateTime = LocalDateTime(year, month, day, hour, minute)
-    return localDateTime.toString()
-}

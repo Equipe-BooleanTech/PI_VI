@@ -130,3 +130,69 @@ data class UserProfileDto(
         }
     }
 }
+
+@Serializable
+data class UserResponse(
+    val id: String,
+    val fullName: String,
+    val email: String,
+    val phone: String,
+    val userType: String,
+    val cpf: String? = null,
+    val crmv: String? = null,
+    val specialization: String? = null,
+    val cnpj: String? = null,
+    val companyName: String? = null,
+    val active: Boolean,
+    val createdAt: String,
+    val updatedAt: String
+) {
+    companion object {
+        fun fromJson(json: String): UserResponse {
+            val jsonElement = Json.parseToJsonElement(json)
+            return fromJsonElement(jsonElement)
+        }
+
+        internal fun fromJsonElement(jsonElement: JsonElement): UserResponse {
+            val obj = jsonElement as JsonObject
+            
+            return UserResponse(
+                id = obj["id"]?.jsonPrimitive?.contentOrNull ?: "",
+                fullName = obj["fullName"]?.jsonPrimitive?.contentOrNull ?: "",
+                email = obj["email"]?.jsonPrimitive?.contentOrNull ?: "",
+                phone = obj["phone"]?.jsonPrimitive?.contentOrNull ?: "",
+                userType = obj["userType"]?.jsonPrimitive?.contentOrNull ?: "",
+                cpf = obj["cpf"]?.jsonPrimitive?.contentOrNull,
+                crmv = obj["crmv"]?.jsonPrimitive?.contentOrNull,
+                specialization = obj["specialization"]?.jsonPrimitive?.contentOrNull,
+                cnpj = obj["cnpj"]?.jsonPrimitive?.contentOrNull,
+                companyName = obj["companyName"]?.jsonPrimitive?.contentOrNull,
+                active = obj["active"]?.jsonPrimitive?.boolean ?: true,
+                createdAt = obj["createdAt"]?.jsonPrimitive?.contentOrNull ?: "",
+                updatedAt = obj["updatedAt"]?.jsonPrimitive?.contentOrNull ?: ""
+            )
+        }
+    }
+}
+
+@Serializable
+data class UpdateProfileResponse(
+    val user: UserResponse,
+    val requiresLogout: Boolean
+) {
+    companion object {
+        fun fromJson(json: String): UpdateProfileResponse {
+            val jsonElement = Json.parseToJsonElement(json)
+            return fromJsonElement(jsonElement)
+        }
+
+        private fun fromJsonElement(jsonElement: JsonElement): UpdateProfileResponse {
+            val obj = jsonElement as JsonObject
+            
+            return UpdateProfileResponse(
+                user = UserResponse.fromJsonElement(obj["user"] as JsonObject),
+                requiresLogout = obj["requiresLogout"]?.jsonPrimitive?.boolean ?: false
+            )
+        }
+    }
+}

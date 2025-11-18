@@ -11,6 +11,7 @@ sealed class DataRefreshEvent {
     object PetsUpdated : DataRefreshEvent()
     object ConsultasUpdated : DataRefreshEvent()
     object VaccinationsUpdated : DataRefreshEvent()
+    object UserLoggedIn : DataRefreshEvent()
     object UserLoggedOut : DataRefreshEvent()
     object AllDataUpdated : DataRefreshEvent()
     data class PetUpdated(val petId: String) : DataRefreshEvent()
@@ -49,6 +50,13 @@ object DataRefreshManager {
         val emitted = _refreshEvents.tryEmit(DataRefreshEvent.VaccinationsUpdated)
         if (!emitted) {
             println("DataRefreshManager: Falha ao emitir evento VaccinationsUpdated")
+        }
+    }
+
+    fun notifyUserLoggedIn() {
+        val emitted = _refreshEvents.tryEmit(DataRefreshEvent.UserLoggedIn)
+        if (!emitted) {
+            println("DataRefreshManager: Falha ao emitir evento UserLoggedIn")
         }
     }
 

@@ -14,6 +14,7 @@ import edu.fatec.petwise.features.consultas.domain.usecases.UpdateConsultaUseCas
 import edu.fatec.petwise.features.consultas.presentation.viewmodel.AddConsultaViewModel
 import edu.fatec.petwise.features.consultas.presentation.viewmodel.ConsultasViewModel
 import edu.fatec.petwise.features.consultas.presentation.viewmodel.UpdateConsultaViewModel
+import edu.fatec.petwise.features.auth.di.AuthDependencyContainer
 import kotlinx.coroutines.cancel
 
 object ConsultaDependencyContainer {
@@ -62,7 +63,8 @@ object ConsultaDependencyContainer {
     private fun buildAddConsultaViewModel(): AddConsultaViewModel {
         val repo = getRepository()
         return AddConsultaViewModel(
-            addConsultaUseCase = AddConsultaUseCase(repo)
+            addConsultaUseCase = AddConsultaUseCase(repo),
+            getUserProfileUseCase = AuthDependencyContainer.provideGetUserProfileUseCase()
         )
     }
 

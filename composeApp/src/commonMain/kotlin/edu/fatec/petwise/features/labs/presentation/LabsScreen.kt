@@ -18,6 +18,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import edu.fatec.petwise.features.labs.domain.models.Lab
+import edu.fatec.petwise.features.labs.presentation.components.AddLabDialog
+import edu.fatec.petwise.features.labs.presentation.components.DeleteLabConfirmationDialog
+import edu.fatec.petwise.features.labs.presentation.components.EditLabDialog
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.fromHex
 
@@ -31,9 +34,17 @@ fun LabsScreen() {
     var selectionMode by remember { mutableStateOf(false) }
     var selectedLabIds by remember { mutableStateOf(setOf<String>()) }
 
+    // Dialog states
+    var showAddLabDialog by remember { mutableStateOf(false) }
+    var showEditLabDialog by remember { mutableStateOf(false) }
+    var showDeleteLabDialog by remember { mutableStateOf(false) }
+    var selectedLab by remember { mutableStateOf<Lab?>(null) }
+    var isSubmitting by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
     val theme = PetWiseTheme.Light
 
-    val filteredLabs = remember(labs, searchQuery) {
+    var filteredLabs = remember(labs, searchQuery) {
         if (searchQuery.isEmpty()) {
             labs
         } else {
@@ -55,12 +66,15 @@ fun LabsScreen() {
             selectedCount = selectedLabIds.size,
             onSearchClick = { showSearchBar = !showSearchBar },
             onFilterClick = { /* TODO: Implement filter */ },
-            onAddLabClick = { /* TODO: Implement add */ },
+            onAddLabClick = { showAddLabDialog = true },
             onSelectionModeToggle = {
                 selectionMode = !selectionMode
                 if (!selectionMode) selectedLabIds = setOf()
             },
-            onDeleteSelected = { /* TODO: Implement delete */ }
+            onDeleteSelected = {
+                // TODO: Implement delete selected labs
+                println("Delete selected labs: $selectedLabIds")
+            }
         )
 
         if (showSearchBar) {
@@ -80,7 +94,7 @@ fun LabsScreen() {
                 }
                 filteredLabs.isEmpty() && searchQuery.isEmpty() -> {
                     EmptyContent(
-                        onAddLabClick = { /* TODO: Implement add */ }
+                        onAddLabClick = { showAddLabDialog = true }
                     )
                 }
                 filteredLabs.isEmpty() && searchQuery.isNotEmpty() -> {
@@ -100,11 +114,55 @@ fun LabsScreen() {
                                 }
                             }
                         },
-                        onEditClick = { /* TODO: Implement edit */ }
+                        onEditClick = { lab ->
+                            selectedLab = lab
+                            showEditLabDialog = true
+                        },
+                        onDeleteClick = { lab ->
+                            selectedLab = lab
+                            showDeleteLabDialog = true
+                        }
                     )
                 }
             }
         }
+
+        LabsDialogs(
+            showAddLabDialog = showAddLabDialog,
+            showEditLabDialog = showEditLabDialog,
+            showDeleteLabDialog = showDeleteLabDialog,
+            selectedLab = selectedLab,
+            isSubmitting = isSubmitting,
+            errorMessage = errorMessage,
+            onDismissAdd = {
+                showAddLabDialog = false
+                errorMessage = null
+            },
+            onDismissEdit = {
+                showEditLabDialog = false
+                selectedLab = null
+                errorMessage = null
+            },
+            onDismissDelete = {
+                showDeleteLabDialog = false
+                selectedLab = null
+            },
+            onAddSuccess = { formData ->
+                // TODO: Handle add lab success
+                println("Add lab success: $formData")
+                showAddLabDialog = false
+            },
+            onEditSuccess = { formData ->
+                // TODO: Handle edit lab success
+                println("Edit lab success: $formData")
+                showEditLabDialog = false
+                selectedLab = null
+            },
+            onDeleteSuccess = {
+                showDeleteLabDialog = false
+                selectedLab = null
+            }
+        )
     }
 }
 
@@ -437,7 +495,8 @@ private fun LabsList(
     selectionMode: Boolean,
     selectedIds: Set<String>,
     onLabClick: (Lab) -> Unit,
-    onEditClick: (Lab) -> Unit
+    onEditClick: (Lab) -> Unit,
+    onDeleteClick: (Lab) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -450,7 +509,8 @@ private fun LabsList(
                 selectionMode = selectionMode,
                 isSelected = selectedIds.contains(lab.id),
                 onClick = onLabClick,
-                onEditClick = onEditClick
+                onEditClick = onEditClick,
+                onDeleteClick = onDeleteClick
             )
         }
     }
@@ -462,7 +522,8 @@ fun LabCard(
     selectionMode: Boolean = false,
     isSelected: Boolean = false,
     onClick: (Lab) -> Unit = {},
-    onEditClick: (Lab) -> Unit = {}
+    onEditClick: (Lab) -> Unit = {},
+    onDeleteClick: (Lab) -> Unit = {}
 ) {
     val theme = PetWiseTheme.Light
     val interactionSource = remember { MutableInteractionSource() }
@@ -530,18 +591,80 @@ fun LabCard(
             }
 
             if (!selectionMode) {
-                IconButton(
-                    onClick = { onEditClick(lab) },
-                    modifier = Modifier.size(36.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Editar",
-                        tint = Color.fromHex("#009688"),
-                        modifier = Modifier.size(20.dp)
-                    )
+                Row {
+                    IconButton(
+                        onClick = { onEditClick(lab) },
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Editar",
+                            tint = Color.fromHex("#009688"),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    IconButton(
+                        onClick = { onDeleteClick(lab) },
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Excluir",
+                            tint = Color.fromHex("#F44336"),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
         }
+    }
+}
+
+// Dialogs
+@Composable
+private fun LabsDialogs(
+    showAddLabDialog: Boolean,
+    showEditLabDialog: Boolean,
+    showDeleteLabDialog: Boolean,
+    selectedLab: Lab?,
+    isSubmitting: Boolean,
+    errorMessage: String?,
+    onDismissAdd: () -> Unit,
+    onDismissEdit: () -> Unit,
+    onDismissDelete: () -> Unit,
+    onAddSuccess: (Map<String, Any>) -> Unit,
+    onEditSuccess: (Map<String, Any>) -> Unit,
+    onDeleteSuccess: () -> Unit
+) {
+    if (showAddLabDialog) {
+        AddLabDialog(
+            isLoading = isSubmitting,
+            errorMessage = errorMessage,
+            onDismiss = onDismissAdd,
+            onSuccess = onAddSuccess
+        )
+    }
+
+    if (showEditLabDialog && selectedLab != null) {
+        EditLabDialog(
+            lab = selectedLab,
+            isLoading = isSubmitting,
+            errorMessage = errorMessage,
+            onDismiss = onDismissEdit,
+            onSuccess = onEditSuccess
+        )
+    }
+
+    if (showDeleteLabDialog && selectedLab != null) {
+        DeleteLabConfirmationDialog(
+            labId = selectedLab.id,
+            labName = selectedLab.name,
+            onSuccess = {
+                // TODO: Handle delete success - refresh labs list
+                println("Lab deleted successfully")
+                onDeleteSuccess()
+            },
+            onCancel = onDismissDelete
+        )
     }
 }

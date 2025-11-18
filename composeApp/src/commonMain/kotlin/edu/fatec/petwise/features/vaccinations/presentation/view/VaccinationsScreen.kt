@@ -22,6 +22,7 @@ import edu.fatec.petwise.features.vaccinations.domain.models.Vaccination
 import edu.fatec.petwise.features.vaccinations.domain.models.VaccinationStatus
 import edu.fatec.petwise.features.vaccinations.presentation.components.AddVaccinationDialog
 import edu.fatec.petwise.features.vaccinations.presentation.components.EditVaccinationDialog
+import edu.fatec.petwise.features.vaccinations.presentation.components.DeleteVaccinationConfirmationDialog
 import edu.fatec.petwise.features.vaccinations.presentation.viewmodel.VaccinationsViewModel
 import edu.fatec.petwise.features.vaccinations.presentation.viewmodel.VaccinationsUiEvent
 import edu.fatec.petwise.features.vaccinations.presentation.viewmodel.UpdateVaccinationViewModel
@@ -53,7 +54,9 @@ fun VaccinationsScreen(
 
     var showAddDialog by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
     var vaccinationToEdit by remember { mutableStateOf<Vaccination?>(null) }
+    var vaccinationToDelete by remember { mutableStateOf<Vaccination?>(null) }
     
     LaunchedEffect(navigationKey) {
         viewModel.onEvent(VaccinationsUiEvent.LoadVaccinations)
@@ -105,6 +108,10 @@ fun VaccinationsScreen(
                             vaccinationToEdit = vaccination
                             showEditDialog = true
                         },
+                        onDeleteVaccination = { vaccination ->
+                            vaccinationToDelete = vaccination
+                            showDeleteDialog = true
+                        },
                         onScheduleVaccination = { /* TODO: Implement scheduling */ }
                     )
                 }
@@ -144,21 +151,20 @@ fun VaccinationsScreen(
         )
     }
 
-    // Edit Dialog
-    vaccinationToEdit?.let { vaccination ->
-        if (showEditDialog) {
-            EditVaccinationDialog(
-                vaccination = vaccination,
-                updateVaccinationViewModel = updateVaccinationViewModel,
-                isLoading = updateUiState.isLoading,
-                errorMessage = updateUiState.errorMessage,
-                onDismiss = {
-                    showEditDialog = false
-                    vaccinationToEdit = null
-                    updateVaccinationViewModel.onEvent(UpdateVaccinationUiEvent.ClearState)
-                },
+    // Delete Dialog
+    vaccinationToDelete?.let { vaccination ->
+        if (showDeleteDialog) {
+            DeleteVaccinationConfirmationDialog(
+                vaccinationId = vaccination.id,
+                vaccinationName = vaccination.vaccineType.getDisplayName(),
                 onSuccess = {
+                    showDeleteDialog = false
+                    vaccinationToDelete = null
                     viewModel.onEvent(VaccinationsUiEvent.LoadVaccinations)
+                },
+                onCancel = {
+                    showDeleteDialog = false
+                    vaccinationToDelete = null
                 }
             )
         }
@@ -342,6 +348,7 @@ private fun VaccinationsListContent(
     vaccinations: List<Vaccination>,
     pendingVaccinations: List<Vaccination>,
     onEditVaccination: (Vaccination) -> Unit,
+    onDeleteVaccination: (Vaccination) -> Unit,
     onScheduleVaccination: (String) -> Unit
 ) {
     LazyColumn(
@@ -369,6 +376,7 @@ private fun VaccinationsListContent(
             VaccinationCard(
                 vaccination = vaccination,
                 onEdit = { onEditVaccination(vaccination) },
+                onDelete = { onDeleteVaccination(vaccination) },
                 onSchedule = { onScheduleVaccination(vaccination.id) }
             )
         }
@@ -562,9 +570,36 @@ private fun StatCard(
 }
 
 @Composable
+private fun VaccinationInfoRow(
+    label: String,
+    value: String,
+    valueColor: Color = Color(0xFF757575)
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 3.dp)
+    ) {
+        Text(
+            text = label,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium,
+            color = Color(0xFF1F1F1F)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = value,
+            fontSize = 14.sp,
+            color = valueColor
+        )
+    }
+}
+
+@Composable
 private fun VaccinationCard(
     vaccination: Vaccination,
     onEdit: () -> Unit,
+    onDelete: () -> Unit,
     onSchedule: () -> Unit
 ) {
     Surface(
@@ -680,29 +715,28 @@ private fun VaccinationCard(
                 OutlinedButton(
                     onClick = onEdit,
                     modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = Color(0xFF666666)
-                        )
-                    ) {
-                        Text(
-                            text = "Editar",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
-                
-                Button(
-                    onClick = onSchedule,
-                    modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF28A745)
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color(0xFF666666)
                     )
                 ) {
                     Text(
-                        text = "Agendar",
+                        text = "Editar",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+                
+                OutlinedButton(
+                    onClick = onDelete,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color(0xFFDC3545)
+                    )
+                ) {
+                    Text(
+                        text = "Excluir",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -712,28 +746,4 @@ private fun VaccinationCard(
     }
 
 
-@Composable
-private fun VaccinationInfoRow(
-    label: String,
-    value: String,
-    valueColor: Color = Color(0xFF757575)
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 3.dp)
-    ) {
-        Text(
-            text = label,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium,
-            color = Color(0xFF1F1F1F)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = value,
-            fontSize = 14.sp,
-            color = valueColor
-        )
-    }
 }

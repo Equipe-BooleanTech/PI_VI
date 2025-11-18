@@ -16,6 +16,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.lifecycle.viewmodel.compose.viewModel
 import edu.fatec.petwise.features.auth.di.AuthDependencyContainer
 import edu.fatec.petwise.features.auth.presentation.viewmodel.AuthViewModel
+import edu.fatec.petwise.features.auth.presentation.viewmodel.AuthUiState
 import edu.fatec.petwise.presentation.shared.form.*
 import edu.fatec.petwise.navigation.NavigationManager
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
@@ -42,7 +43,7 @@ fun AuthScreen(
         DynamicFormViewModel(initialConfiguration = formConfiguration)
     }
 
-    val authUiState by authViewModel.uiState.collectAsState()
+    val authUiState: AuthUiState by authViewModel.uiState.collectAsState()
     val theme = PetWiseTheme.Light
 
     LaunchedEffect(selectedTab) {

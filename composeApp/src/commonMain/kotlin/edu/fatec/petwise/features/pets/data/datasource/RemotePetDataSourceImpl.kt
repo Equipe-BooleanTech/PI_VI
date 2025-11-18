@@ -17,7 +17,24 @@ class RemotePetDataSourceImpl(
         return when (val result = petApiService.getAllPets(1, 1000)) {  // Large pageSize to get all
             is NetworkResult.Success -> {
                 println("API: ${result.data.size} pets obtidos com sucesso")
-                result.data.map { it.toDomain() }
+                var pets = result.data.map { it.toDomain() }
+                
+                // Filter pets based on user type
+                try {
+                    val userProfile = getUserProfileUseCase.execute().getOrNull()
+                    if (userProfile != null && userProfile.userType == "OWNER") {
+                        println("API: Usuário é OWNER, filtrando pets por ownerId: ${userProfile.id}")
+                        pets = pets.filter { it.ownerId == userProfile.id }
+                        println("API: Após filtro OWNER: ${pets.size} pets restantes")
+                    } else {
+                        println("API: Usuário não é OWNER ou perfil não encontrado, mostrando todos os pets")
+                    }
+                } catch (e: Exception) {
+                    println("API: Erro ao obter perfil do usuário para filtro: ${e.message}")
+                    // Continue without filtering
+                }
+                
+                pets
             }
             is NetworkResult.Error -> {
                 println("API: Erro ao buscar pets - ${result.exception.message}")
@@ -81,6 +98,7 @@ class RemotePetDataSourceImpl(
             age = pet.age,
             weight = pet.weight,
             healthStatus = pet.healthStatus.name,
+            ownerId = userProfile.id,
             ownerName = userProfile.fullName,
             ownerPhone = userProfile.phone ?: "",
             healthHistory = pet.healthHistory,
@@ -134,6 +152,7 @@ class RemotePetDataSourceImpl(
             age = pet.age,
             weight = pet.weight,
             healthStatus = pet.healthStatus.name,
+            ownerId = userProfile.id,
             ownerName = userProfile.fullName,
             ownerPhone = userProfile.phone ?: "",
             healthHistory = pet.healthHistory,

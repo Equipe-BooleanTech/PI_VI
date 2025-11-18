@@ -25,14 +25,14 @@ sealed class UpdateConsultaUiEvent {
         val petName: String,
         val veterinarianName: String,
         val consultaType: ConsultaType,
-        val consultaDate: String,
+        val consultaDate: kotlinx.datetime.LocalDateTime,
         val consultaTime: String,
         val symptoms: String,
         val diagnosis: String,
         val treatment: String,
         val prescriptions: String,
         val notes: String,
-        val nextAppointment: String?,
+        val nextAppointment: kotlinx.datetime.LocalDateTime?,
         val price: String,
     ) : UpdateConsultaUiEvent()
     object ClearState : UpdateConsultaUiEvent()

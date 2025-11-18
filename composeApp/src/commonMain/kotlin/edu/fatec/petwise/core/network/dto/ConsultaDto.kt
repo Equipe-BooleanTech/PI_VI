@@ -4,6 +4,7 @@ import edu.fatec.petwise.features.consultas.domain.models.Consulta
 import edu.fatec.petwise.features.consultas.domain.models.ConsultaType
 import edu.fatec.petwise.features.consultas.domain.models.ConsultaStatus
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 
 
@@ -45,7 +46,7 @@ data class CreateConsultaRequest(
 data class UpdateConsultaRequest(
     val veterinarianName: String? = null,
     val consultaType: String? = null,
-    val consultaDate: String? = null,
+    val consultaDate: String,
     val consultaTime: String? = null,
     val status: String? = null,
     val symptoms: String? = null,
@@ -90,7 +91,7 @@ fun Consulta.toDto(): ConsultaDto = ConsultaDto(
     petName = petName,
     veterinarianName = veterinarianName,
     consultaType = consultaType.name,
-    consultaDate = parseDateTimeToIso(consultaDate, consultaTime),
+    consultaDate = consultaDate.toString(),
     consultaTime = consultaTime,
     status = status.name,
     symptoms = symptoms,
@@ -98,48 +99,12 @@ fun Consulta.toDto(): ConsultaDto = ConsultaDto(
     treatment = treatment,
     prescriptions = prescriptions,
     notes = notes,
-    nextAppointment = nextAppointment?.let { parseDateToIso(it) },
+    nextAppointment = nextAppointment?.toString(),
     price = price,
     isPaid = isPaid,
     createdAt = createdAt,
     updatedAt = updatedAt
 )
-
-private fun parseDateTimeToIso(date: String, time: String): String {
-    val dateParts = if (date.contains("/")) {
-        // DD/MM/YYYY format
-        date.split("/")
-    } else {
-        // YYYY-MM-DD format
-        date.split("-").reversed() // Reverse to DD/MM/YYYY
-    }
-    val day = dateParts[0].toInt()
-    val month = dateParts[1].toInt()
-    val year = dateParts[2].toInt()
-
-    val timeParts = time.split(":")
-    val hour = timeParts[0].toInt()
-    val minute = timeParts[1].toInt()
-
-    val localDateTime = LocalDateTime(year, month, day, hour, minute)
-    return localDateTime.toString()
-}
-
-private fun parseDateToIso(date: String): String {
-    val dateParts = if (date.contains("/")) {
-        // DD/MM/YYYY format
-        date.split("/")
-    } else {
-        // YYYY-MM-DD format
-        date.split("-").reversed() // Reverse to DD/MM/YYYY
-    }
-    val day = dateParts[0].toInt()
-    val month = dateParts[1].toInt()
-    val year = dateParts[2].toInt()
-
-    val localDateTime = LocalDateTime(year, month, day, 0, 0)
-    return localDateTime.toString()
-}
 
 private fun mapStringToConsultaType(value: String): ConsultaType {
     return try {
@@ -179,7 +144,7 @@ fun ConsultaDto.toDomain(): Consulta = Consulta(
     petName = petName,
     veterinarianName = veterinarianName,
     consultaType = mapStringToConsultaType(consultaType),
-    consultaDate = consultaDate,
+    consultaDate = LocalDateTime.parse(consultaDate),
     consultaTime = consultaTime,
     status = mapStringToConsultaStatus(status),
     symptoms = symptoms,
@@ -187,7 +152,7 @@ fun ConsultaDto.toDomain(): Consulta = Consulta(
     treatment = treatment,
     prescriptions = prescriptions,
     notes = notes,
-    nextAppointment = nextAppointment,
+    nextAppointment = nextAppointment?.let { LocalDateTime.parse(it) },
     price = price,
     isPaid = isPaid,
     createdAt = createdAt,

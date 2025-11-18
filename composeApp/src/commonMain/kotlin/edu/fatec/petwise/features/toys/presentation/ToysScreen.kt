@@ -22,6 +22,9 @@ import edu.fatec.petwise.features.toys.domain.models.Toy
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.fromHex
 import edu.fatec.petwise.presentation.shared.NumberFormatter
+import edu.fatec.petwise.features.toys.presentation.components.AddToyDialog
+import edu.fatec.petwise.features.toys.presentation.components.EditToyDialog
+import edu.fatec.petwise.features.toys.presentation.components.DeleteToyConfirmationDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,6 +35,15 @@ fun ToysScreen() {
     var searchQuery by remember { mutableStateOf("") }
     var selectionMode by remember { mutableStateOf(false) }
     var selectedToyIds by remember { mutableStateOf(setOf<String>()) }
+
+    // Dialog states
+    var showAddToyDialog by remember { mutableStateOf(false) }
+    var showEditToyDialog by remember { mutableStateOf(false) }
+    var toyToEdit by remember { mutableStateOf<Toy?>(null) }
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
+    var toyToDelete by remember { mutableStateOf<Toy?>(null) }
+    var isSubmitting by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val theme = PetWiseTheme.Light
 
@@ -57,7 +69,7 @@ fun ToysScreen() {
             selectedCount = selectedToyIds.size,
             onSearchClick = { showSearchBar = !showSearchBar },
             onFilterClick = { /* TODO: Implement filter */ },
-            onAddToyClick = { /* TODO: Implement add */ },
+            onAddToyClick = { showAddToyDialog = true },
             onSelectionModeToggle = {
                 selectionMode = !selectionMode
                 if (!selectionMode) selectedToyIds = setOf()
@@ -82,7 +94,7 @@ fun ToysScreen() {
                 }
                 filteredToys.isEmpty() && searchQuery.isEmpty() -> {
                     EmptyContent(
-                        onAddToyClick = { /* TODO: Implement add */ }
+                        onAddToyClick = { showAddToyDialog = true }
                     )
                 }
                 filteredToys.isEmpty() && searchQuery.isNotEmpty() -> {
@@ -102,11 +114,68 @@ fun ToysScreen() {
                                 }
                             }
                         },
-                        onEditClick = { /* TODO: Implement edit */ }
+                        onEditClick = { toy ->
+                            toyToEdit = toy
+                            showEditToyDialog = true
+                        }
                     )
                 }
             }
         }
+    }
+
+    // Dialogs
+    if (showAddToyDialog) {
+        AddToyDialog(
+            isLoading = isSubmitting,
+            errorMessage = errorMessage,
+            onDismiss = {
+                showAddToyDialog = false
+                errorMessage = null
+            },
+            onSuccess = { formData ->
+                // TODO: Handle add toy
+                println("Add toy form data: $formData")
+                showAddToyDialog = false
+            }
+        )
+    }
+
+    if (showEditToyDialog && toyToEdit != null) {
+        EditToyDialog(
+            toy = toyToEdit!!,
+            isLoading = isSubmitting,
+            errorMessage = errorMessage,
+            onDismiss = {
+                showEditToyDialog = false
+                toyToEdit = null
+                errorMessage = null
+            },
+            onSuccess = { formData ->
+                // TODO: Handle edit toy
+                println("Edit toy form data: $formData")
+                showEditToyDialog = false
+                toyToEdit = null
+            }
+        )
+    }
+
+    if (showDeleteConfirmation && toyToDelete != null) {
+        DeleteToyConfirmationDialog(
+            toyId = toyToDelete!!.id,
+            toyName = toyToDelete!!.name,
+            onSuccess = {
+                // Handle successful delete
+                println("Toy deleted successfully")
+                showDeleteConfirmation = false
+                toyToDelete = null
+                // TODO: Refresh the toys list
+            },
+            onCancel = {
+                showDeleteConfirmation = false
+                toyToDelete = null
+            }
+        )
     }
 }
 

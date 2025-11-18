@@ -2,7 +2,7 @@ package edu.fatec.petwise.features.consultas.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import edu.fatec.petwise.features.auth.di.AuthDependencyContainer
+import edu.fatec.petwise.features.auth.domain.usecases.GetUserProfileUseCase
 import edu.fatec.petwise.features.consultas.domain.models.Consulta
 import edu.fatec.petwise.features.consultas.domain.models.ConsultaStatus
 import edu.fatec.petwise.features.consultas.domain.models.ConsultaType
@@ -23,7 +23,7 @@ sealed class AddConsultaUiEvent {
         val petId: String,
         val petName: String,
         val consultaType: ConsultaType,
-        val consultaDate: String,
+        val consultaDate: kotlinx.datetime.LocalDateTime,
         val consultaTime: String,
         val symptoms: String,
         val notes: String,
@@ -33,7 +33,8 @@ sealed class AddConsultaUiEvent {
 }
 
 class AddConsultaViewModel(
-    private val addConsultaUseCase: AddConsultaUseCase
+    private val addConsultaUseCase: AddConsultaUseCase,
+    private val getUserProfileUseCase: GetUserProfileUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AddConsultaUiState())
@@ -61,7 +62,9 @@ class AddConsultaViewModel(
                     return@launch
                 }
 
-                val veterinarianName = AuthDependencyContainer.getTokenStorage().getFullName() ?: ""
+                // Fetch user profile to get full name
+                val userProfile = getUserProfileUseCase.execute().getOrNull()
+                val veterinarianName = userProfile?.fullName ?: ""
 
                 val consulta = Consulta(
                     id = "",

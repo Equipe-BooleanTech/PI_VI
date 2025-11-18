@@ -22,6 +22,9 @@ import edu.fatec.petwise.features.hygiene.domain.models.HygieneProduct
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.fromHex
 import edu.fatec.petwise.presentation.shared.NumberFormatter
+import edu.fatec.petwise.features.hygiene.presentation.components.AddHygieneDialog
+import edu.fatec.petwise.features.hygiene.presentation.components.EditHygieneDialog
+import edu.fatec.petwise.features.hygiene.presentation.components.DeleteHygieneConfirmationDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,6 +35,15 @@ fun HygieneScreen() {
     var searchQuery by remember { mutableStateOf("") }
     var selectionMode by remember { mutableStateOf(false) }
     var selectedProductIds by remember { mutableStateOf(setOf<String>()) }
+
+    // Dialog states
+    var showAddHygieneDialog by remember { mutableStateOf(false) }
+    var showEditHygieneDialog by remember { mutableStateOf(false) }
+    var productToEdit by remember { mutableStateOf<HygieneProduct?>(null) }
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
+    var productToDelete by remember { mutableStateOf<HygieneProduct?>(null) }
+    var isSubmitting by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val theme = PetWiseTheme.Light
 
@@ -57,7 +69,7 @@ fun HygieneScreen() {
             selectedCount = selectedProductIds.size,
             onSearchClick = { showSearchBar = !showSearchBar },
             onFilterClick = { /* TODO: Implement filter */ },
-            onAddProductClick = { /* TODO: Implement add */ },
+            onAddProductClick = { showAddHygieneDialog = true },
             onSelectionModeToggle = {
                 selectionMode = !selectionMode
                 if (!selectionMode) selectedProductIds = setOf()
@@ -82,7 +94,7 @@ fun HygieneScreen() {
                 }
                 filteredProducts.isEmpty() && searchQuery.isEmpty() -> {
                     EmptyContent(
-                        onAddProductClick = { /* TODO: Implement add */ }
+                        onAddProductClick = { showAddHygieneDialog = true }
                     )
                 }
                 filteredProducts.isEmpty() && searchQuery.isNotEmpty() -> {
@@ -102,11 +114,68 @@ fun HygieneScreen() {
                                 }
                             }
                         },
-                        onEditClick = { /* TODO: Implement edit */ }
+                        onEditClick = { product ->
+                            productToEdit = product
+                            showEditHygieneDialog = true
+                        }
                     )
                 }
             }
         }
+    }
+
+    // Dialogs
+    if (showAddHygieneDialog) {
+        AddHygieneDialog(
+            isLoading = isSubmitting,
+            errorMessage = errorMessage,
+            onDismiss = {
+                showAddHygieneDialog = false
+                errorMessage = null
+            },
+            onSuccess = { formData ->
+                // TODO: Handle add hygiene product
+                println("Add hygiene product form data: $formData")
+                showAddHygieneDialog = false
+            }
+        )
+    }
+
+    if (showEditHygieneDialog && productToEdit != null) {
+        EditHygieneDialog(
+            product = productToEdit!!,
+            isLoading = isSubmitting,
+            errorMessage = errorMessage,
+            onDismiss = {
+                showEditHygieneDialog = false
+                productToEdit = null
+                errorMessage = null
+            },
+            onSuccess = { formData ->
+                // TODO: Handle edit hygiene product
+                println("Edit hygiene product form data: $formData")
+                showEditHygieneDialog = false
+                productToEdit = null
+            }
+        )
+    }
+
+    if (showDeleteConfirmation && productToDelete != null) {
+        DeleteHygieneConfirmationDialog(
+            productId = productToDelete!!.id,
+            productName = productToDelete!!.name,
+            onSuccess = {
+                // Handle successful delete
+                println("Hygiene product deleted successfully")
+                showDeleteConfirmation = false
+                productToDelete = null
+                // TODO: Refresh the products list
+            },
+            onCancel = {
+                showDeleteConfirmation = false
+                productToDelete = null
+            }
+        )
     }
 }
 

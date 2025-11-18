@@ -1,5 +1,6 @@
 package edu.fatec.petwise.core.session
 
+import edu.fatec.petwise.features.auth.di.AuthDependencyContainer
 import edu.fatec.petwise.features.consultas.di.ConsultaDependencyContainer
 import edu.fatec.petwise.features.dashboard.di.DashboardDepedencyContainer
 import edu.fatec.petwise.features.pets.di.PetDependencyContainer
@@ -9,6 +10,7 @@ import edu.fatec.petwise.navigation.NavigationManager
 object SessionResetManager {
 
     fun resetFeatureContainers() {
+        AuthDependencyContainer.reset()
         DashboardDepedencyContainer.reset()
         PetDependencyContainer.reset()
         ConsultaDependencyContainer.reset()

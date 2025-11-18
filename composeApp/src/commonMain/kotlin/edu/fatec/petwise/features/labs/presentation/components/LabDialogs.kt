@@ -1,4 +1,4 @@
-package edu.fatec.petwise.features.medications.presentation.components
+package edu.fatec.petwise.features.labs.presentation.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,40 +16,31 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import edu.fatec.petwise.presentation.shared.form.*
-import edu.fatec.petwise.features.medications.domain.models.*
-import edu.fatec.petwise.features.medications.presentation.forms.addMedicationFormConfiguration
-import edu.fatec.petwise.features.medications.presentation.forms.createEditMedicationFormConfiguration
-import edu.fatec.petwise.features.medications.presentation.viewmodel.AddMedicationViewModel
-import edu.fatec.petwise.features.medications.presentation.viewmodel.UpdateMedicationViewModel
+import edu.fatec.petwise.features.labs.domain.models.Lab
+import edu.fatec.petwise.features.labs.presentation.forms.addLabFormConfiguration
+import edu.fatec.petwise.features.labs.presentation.forms.createEditLabFormConfiguration
+import edu.fatec.petwise.features.labs.di.LabDependencyContainer
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.fromHex
+import kotlinx.coroutines.launch
 
 @Composable
-fun AddMedicationDialog(
-    addMedicationViewModel: AddMedicationViewModel,
+fun AddLabDialog(
     isLoading: Boolean,
     errorMessage: String?,
     onDismiss: () -> Unit,
-    onSuccess: () -> Unit = {}
+    onSuccess: (Map<String, Any>) -> Unit = {}
 ) {
     val theme = PetWiseTheme.Light
-    val addMedicationState by addMedicationViewModel.uiState.collectAsState()
 
-    val formConfiguration = addMedicationFormConfiguration
+    val formConfiguration = addLabFormConfiguration
 
-    val formViewModel = viewModel<DynamicFormViewModel>(key = "add_medication_form") {
+    val formViewModel = viewModel<DynamicFormViewModel>(key = "add_lab_form") {
         DynamicFormViewModel(initialConfiguration = formConfiguration)
-    }
-    
-    LaunchedEffect(addMedicationState.isSuccess) {
-        if (addMedicationState.isSuccess) {
-            formViewModel.resetForm()
-            onSuccess()
-        }
     }
 
     Dialog(
-        onDismissRequest = { 
+        onDismissRequest = {
             if (!isLoading) {
                 onDismiss()
             }
@@ -87,7 +78,7 @@ fun AddMedicationDialog(
                             bottomStart = 0.dp,
                             bottomEnd = 0.dp
                         ),
-                        color = Color.fromHex(theme.palette.primary),
+                        color = Color.fromHex("#009688"),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
@@ -98,7 +89,7 @@ fun AddMedicationDialog(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Adicionar Medicamento",
+                                text = "Adicionar Laboratório",
                                 style = MaterialTheme.typography.titleLarge.copy(
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White
@@ -134,11 +125,11 @@ fun AddMedicationDialog(
                                     verticalArrangement = Arrangement.Center
                                 ) {
                                     CircularProgressIndicator(
-                                        color = Color.fromHex(theme.palette.primary)
+                                        color = Color.fromHex("#009688")
                                     )
                                     Spacer(modifier = Modifier.height(16.dp))
                                     Text(
-                                        text = "Adicionando medicamento...",
+                                        text = "Adicionando laboratório...",
                                         style = MaterialTheme.typography.bodyMedium.copy(
                                             color = Color.fromHex(theme.palette.textSecondary)
                                         )
@@ -150,7 +141,7 @@ fun AddMedicationDialog(
                                 viewModel = formViewModel,
                                 modifier = Modifier.fillMaxSize(),
                                 onSubmitSuccess = { formData ->
-                                    addMedicationViewModel.addMedication(formData)
+                                    onSuccess(formData)
                                 },
                                 onSubmitError = { error ->
                                     println("Erro no formulário: ${error.message}")
@@ -171,31 +162,23 @@ fun AddMedicationDialog(
 }
 
 @Composable
-fun EditMedicationDialog(
-    medication: Medication,
-    updateMedicationViewModel: UpdateMedicationViewModel,
+fun EditLabDialog(
+    lab: Lab,
     isLoading: Boolean,
     errorMessage: String?,
     onDismiss: () -> Unit,
-    onSuccess: () -> Unit = {}
+    onSuccess: (Map<String, Any>) -> Unit = {}
 ) {
     val theme = PetWiseTheme.Light
-    val updateMedicationState by updateMedicationViewModel.uiState.collectAsState()
 
-    val formConfiguration = createEditMedicationFormConfiguration(medication)
+    val formConfiguration = createEditLabFormConfiguration(lab)
 
-    val formViewModel = viewModel<DynamicFormViewModel>(key = "edit_medication_form_${medication.id}") {
+    val formViewModel = viewModel<DynamicFormViewModel>(key = "edit_lab_form_${lab.id}") {
         DynamicFormViewModel(initialConfiguration = formConfiguration)
-    }
-    
-    LaunchedEffect(updateMedicationState.isSuccess) {
-        if (updateMedicationState.isSuccess) {
-            onSuccess()
-        }
     }
 
     Dialog(
-        onDismissRequest = { 
+        onDismissRequest = {
             if (!isLoading) {
                 onDismiss()
             }
@@ -233,7 +216,7 @@ fun EditMedicationDialog(
                             bottomStart = 0.dp,
                             bottomEnd = 0.dp
                         ),
-                        color = Color.fromHex(theme.palette.primary),
+                        color = Color.fromHex("#009688"),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
@@ -244,7 +227,7 @@ fun EditMedicationDialog(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Editar Medicamento",
+                                text = "Editar Laboratório",
                                 style = MaterialTheme.typography.titleLarge.copy(
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White
@@ -280,11 +263,11 @@ fun EditMedicationDialog(
                                     verticalArrangement = Arrangement.Center
                                 ) {
                                     CircularProgressIndicator(
-                                        color = Color.fromHex(theme.palette.primary)
+                                        color = Color.fromHex("#009688")
                                     )
                                     Spacer(modifier = Modifier.height(16.dp))
                                     Text(
-                                        text = "Atualizando medicamento...",
+                                        text = "Atualizando laboratório...",
                                         style = MaterialTheme.typography.bodyMedium.copy(
                                             color = Color.fromHex(theme.palette.textSecondary)
                                         )
@@ -296,7 +279,7 @@ fun EditMedicationDialog(
                                 viewModel = formViewModel,
                                 modifier = Modifier.fillMaxSize(),
                                 onSubmitSuccess = { formData ->
-                                    updateMedicationViewModel.updateMedication(medication.id, formData)
+                                    onSuccess(formData)
                                 },
                                 onSubmitError = { error ->
                                     println("Erro no formulário: ${error.message}")
@@ -314,4 +297,97 @@ fun EditMedicationDialog(
             }
         }
     }
+}
+
+@Composable
+fun DeleteLabConfirmationDialog(
+    labId: String,
+    labName: String,
+    onSuccess: () -> Unit,
+    onCancel: () -> Unit
+) {
+    val coroutineScope = rememberCoroutineScope()
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    val theme = PetWiseTheme.Light
+
+    AlertDialog(
+        onDismissRequest = { if (!isLoading) onCancel() },
+        title = {
+            Text(
+                text = "Confirmar Exclusão",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = Color.fromHex(theme.palette.textPrimary)
+                )
+            )
+        },
+        text = {
+            Column {
+                Text(
+                    text = "Tem certeza que deseja excluir o laboratório \"$labName\"?\n\nEsta ação não pode ser desfeita.",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = Color.fromHex(theme.palette.textSecondary)
+                    )
+                )
+                if (errorMessage != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = errorMessage!!,
+                        color = Color.Red,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    coroutineScope.launch {
+                        isLoading = true
+                        errorMessage = null
+                        val result = LabDependencyContainer.deleteLabUseCase(labId)
+                        result.fold(
+                            onSuccess = {
+                                onSuccess()
+                            },
+                            onFailure = { error ->
+                                errorMessage = error.message ?: "Erro ao excluir laboratório"
+                            }
+                        )
+                        isLoading = false
+                    }
+                },
+                enabled = !isLoading,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.fromHex("#F44336"),
+                    contentColor = Color.White
+                )
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text("Excluir")
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onCancel,
+                enabled = !isLoading
+            ) {
+                Text(
+                    "Cancelar",
+                    color = Color.fromHex(theme.palette.textSecondary)
+                )
+            }
+        },
+        containerColor = Color.White,
+        shape = RoundedCornerShape(16.dp)
+    )
 }

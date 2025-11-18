@@ -1,7 +1,7 @@
 package edu.fatec.petwise.core.network
 
 object NetworkConfig {
-    const val API_URL = "http://localhost:8080/api" // Para TESTES LOCAIS APENAS!!!
+    const val API_URL = "http://localhost:8080" // Para TESTES LOCAIS APENAS!!!
     const val REQUEST_TIMEOUT = 30_000L
     const val CONNECT_TIMEOUT = 15_000L
     const val SOCKET_TIMEOUT = 30_000L
@@ -36,7 +36,7 @@ object ApiEndpoints {
     fun updateStatus(id: String) = "$CONSULTAS/$id/status"
     fun cancelConsulta(id: String) = "$CONSULTAS/$id/cancel"
 
-    const val VACCINATIONS = "/vaccines"
+    const val VACCINATIONS = "/api/vaccines"
     fun getVaccination(id: String) = "$VACCINATIONS/$id"
     fun getVaccinationsByPet(petId: String) = "/api/pets/$petId/vaccines"
     const val VACCINATIONS_UPCOMING = "$VACCINATIONS/upcoming"
@@ -44,7 +44,7 @@ object ApiEndpoints {
     fun markVaccinationAsApplied(id: String) = "$VACCINATIONS/$id/apply"
     fun scheduleVaccinationNextDose(id: String) = "$VACCINATIONS/$id/schedule-next"
 
-    const val MEDICATIONS = "/medications"
+    const val MEDICATIONS = "/api/medications"
     fun getMedication(id: String) = "$MEDICATIONS/$id"
     const val MEDICATIONS_SEARCH = "$MEDICATIONS/search"
     const val MEDICATIONS_UPCOMING = "$MEDICATIONS/upcoming"
@@ -55,30 +55,30 @@ object ApiEndpoints {
     const val USER_PROFILE = "/api/auth/profile"
     fun updateUserProfile() = "/api/auth/profile"
     
-    const val EXAMS = "/exams"
+    const val EXAMS = "/api/exams"
     fun getExam(id: String) = "$EXAMS/$id"
     fun getExamsByPet(petId: String) = "/api/pets/$petId/exams"
     fun getExamsByVeterinary(veterinaryId: String) = "/api/veterinaries/$veterinaryId/exams"
 
-    const val PRESCRIPTIONS = "/vet"
+    const val PRESCRIPTIONS = "/api/vet"
     fun getPrescription(id: String) = "$PRESCRIPTIONS/$id"
     fun getPrescriptionsByPet(petId: String) = "/api/pets/$petId/prescriptions"
     fun getPrescriptionsByVeterinary(veterinaryId: String) = "/api/veterinaries/$veterinaryId/prescriptions"
 
-    const val LABS = "/labs"
+    const val LABS = "/api/labs"
     fun getLab(id: String) = "$LABS/$id"
 
-    const val FOOD = "/foods"
+    const val FOOD = "/api/foods"
     fun getFood(id: String) = "$FOOD/$id"
     const val FOOD_SEARCH = "$FOOD/search"
     const val FOOD_BY_CATEGORY = "$FOOD/category"
 
-    const val HYGIENE = "/hygiene"
+    const val HYGIENE = "/api/hygiene"
     fun getHygieneProduct(id: String) = "$HYGIENE/$id"
     const val HYGIENE_SEARCH = "$HYGIENE/search"
     const val HYGIENE_BY_CATEGORY = "$HYGIENE/category"
 
-    const val TOYS = "/toys"
+    const val TOYS = "/api/toys"
     fun getToy(id: String) = "$TOYS/$id"
     const val TOYS_SEARCH = "$TOYS/search"
     const val TOYS_BY_CATEGORY = "$TOYS/category"

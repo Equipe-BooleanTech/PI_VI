@@ -22,17 +22,21 @@ import edu.fatec.petwise.features.consultas.domain.models.Consulta
 import edu.fatec.petwise.features.consultas.domain.models.ConsultaType
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.fromHex
+import edu.fatec.petwise.features.dashboard.domain.models.UserType
 
 @Composable
 fun ConsultaCard(
     consulta: Consulta,
     onClick: (Consulta) -> Unit,
     onEditClick: ((Consulta) -> Unit)? = null,
+    onCancelClick: ((Consulta) -> Unit)? = null,
+    onDeleteClick: ((Consulta) -> Unit)? = null,
     onStatusChange: ((String) -> Unit)? = null,
     onMarkAsPaid: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier,
     selectionMode: Boolean = false,
-    isSelected: Boolean = false
+    isSelected: Boolean = false,
+    userType: UserType = UserType.OWNER
 ) {
     val theme = PetWiseTheme.Light
     val interactionSource = remember { MutableInteractionSource() }
@@ -217,6 +221,40 @@ fun ConsultaCard(
                                     )
                                 }
                             }
+                            
+                            // Cancel button for OWNER and VETERINARY users
+                            if (userType == UserType.OWNER || userType == UserType.VETERINARY) {
+                                onCancelClick?.let { cancelClick ->
+                                    IconButton(
+                                        onClick = { cancelClick(consulta) },
+                                        modifier = Modifier.size(36.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Cancel,
+                                            contentDescription = "Cancelar consulta",
+                                            tint = Color.fromHex("#FF9800"),
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                }
+                            }
+                            
+                            // Delete button only for VETERINARY users
+                            if (userType == UserType.VETERINARY) {
+                                onDeleteClick?.let { deleteClick ->
+                                    IconButton(
+                                        onClick = { deleteClick(consulta) },
+                                        modifier = Modifier.size(36.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "Excluir consulta",
+                                            tint = Color.fromHex("#F44336"),
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                }
+                            }
                         }
                         
                         Text(
@@ -306,11 +344,6 @@ private fun getConsultaTypeIcon(type: ConsultaType) = when (type) {
     ConsultaType.OTHER -> Icons.Default.MoreHoriz
 }
 
-private fun formatDate(dateString: String): String {
-    val parts = dateString.split("-")
-    return if (parts.size == 3) {
-        "${parts[2]}/${parts[1]}"
-    } else {
-        dateString
-    }
+private fun formatDate(date: kotlinx.datetime.LocalDateTime): String {
+    return "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}"
 }

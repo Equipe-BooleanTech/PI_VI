@@ -19,6 +19,8 @@ import edu.fatec.petwise.features.vaccinations.presentation.viewmodel.AddVaccina
 import edu.fatec.petwise.features.vaccinations.presentation.viewmodel.AddVaccinationUiEvent
 import edu.fatec.petwise.presentation.shared.form.DynamicForm
 import edu.fatec.petwise.presentation.shared.form.DynamicFormViewModel
+import edu.fatec.petwise.features.pets.di.PetDependencyContainer
+import edu.fatec.petwise.presentation.shared.form.SelectOption
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.fromHex
 
@@ -32,9 +34,36 @@ fun AddVaccinationDialog(
     onSuccess: () -> Unit
 ) {
     val theme = PetWiseTheme.Light
-    val formConfiguration = remember { addVaccinationFormConfiguration }
+    
+    val petsViewModel = remember { PetDependencyContainer.providePetsViewModel() }
+    val petsState by petsViewModel.uiState.collectAsState()
+    
+    LaunchedEffect(Unit) {
+        petsViewModel.onEvent(edu.fatec.petwise.features.pets.presentation.viewmodel.PetsUiEvent.LoadPets)
+    }
+    
+    val petOptions = remember(petsState.pets) {
+        petsState.pets.map { pet ->
+            SelectOption(
+                key = pet.id,
+                value = "${pet.name} - ${pet.ownerName}"
+            )
+        }
+    }
 
-    val formViewModel = remember {
+    val formConfiguration = remember(petOptions) {
+        addVaccinationFormConfiguration.copy(
+            fields = addVaccinationFormConfiguration.fields.map { field ->
+                if (field.id == "petId") {
+                    field.copy(selectOptions = petOptions)
+                } else {
+                    field
+                }
+            }
+        )
+    }
+
+    val formViewModel = remember(formConfiguration) {
         DynamicFormViewModel(formConfiguration)
     }
 

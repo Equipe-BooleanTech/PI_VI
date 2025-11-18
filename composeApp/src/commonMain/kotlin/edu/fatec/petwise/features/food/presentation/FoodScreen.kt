@@ -22,6 +22,9 @@ import edu.fatec.petwise.features.food.domain.models.Food
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.fromHex
 import edu.fatec.petwise.presentation.shared.NumberFormatter
+import edu.fatec.petwise.features.food.presentation.components.AddFoodDialog
+import edu.fatec.petwise.features.food.presentation.components.EditFoodDialog
+import edu.fatec.petwise.features.food.presentation.components.DeleteFoodConfirmationDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,6 +35,15 @@ fun FoodScreen() {
     var searchQuery by remember { mutableStateOf("") }
     var selectionMode by remember { mutableStateOf(false) }
     var selectedFoodIds by remember { mutableStateOf(setOf<String>()) }
+
+    // Dialog states
+    var showAddFoodDialog by remember { mutableStateOf(false) }
+    var showEditFoodDialog by remember { mutableStateOf(false) }
+    var foodToEdit by remember { mutableStateOf<Food?>(null) }
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
+    var foodToDelete by remember { mutableStateOf<Food?>(null) }
+    var isSubmitting by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val theme = PetWiseTheme.Light
 
@@ -57,7 +69,7 @@ fun FoodScreen() {
             selectedCount = selectedFoodIds.size,
             onSearchClick = { showSearchBar = !showSearchBar },
             onFilterClick = { /* TODO: Implement filter */ },
-            onAddFoodClick = { /* TODO: Implement add */ },
+            onAddFoodClick = { showAddFoodDialog = true },
             onSelectionModeToggle = {
                 selectionMode = !selectionMode
                 if (!selectionMode) selectedFoodIds = setOf()
@@ -82,7 +94,7 @@ fun FoodScreen() {
                 }
                 filteredFoods.isEmpty() && searchQuery.isEmpty() -> {
                     EmptyContent(
-                        onAddFoodClick = { /* TODO: Implement add */ }
+                        onAddFoodClick = { showAddFoodDialog = true }
                     )
                 }
                 filteredFoods.isEmpty() && searchQuery.isNotEmpty() -> {
@@ -102,11 +114,68 @@ fun FoodScreen() {
                                 }
                             }
                         },
-                        onEditClick = { /* TODO: Implement edit */ }
+                        onEditClick = { food ->
+                            foodToEdit = food
+                            showEditFoodDialog = true
+                        }
                     )
                 }
             }
         }
+    }
+
+    // Dialogs
+    if (showAddFoodDialog) {
+        AddFoodDialog(
+            isLoading = isSubmitting,
+            errorMessage = errorMessage,
+            onDismiss = {
+                showAddFoodDialog = false
+                errorMessage = null
+            },
+            onSuccess = { formData ->
+                // TODO: Handle add food
+                println("Add food form data: $formData")
+                showAddFoodDialog = false
+            }
+        )
+    }
+
+    if (showEditFoodDialog && foodToEdit != null) {
+        EditFoodDialog(
+            food = foodToEdit!!,
+            isLoading = isSubmitting,
+            errorMessage = errorMessage,
+            onDismiss = {
+                showEditFoodDialog = false
+                foodToEdit = null
+                errorMessage = null
+            },
+            onSuccess = { formData ->
+                // TODO: Handle edit food
+                println("Edit food form data: $formData")
+                showEditFoodDialog = false
+                foodToEdit = null
+            }
+        )
+    }
+
+    if (showDeleteConfirmation && foodToDelete != null) {
+        DeleteFoodConfirmationDialog(
+            foodId = foodToDelete!!.id,
+            foodName = foodToDelete!!.name,
+            onSuccess = {
+                // Handle successful delete
+                println("Food deleted successfully")
+                showDeleteConfirmation = false
+                foodToDelete = null
+                // TODO: Refresh the foods list
+            },
+            onCancel = {
+                showDeleteConfirmation = false
+                foodToDelete = null
+            }
+        )
     }
 }
 

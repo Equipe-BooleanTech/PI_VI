@@ -49,8 +49,7 @@ class AddConsultaUseCase(
     }
 
     private fun validateConsulta(consulta: Consulta): Boolean {
-        return consulta.consultaDate.isNotBlank() &&
-               consulta.consultaTime.isNotBlank() &&
+        return consulta.consultaTime.isNotBlank() &&
                consulta.price >= 0
     }
 }

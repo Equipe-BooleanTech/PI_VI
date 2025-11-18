@@ -5,6 +5,7 @@ import edu.fatec.petwise.core.network.di.NetworkModule
 import edu.fatec.petwise.features.auth.di.AuthDependencyContainer
 import edu.fatec.petwise.features.profile.data.repository.ProfileRepositoryImpl
 import edu.fatec.petwise.features.profile.domain.repository.ProfileRepository
+import edu.fatec.petwise.features.profile.domain.usecases.DeleteProfileUseCase
 import edu.fatec.petwise.features.profile.domain.usecases.UpdateProfileUseCase
 import edu.fatec.petwise.features.profile.presentation.viewmodel.EditProfileViewModel
 import kotlinx.coroutines.cancel
@@ -26,7 +27,9 @@ object ProfileDependencyContainer {
         val repo = getRepository()
         return EditProfileViewModel(
             getUserProfileUseCase = AuthDependencyContainer.provideGetUserProfileUseCase(),
-            updateProfileUseCase = UpdateProfileUseCase(repo)
+            updateProfileUseCase = UpdateProfileUseCase(repo),
+            logoutUseCase = AuthDependencyContainer.provideLogoutUseCase(),
+            deleteProfileUseCase = DeleteProfileUseCase(repo)
         )
     }
 

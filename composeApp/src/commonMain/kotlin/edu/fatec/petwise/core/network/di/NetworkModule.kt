@@ -114,7 +114,9 @@ object NetworkModule {
         println("NetworkModule: Definindo token de autenticação: ${token.take(10)}...")
         tokenManager.setAccessToken(token)
         _networkRequestHandler = null
-        println("NetworkModule: Token atualizado, NetworkRequestHandler limpo para recriar com novo token")
+        _httpClient = null
+        _isClientClosed = false
+        println("NetworkModule: Token atualizado, HttpClient e NetworkRequestHandler limpos para recriar com novo token")
     }
     
     fun setAuthTokenWithExpiration(token: String, expiresInSeconds: Long) {
@@ -125,7 +127,9 @@ object NetworkModule {
             tokenManager.setAccessToken(token)
         }
         _networkRequestHandler = null
-        println("NetworkModule: Token atualizado, NetworkRequestHandler limpo para recriar com novo token")
+        _httpClient = null
+        _isClientClosed = false
+        println("NetworkModule: Token atualizado, HttpClient e NetworkRequestHandler limpos para recriar com novo token")
     }
 
     fun getAuthToken(): String? {
@@ -142,9 +146,11 @@ object NetworkModule {
         println("NetworkModule: Limpando token de autenticação")
         
         tokenManager.clearTokens()
+        _networkRequestHandler = null
+        _httpClient = null
+        _isClientClosed = false
                 
-        println("NetworkModule: Token limpo - requisições subsequentes não terão autenticação")
-        println("NetworkModule: HttpClient mantido ativo para prevenir JobCancellationException")
+        println("NetworkModule: Token, HttpClient e NetworkRequestHandler limpos - nova instância será criada")
     }
 }
 

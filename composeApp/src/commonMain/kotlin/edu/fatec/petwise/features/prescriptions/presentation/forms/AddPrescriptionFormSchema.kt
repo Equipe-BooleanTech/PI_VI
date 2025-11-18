@@ -28,18 +28,6 @@ val addPrescriptionFormConfiguration: FormConfiguration = FormConfiguration(
             )
         ),
         FormFieldDefinition(
-            id = "veterinaryId",
-            label = "Veterinário",
-            type = FormFieldType.TEXT,
-            placeholder = "ID do veterinário responsável",
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Veterinário é obrigatório"
-                )
-            )
-        ),
-        FormFieldDefinition(
             id = "medicationName",
             label = "Nome do Medicamento",
             type = FormFieldType.TEXT,
