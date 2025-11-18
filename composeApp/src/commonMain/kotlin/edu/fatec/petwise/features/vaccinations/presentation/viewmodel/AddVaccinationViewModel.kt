@@ -6,6 +6,7 @@ import edu.fatec.petwise.features.vaccinations.domain.models.Vaccination
 import edu.fatec.petwise.features.vaccinations.domain.models.VaccineType
 import edu.fatec.petwise.features.vaccinations.domain.models.VaccinationStatus
 import edu.fatec.petwise.features.vaccinations.domain.usecases.AddVaccinationUseCase
+import edu.fatec.petwise.features.auth.domain.usecases.GetUserProfileUseCase
 import edu.fatec.petwise.core.data.DataRefreshEvent
 import edu.fatec.petwise.core.data.DataRefreshManager
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,7 +23,6 @@ data class AddVaccinationUiState(
 sealed class AddVaccinationUiEvent {
     data class AddVaccination(
         val petId: String,
-        val veterinarianId: String,
         val vaccineType: VaccineType,
         val vaccinationDate: String,
         val nextDoseDate: String?,
@@ -34,7 +34,8 @@ sealed class AddVaccinationUiEvent {
 }
 
 class AddVaccinationViewModel(
-    private val addVaccinationUseCase: AddVaccinationUseCase
+    private val addVaccinationUseCase: AddVaccinationUseCase,
+    private val getUserProfileUseCase: GetUserProfileUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AddVaccinationUiState())
@@ -67,6 +68,18 @@ class AddVaccinationViewModel(
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
 
             try {
+                // Get user profile to obtain veterinarianId
+                val userProfileResult = getUserProfileUseCase.execute()
+                val veterinarianId = userProfileResult.fold(
+                    onSuccess = { profile -> profile.id },
+                    onFailure = { error ->
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            errorMessage = "Erro ao obter perfil do usuário: ${error.message}"
+                        )
+                        return@launch
+                    }
+                )
 
                 val totalDoses = event.totalDoses.toIntOrNull()
 
@@ -81,7 +94,7 @@ class AddVaccinationViewModel(
                 val vaccination = Vaccination(
                     id = "",
                     petId = event.petId,
-                    veterinarianId = event.veterinarianId,
+                    veterinarianId = veterinarianId,
                     vaccineType = event.vaccineType,
                     vaccinationDate = event.vaccinationDate,
                     nextDoseDate = event.nextDoseDate,

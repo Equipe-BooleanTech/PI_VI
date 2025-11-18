@@ -21,6 +21,10 @@ import androidx.compose.ui.unit.dp
 import edu.fatec.petwise.features.toys.domain.models.Toy
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.fromHex
+import edu.fatec.petwise.presentation.shared.NumberFormatter
+import edu.fatec.petwise.features.toys.presentation.components.AddToyDialog
+import edu.fatec.petwise.features.toys.presentation.components.EditToyDialog
+import edu.fatec.petwise.features.toys.presentation.components.DeleteToyConfirmationDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,6 +35,15 @@ fun ToysScreen() {
     var searchQuery by remember { mutableStateOf("") }
     var selectionMode by remember { mutableStateOf(false) }
     var selectedToyIds by remember { mutableStateOf(setOf<String>()) }
+
+    // Dialog states
+    var showAddToyDialog by remember { mutableStateOf(false) }
+    var showEditToyDialog by remember { mutableStateOf(false) }
+    var toyToEdit by remember { mutableStateOf<Toy?>(null) }
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
+    var toyToDelete by remember { mutableStateOf<Toy?>(null) }
+    var isSubmitting by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val theme = PetWiseTheme.Light
 
@@ -48,7 +61,7 @@ fun ToysScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.fromHex("#F7F7F7"))
+            .background(fromHex("#F7F7F7"))
     ) {
         ToysHeader(
             toyCount = filteredToys.size,
@@ -56,7 +69,7 @@ fun ToysScreen() {
             selectedCount = selectedToyIds.size,
             onSearchClick = { showSearchBar = !showSearchBar },
             onFilterClick = { /* TODO: Implement filter */ },
-            onAddToyClick = { /* TODO: Implement add */ },
+            onAddToyClick = { showAddToyDialog = true },
             onSelectionModeToggle = {
                 selectionMode = !selectionMode
                 if (!selectionMode) selectedToyIds = setOf()
@@ -81,7 +94,7 @@ fun ToysScreen() {
                 }
                 filteredToys.isEmpty() && searchQuery.isEmpty() -> {
                     EmptyContent(
-                        onAddToyClick = { /* TODO: Implement add */ }
+                        onAddToyClick = { showAddToyDialog = true }
                     )
                 }
                 filteredToys.isEmpty() && searchQuery.isNotEmpty() -> {
@@ -101,11 +114,68 @@ fun ToysScreen() {
                                 }
                             }
                         },
-                        onEditClick = { /* TODO: Implement edit */ }
+                        onEditClick = { toy ->
+                            toyToEdit = toy
+                            showEditToyDialog = true
+                        }
                     )
                 }
             }
         }
+    }
+
+    // Dialogs
+    if (showAddToyDialog) {
+        AddToyDialog(
+            isLoading = isSubmitting,
+            errorMessage = errorMessage,
+            onDismiss = {
+                showAddToyDialog = false
+                errorMessage = null
+            },
+            onSuccess = { formData ->
+                // TODO: Handle add toy
+                println("Add toy form data: $formData")
+                showAddToyDialog = false
+            }
+        )
+    }
+
+    if (showEditToyDialog && toyToEdit != null) {
+        EditToyDialog(
+            toy = toyToEdit!!,
+            isLoading = isSubmitting,
+            errorMessage = errorMessage,
+            onDismiss = {
+                showEditToyDialog = false
+                toyToEdit = null
+                errorMessage = null
+            },
+            onSuccess = { formData ->
+                // TODO: Handle edit toy
+                println("Edit toy form data: $formData")
+                showEditToyDialog = false
+                toyToEdit = null
+            }
+        )
+    }
+
+    if (showDeleteConfirmation && toyToDelete != null) {
+        DeleteToyConfirmationDialog(
+            toyId = toyToDelete!!.id,
+            toyName = toyToDelete!!.name,
+            onSuccess = {
+                // Handle successful delete
+                println("Toy deleted successfully")
+                showDeleteConfirmation = false
+                toyToDelete = null
+                // TODO: Refresh the toys list
+            },
+            onCancel = {
+                showDeleteConfirmation = false
+                toyToDelete = null
+            }
+        )
     }
 }
 
@@ -125,7 +195,7 @@ private fun ToysHeader(
             .fillMaxWidth()
             .padding(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (selectionMode) Color.fromHex("#d32f2f") else Color.fromHex("#E91E63")
+            containerColor = if (selectionMode) fromHex("#d32f2f") else fromHex("#E91E63")
         ),
         shape = RoundedCornerShape(16.dp)
     ) {
@@ -212,7 +282,7 @@ private fun ToysHeader(
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.White,
-                        contentColor = Color.fromHex("#E91E63")
+                        contentColor = fromHex("#E91E63")
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
@@ -235,7 +305,7 @@ private fun ToysHeader(
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.White,
-                        contentColor = Color.fromHex("#d32f2f")
+                        contentColor = fromHex("#d32f2f")
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
@@ -282,7 +352,7 @@ private fun SearchBar(
                 Text(
                     "Buscar por nome ou marca...",
                     style = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color.fromHex(theme.palette.textSecondary)
+                        color = fromHex(theme.palette.textSecondary)
                     )
                 )
             },
@@ -290,7 +360,7 @@ private fun SearchBar(
                 Icon(
                     imageVector = Icons.Default.Search,
                     contentDescription = "Buscar",
-                    tint = Color.fromHex("#E91E63")
+                    tint = fromHex("#E91E63")
                 )
             },
             trailingIcon = {
@@ -299,7 +369,7 @@ private fun SearchBar(
                         Icon(
                             imageVector = Icons.Default.Clear,
                             contentDescription = "Limpar",
-                            tint = Color.fromHex(theme.palette.textSecondary)
+                            tint = fromHex(theme.palette.textSecondary)
                         )
                     }
                 }
@@ -307,8 +377,8 @@ private fun SearchBar(
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color.fromHex("#E91E63"),
-                unfocusedBorderColor = Color.fromHex(theme.palette.textSecondary).copy(alpha = 0.3f),
+                focusedBorderColor = fromHex("#E91E63"),
+                unfocusedBorderColor = fromHex(theme.palette.textSecondary).copy(alpha = 0.3f),
                 focusedContainerColor = Color.White,
                 unfocusedContainerColor = Color.White
             )
@@ -323,7 +393,7 @@ private fun LoadingContent() {
         contentAlignment = Alignment.Center
     ) {
         CircularProgressIndicator(
-            color = Color.fromHex("#E91E63")
+            color = fromHex("#E91E63")
         )
     }
 }
@@ -371,7 +441,7 @@ private fun EmptyContent(
             Button(
                 onClick = onAddToyClick,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.fromHex("#E91E63")
+                    containerColor = fromHex("#E91E63")
                 )
             ) {
                 Icon(
@@ -426,7 +496,7 @@ private fun NoResultsContent(
             Spacer(modifier = Modifier.height(24.dp))
 
             TextButton(onClick = onClearSearch) {
-                Text("Limpar busca", color = Color.fromHex("#E91E63"))
+                Text("Limpar busca", color = fromHex("#E91E63"))
             }
         }
     }
@@ -480,7 +550,7 @@ fun ToyCard(
             ) { onClick(toy) },
         colors = CardDefaults.cardColors(
             containerColor = when {
-                isSelected -> Color.fromHex("#E91E63").copy(alpha = 0.1f)
+                isSelected -> fromHex("#E91E63").copy(alpha = 0.1f)
                 isHovered -> Color.White.copy(alpha = 0.9f)
                 else -> Color.White
             }
@@ -489,7 +559,7 @@ fun ToyCard(
             defaultElevation = if (isHovered) 3.dp else 1.dp
         ),
         border = if (isSelected) {
-            androidx.compose.foundation.BorderStroke(2.dp, Color.fromHex("#E91E63"))
+            androidx.compose.foundation.BorderStroke(2.dp, fromHex("#E91E63"))
         } else null,
         shape = RoundedCornerShape(12.dp)
     ) {
@@ -507,7 +577,7 @@ fun ToyCard(
                         checked = isSelected,
                         onCheckedChange = { onClick(toy) },
                         colors = CheckboxDefaults.colors(
-                            checkedColor = Color.fromHex("#E91E63")
+                            checkedColor = fromHex("#E91E63")
                         )
                     )
                 }
@@ -523,7 +593,7 @@ fun ToyCard(
                         Icon(
                             imageVector = Icons.Default.Edit,
                             contentDescription = "Editar",
-                            tint = Color.fromHex("#E91E63"),
+                            tint = fromHex("#E91E63"),
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -534,28 +604,28 @@ fun ToyCard(
                 text = toy.name,
                 style = MaterialTheme.typography.titleSmall.copy(
                     fontWeight = FontWeight.Bold,
-                    color = Color.fromHex(theme.palette.textPrimary)
+                    color = fromHex(theme.palette.textPrimary)
                 )
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = toy.brand,
                 style = MaterialTheme.typography.bodySmall.copy(
-                    color = Color.fromHex(theme.palette.textSecondary)
+                    color = fromHex(theme.palette.textSecondary)
                 )
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "R$ ${String.format("%.2f", toy.price)}",
+                text = "R$ ${NumberFormatter.formatCurrency(toy.price)}",
                 style = MaterialTheme.typography.bodyMedium.copy(
-                    color = Color.fromHex("#E91E63"),
+                    color = fromHex("#E91E63"),
                     fontWeight = FontWeight.Bold
                 )
             )
             Text(
                 text = "Estoque: ${toy.stock} ${toy.unit}",
                 style = MaterialTheme.typography.bodySmall.copy(
-                    color = Color.fromHex(theme.palette.textSecondary)
+                    color = fromHex(theme.palette.textSecondary)
                 )
             )
         }

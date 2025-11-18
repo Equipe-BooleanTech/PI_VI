@@ -20,8 +20,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import edu.fatec.petwise.features.suprimentos.domain.models.Suprimento
 import edu.fatec.petwise.features.suprimentos.domain.models.SuprimentCategory
-import java.text.NumberFormat
-import java.util.*
+import edu.fatec.petwise.presentation.shared.NumberFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -131,8 +130,7 @@ fun SuprimentoCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
-                            .format(suprimento.price),
+                        text = NumberFormatter.formatCurrency(suprimento.price.toDouble()),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold

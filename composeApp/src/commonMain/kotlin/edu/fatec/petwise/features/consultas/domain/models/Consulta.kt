@@ -8,7 +8,7 @@ data class Consulta(
     val petName: String,
     val veterinarianName: String,
     val consultaType: ConsultaType,
-    val consultaDate: String,
+    val consultaDate: kotlinx.datetime.LocalDateTime,
     val consultaTime: String,
     val status: ConsultaStatus,
     val symptoms: String = "",
@@ -16,7 +16,7 @@ data class Consulta(
     val treatment: String = "",
     val prescriptions: String = "",
     val notes: String = "",
-    val nextAppointment: String? = null,
+    val nextAppointment: kotlinx.datetime.LocalDateTime? = null,
     val price: Float = 0f,
     val isPaid: Boolean = false,
     val createdAt: String,
@@ -50,6 +50,6 @@ data class ConsultaFilterOptions(
 )
 
 data class DateRange(
-    val startDate: String,
-    val endDate: String
+    val startDate: kotlinx.datetime.LocalDateTime,
+    val endDate: kotlinx.datetime.LocalDateTime
 )

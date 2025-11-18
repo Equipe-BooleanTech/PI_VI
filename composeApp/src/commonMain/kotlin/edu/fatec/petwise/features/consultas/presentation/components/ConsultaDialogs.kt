@@ -41,7 +41,6 @@ fun AddConsultaDialog(
     val petsViewModel = remember { PetDependencyContainer.providePetsViewModel() }
     val petsState by petsViewModel.uiState.collectAsState()
     
-    // Trigger pets loading when dialog opens
     LaunchedEffect(Unit) {
         petsViewModel.onEvent(edu.fatec.petwise.features.pets.presentation.viewmodel.PetsUiEvent.LoadPets)
     }
@@ -50,7 +49,7 @@ fun AddConsultaDialog(
         petsState.pets.map { pet ->
             SelectOption(
                 key = pet.id,
-                value = pet.name
+                value = "${pet.name} - ${pet.ownerName}"
             )
         }
     }
@@ -200,8 +199,14 @@ fun AddConsultaDialog(
                                         petId = petId,
                                         petName = petName,
                                         consultaType = consultaType,
-                                        consultaDate = values["consultaDate"]?.toString() ?: "",
-                                        consultaTime = values["consultaTime"]?.toString() ?: "",
+                                        consultaDate = run {
+                                            val dateStr = values["consultaDate"] as String
+                                            val timeStr = values["consultaTime"] as String
+                                            val date = kotlinx.datetime.LocalDate.parse(dateStr)
+                                            val time = kotlinx.datetime.LocalTime.parse(timeStr)
+                                            kotlinx.datetime.LocalDateTime(date, time)
+                                        },
+                                        consultaTime = values["consultaTime"] as String,
                                         symptoms = values["symptoms"]?.toString() ?: "",
                                         notes = values["notes"]?.toString() ?: "",
                                         price = values["price"]?.toString() ?: "0",
@@ -253,7 +258,7 @@ fun EditConsultaDialog(
         petsState.pets.map { pet ->
             SelectOption(
                 key = pet.id,
-                value = pet.name
+                value = "${pet.name} - ${pet.ownerName}"
             )
         }
     }
@@ -406,14 +411,14 @@ fun EditConsultaDialog(
                                         petName = petName,
                                         veterinarianName = values["veterinarianName"]?.toString() ?: consulta.veterinarianName,
                                         consultaType = consultaType,
-                                        consultaDate = values["consultaDate"]?.toString() ?: consulta.consultaDate,
+                                        consultaDate = values["consultaDate"]?.toString()?.let { kotlinx.datetime.LocalDateTime.parse(it) } ?: consulta.consultaDate,
                                         consultaTime = values["consultaTime"]?.toString() ?: consulta.consultaTime,
                                         symptoms = values["symptoms"]?.toString() ?: consulta.symptoms,
                                         diagnosis = values["diagnosis"]?.toString() ?: consulta.diagnosis,
                                         treatment = values["treatment"]?.toString() ?: consulta.treatment,
                                         prescriptions = values["prescriptions"]?.toString() ?: consulta.prescriptions,
                                         notes = values["notes"]?.toString() ?: consulta.notes,
-                                        nextAppointment = values["nextAppointment"]?.toString(),
+                                        nextAppointment = values["nextAppointment"]?.toString()?.let { kotlinx.datetime.LocalDateTime.parse(it) },
                                         price = values["price"]?.toString() ?: consulta.price.toString(),
                                     )
                                 )

@@ -20,6 +20,9 @@ import androidx.compose.ui.unit.dp
 import edu.fatec.petwise.features.prescriptions.domain.models.Prescription
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.fromHex
+import edu.fatec.petwise.features.prescriptions.presentation.components.AddPrescriptionDialog
+import edu.fatec.petwise.features.prescriptions.presentation.components.EditPrescriptionDialog
+import edu.fatec.petwise.features.prescriptions.presentation.components.DeletePrescriptionConfirmationDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,6 +33,15 @@ fun PrescriptionsScreen() {
     var searchQuery by remember { mutableStateOf("") }
     var selectionMode by remember { mutableStateOf(false) }
     var selectedPrescriptionIds by remember { mutableStateOf(setOf<String>()) }
+
+    // Dialog states
+    var showAddPrescriptionDialog by remember { mutableStateOf(false) }
+    var showEditPrescriptionDialog by remember { mutableStateOf(false) }
+    var prescriptionToEdit by remember { mutableStateOf<Prescription?>(null) }
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
+    var prescriptionToDelete by remember { mutableStateOf<Prescription?>(null) }
+    var isSubmitting by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val theme = PetWiseTheme.Light
 
@@ -54,7 +66,7 @@ fun PrescriptionsScreen() {
             selectedCount = selectedPrescriptionIds.size,
             onSearchClick = { showSearchBar = !showSearchBar },
             onFilterClick = { /* TODO: Implement filter */ },
-            onAddPrescriptionClick = { /* TODO: Implement add */ },
+            onAddPrescriptionClick = { showAddPrescriptionDialog = true },
             onSelectionModeToggle = {
                 selectionMode = !selectionMode
                 if (!selectionMode) selectedPrescriptionIds = setOf()
@@ -79,7 +91,7 @@ fun PrescriptionsScreen() {
                 }
                 filteredPrescriptions.isEmpty() && searchQuery.isEmpty() -> {
                     EmptyContent(
-                        onAddPrescriptionClick = { /* TODO: Implement add */ }
+                        onAddPrescriptionClick = { showAddPrescriptionDialog = true }
                     )
                 }
                 filteredPrescriptions.isEmpty() && searchQuery.isNotEmpty() -> {
@@ -99,11 +111,71 @@ fun PrescriptionsScreen() {
                                 }
                             }
                         },
-                        onEditClick = { /* TODO: Implement edit */ }
+                        onEditClick = { prescription ->
+                            prescriptionToEdit = prescription
+                            showEditPrescriptionDialog = true
+                        },
+                        onDeleteClick = { prescription ->
+                            prescriptionToDelete = prescription
+                            showDeleteConfirmation = true
+                        }
                     )
                 }
             }
         }
+    }
+
+    // Dialogs
+    if (showAddPrescriptionDialog) {
+        AddPrescriptionDialog(
+            isLoading = isSubmitting,
+            errorMessage = errorMessage,
+            onDismiss = {
+                showAddPrescriptionDialog = false
+                errorMessage = null
+            },
+            onSuccess = { formData ->
+                // TODO: Handle add prescription
+                println("Add prescription form data: $formData")
+                showAddPrescriptionDialog = false
+            }
+        )
+    }
+
+    if (showEditPrescriptionDialog && prescriptionToEdit != null) {
+        EditPrescriptionDialog(
+            prescription = prescriptionToEdit!!,
+            isLoading = isSubmitting,
+            errorMessage = errorMessage,
+            onDismiss = {
+                showEditPrescriptionDialog = false
+                prescriptionToEdit = null
+                errorMessage = null
+            },
+            onSuccess = { formData ->
+                // TODO: Handle edit prescription
+                println("Edit prescription form data: $formData")
+                showEditPrescriptionDialog = false
+                prescriptionToEdit = null
+            }
+        )
+    }
+
+    if (showDeleteConfirmation && prescriptionToDelete != null) {
+        DeletePrescriptionConfirmationDialog(
+            prescriptionId = prescriptionToDelete!!.id,
+            prescriptionName = prescriptionToDelete!!.medicationName,
+            onSuccess = {
+                // TODO: Handle delete success - refresh prescriptions list
+                println("Prescription deleted successfully: ${prescriptionToDelete!!.id}")
+                showDeleteConfirmation = false
+                prescriptionToDelete = null
+            },
+            onCancel = {
+                showDeleteConfirmation = false
+                prescriptionToDelete = null
+            }
+        )
     }
 }
 
@@ -436,7 +508,8 @@ private fun PrescriptionsList(
     selectionMode: Boolean,
     selectedIds: Set<String>,
     onPrescriptionClick: (Prescription) -> Unit,
-    onEditClick: (Prescription) -> Unit
+    onEditClick: (Prescription) -> Unit,
+    onDeleteClick: (Prescription) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -449,7 +522,8 @@ private fun PrescriptionsList(
                 selectionMode = selectionMode,
                 isSelected = selectedIds.contains(prescription.id),
                 onClick = onPrescriptionClick,
-                onEditClick = onEditClick
+                onEditClick = onEditClick,
+                onDeleteClick = onDeleteClick
             )
         }
     }
@@ -461,7 +535,8 @@ fun PrescriptionCard(
     selectionMode: Boolean = false,
     isSelected: Boolean = false,
     onClick: (Prescription) -> Unit = {},
-    onEditClick: (Prescription) -> Unit = {}
+    onEditClick: (Prescription) -> Unit = {},
+    onDeleteClick: (Prescription) -> Unit = {}
 ) {
     val theme = PetWiseTheme.Light
     val interactionSource = remember { MutableInteractionSource() }
@@ -548,16 +623,29 @@ fun PrescriptionCard(
             }
 
             if (!selectionMode) {
-                IconButton(
-                    onClick = { onEditClick(prescription) },
-                    modifier = Modifier.size(36.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Editar",
-                        tint = Color.fromHex("#673AB7"),
-                        modifier = Modifier.size(20.dp)
-                    )
+                Row {
+                    IconButton(
+                        onClick = { onEditClick(prescription) },
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Editar",
+                            tint = Color.fromHex("#673AB7"),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    IconButton(
+                        onClick = { onDeleteClick(prescription) },
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Excluir",
+                            tint = Color.fromHex("#F44336"),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
         }

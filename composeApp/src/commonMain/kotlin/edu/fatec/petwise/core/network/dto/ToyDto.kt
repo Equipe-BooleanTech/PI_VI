@@ -23,10 +23,10 @@ data class ToyDto(
 
 @Serializable
 data class ToyListResponse(
-    val toys: List<ToyDto>,
-    val total: Int = toys.size,
-    val page: Int = 1,
-    val pageSize: Int = 20
+    val toys: List<ToyDto>? = null,
+    val total: Int,
+    val page: Int,
+    val pageSize: Int
 )
 
 @Serializable

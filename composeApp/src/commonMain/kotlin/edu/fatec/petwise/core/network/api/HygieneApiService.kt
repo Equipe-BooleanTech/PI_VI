@@ -5,9 +5,10 @@ import edu.fatec.petwise.core.network.NetworkRequestHandler
 import edu.fatec.petwise.core.network.NetworkResult
 import edu.fatec.petwise.core.network.dto.*
 import io.ktor.client.request.*
+import kotlinx.serialization.json.Json
 
 interface HygieneApiService {
-    suspend fun getAllHygieneProducts(page: Int = 1, pageSize: Int = 20): NetworkResult<HygieneListResponse>
+    suspend fun getAllHygieneProducts(page: Int = 1, pageSize: Int = 20): NetworkResult<List<HygieneDto>>
     suspend fun getHygieneProductById(id: String): NetworkResult<HygieneDto>
     suspend fun getHygieneProductsByCategory(category: String): NetworkResult<List<HygieneDto>>
     suspend fun searchHygieneProducts(query: String): NetworkResult<List<HygieneDto>>
@@ -20,8 +21,21 @@ class HygieneApiServiceImpl(
     private val networkHandler: NetworkRequestHandler
 ) : HygieneApiService {
 
-    override suspend fun getAllHygieneProducts(page: Int, pageSize: Int): NetworkResult<HygieneListResponse> {
-        return networkHandler.get<HygieneListResponse>(ApiEndpoints.HYGIENE) {
+    override suspend fun getAllHygieneProducts(page: Int, pageSize: Int): NetworkResult<List<HygieneDto>> {
+        return networkHandler.getWithCustomDeserializer(
+            urlString = ApiEndpoints.HYGIENE,
+            deserializer = { jsonString ->
+                val json = Json { ignoreUnknownKeys = true }
+                try {
+                    // Try to parse as direct array first
+                    json.decodeFromString<List<HygieneDto>>(jsonString)
+                } catch (e: Exception) {
+                    // Fallback to wrapped object
+                    val wrapped = json.decodeFromString<HygieneListResponse>(jsonString)
+                    wrapped.hygieneProducts ?: emptyList()
+                }
+            }
+        ) {
             parameter("page", page)
             parameter("pageSize", pageSize)
         }

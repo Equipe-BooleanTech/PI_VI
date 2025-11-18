@@ -12,6 +12,7 @@ data class Pet(
     val age: Int,
     val weight: Float,
     val healthStatus: HealthStatus,
+    val ownerId: String,
     val ownerName: String,
     val ownerPhone: String,
     val healthHistory: String = "",

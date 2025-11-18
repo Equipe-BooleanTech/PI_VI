@@ -40,30 +40,6 @@ class MedicationRepositoryImpl(
         }
     }
 
-    override fun getMedicationsByPetId(petId: String): Flow<List<Medication>> = flow {
-        try {
-            println("Repositório: Buscando medicamentos para o pet '$petId' via API")
-            val medications = remoteDataSource.getMedicationsByPetId(petId)
-            println("Repositório: ${medications.size} medicamentos encontrados para o pet")
-            emit(medications)
-        } catch (e: Exception) {
-            println("Repositório: Erro ao buscar medicamentos do pet '$petId' - ${e.message}")
-            throw e
-        }
-    }
-
-    override fun getMedicationsByVeterinarianId(veterinarianId: String): Flow<List<Medication>> = flow {
-        try {
-            println("Repositório: Buscando medicamentos para o veterinário '$veterinarianId' via API")
-            val medications = remoteDataSource.getMedicationsByVeterinarianId(veterinarianId)
-            println("Repositório: ${medications.size} medicamentos encontrados para o veterinário")
-            emit(medications)
-        } catch (e: Exception) {
-            println("Repositório: Erro ao buscar medicamentos do veterinário '$veterinarianId' - ${e.message}")
-            throw e
-        }
-    }
-
     override fun getMedicationsByPrescriptionId(prescriptionId: String): Flow<List<Medication>> = flow {
         try {
             println("Repositório: Buscando medicamentos para a prescrição '$prescriptionId' via API")
@@ -93,8 +69,6 @@ class MedicationRepositoryImpl(
             println("Repositório: Aplicando filtros nos medicamentos via API")
             val medications = remoteDataSource.getAllMedications()
             val filteredMedications = medications.filter { medication ->
-                val petMatch = options.petId?.let { medication.petId == it } ?: true
-                val veterinarianMatch = options.veterinarianId?.let { medication.veterinarianId == it } ?: true
                 val medicationNameMatch = options.medicationName?.let { 
                     medication.medicationName.contains(it, ignoreCase = true) 
                 } ?: true
@@ -105,7 +79,7 @@ class MedicationRepositoryImpl(
                     medication.sideEffects.contains(options.searchQuery, ignoreCase = true)
                 } else true
 
-                petMatch && veterinarianMatch && medicationNameMatch && searchMatch
+                medicationNameMatch && searchMatch
             }
             println("Repositório: Filtros aplicados - ${filteredMedications.size} medicamentos encontrados")
             emit(filteredMedications)

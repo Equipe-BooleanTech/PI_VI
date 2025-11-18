@@ -3,6 +3,8 @@ package edu.fatec.petwise.core.network.dto
 import edu.fatec.petwise.features.consultas.domain.models.Consulta
 import edu.fatec.petwise.features.consultas.domain.models.ConsultaType
 import edu.fatec.petwise.features.consultas.domain.models.ConsultaStatus
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 
 
@@ -44,7 +46,7 @@ data class CreateConsultaRequest(
 data class UpdateConsultaRequest(
     val veterinarianName: String? = null,
     val consultaType: String? = null,
-    val consultaDate: String? = null,
+    val consultaDate: String,
     val consultaTime: String? = null,
     val status: String? = null,
     val symptoms: String? = null,
@@ -59,8 +61,8 @@ data class UpdateConsultaRequest(
 
 @Serializable
 data class ConsultaListResponse(
-    val consultas: List<ConsultaDto>,
-    var total: Int,
+    val consultas: List<ConsultaDto>? = null,
+    val total: Int,
     val page: Int,
     val pageSize: Int
 )
@@ -89,7 +91,7 @@ fun Consulta.toDto(): ConsultaDto = ConsultaDto(
     petName = petName,
     veterinarianName = veterinarianName,
     consultaType = consultaType.name,
-    consultaDate = consultaDate,
+    consultaDate = consultaDate.toString(),
     consultaTime = consultaTime,
     status = status.name,
     symptoms = symptoms,
@@ -97,28 +99,7 @@ fun Consulta.toDto(): ConsultaDto = ConsultaDto(
     treatment = treatment,
     prescriptions = prescriptions,
     notes = notes,
-    nextAppointment = nextAppointment,
-    price = price,
-    isPaid = isPaid,
-    createdAt = createdAt,
-    updatedAt = updatedAt
-)
-
-fun ConsultaDto.toDomain(): Consulta = Consulta(
-    id = id,
-    petId = petId,
-    petName = petName,
-    veterinarianName = veterinarianName,
-    consultaType = mapStringToConsultaType(consultaType),
-    consultaDate = consultaDate,
-    consultaTime = consultaTime,
-    status = mapStringToConsultaStatus(status),
-    symptoms = symptoms,
-    diagnosis = diagnosis,
-    treatment = treatment,
-    prescriptions = prescriptions,
-    notes = notes,
-    nextAppointment = nextAppointment,
+    nextAppointment = nextAppointment?.toString(),
     price = price,
     isPaid = isPaid,
     createdAt = createdAt,
@@ -156,3 +137,24 @@ private fun mapStringToConsultaStatus(value: String): ConsultaStatus {
         }
     }
 }
+
+fun ConsultaDto.toDomain(): Consulta = Consulta(
+    id = id,
+    petId = petId,
+    petName = petName,
+    veterinarianName = veterinarianName,
+    consultaType = mapStringToConsultaType(consultaType),
+    consultaDate = LocalDateTime.parse(consultaDate),
+    consultaTime = consultaTime,
+    status = mapStringToConsultaStatus(status),
+    symptoms = symptoms,
+    diagnosis = diagnosis,
+    treatment = treatment,
+    prescriptions = prescriptions,
+    notes = notes,
+    nextAppointment = nextAppointment?.let { LocalDateTime.parse(it) },
+    price = price,
+    isPaid = isPaid,
+    createdAt = createdAt,
+    updatedAt = updatedAt
+)

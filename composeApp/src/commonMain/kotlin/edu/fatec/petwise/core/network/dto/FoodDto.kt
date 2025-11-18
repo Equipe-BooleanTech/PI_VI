@@ -22,10 +22,10 @@ data class FoodDto(
 
 @Serializable
 data class FoodListResponse(
-    val foods: List<FoodDto>,
-    val total: Int = foods.size,
-    val page: Int = 1,
-    val pageSize: Int = 20
+    val foods: List<FoodDto>? = null,
+    val total: Int,
+    val page: Int,
+    val pageSize: Int
 )
 
 @Serializable

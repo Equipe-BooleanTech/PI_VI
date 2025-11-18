@@ -10,11 +10,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.HealthAndSafety
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.LocalPharmacy
+import androidx.compose.material.icons.filled.MedicalInformation
 import androidx.compose.material.icons.filled.MedicalServices
 import androidx.compose.material.icons.filled.Medication
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Pets
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -55,8 +59,15 @@ fun BottomNavigationBar(
     LaunchedEffect(Unit) {
         getUserProfileUseCase.execute().fold(
             onSuccess = { userProfile ->
-                userType = userProfile.userType
-                println("BottomNavigationBar - userType loaded: ${userProfile.userType}")
+                // Normalize user type the same way as DashboardViewModel
+                val normalizedUserType = when (userProfile.userType.uppercase()) {
+                    "VETERINARY", "VETERINARIAN", "VET" -> "VETERINARY"
+                    "PETSHOP" -> "PETSHOP"
+                    "PHARMACY" -> "PHARMACY"
+                    else -> "OWNER"
+                }
+                userType = normalizedUserType
+                println("BottomNavigationBar - userType loaded: ${userProfile.userType}, normalized: $normalizedUserType")
             },
             onFailure = {
                 userType = "OWNER"
@@ -71,6 +82,7 @@ fun BottomNavigationBar(
         "VETERINARY" -> listOf(
             BottomNavItem("Início", Icons.Default.Home, NavigationManager.TabScreen.Home),
             BottomNavItem("Consultas", Icons.Default.MedicalServices, NavigationManager.TabScreen.Appointments),
+            BottomNavItem("Vacinas", Icons.Default.HealthAndSafety, NavigationManager.TabScreen.Vaccines),
             BottomNavItem("Mais", Icons.Default.Menu, NavigationManager.TabScreen.More)
         )
         "PHARMACY" -> listOf(
@@ -80,7 +92,7 @@ fun BottomNavigationBar(
         )
         "PETSHOP" -> listOf(
             BottomNavItem("Início", Icons.Default.Home, NavigationManager.TabScreen.Home),
-            BottomNavItem("Produtos", Icons.Default.Medication, NavigationManager.TabScreen.Food),
+            BottomNavItem("Produtos", Icons.Default.ShoppingCart, NavigationManager.TabScreen.Food),
             BottomNavItem("Mais", Icons.Default.Menu, NavigationManager.TabScreen.More)
         )
         else -> listOf( // OWNER

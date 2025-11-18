@@ -16,6 +16,7 @@ data class PetDto(
     val age: Int,
     val weight: Float,
     val healthStatus: String,
+    val ownerId: String,
     val ownerName: String,
     val ownerPhone: String,
     val healthHistory: String = "",
@@ -35,6 +36,7 @@ data class CreatePetRequest(
     val age: Int,
     val weight: Float,
     val healthStatus: String,
+    val ownerId: String,
     val ownerName: String,
     val ownerPhone: String,
     val healthHistory: String = "",
@@ -50,6 +52,7 @@ data class UpdatePetRequest(
     val age: Int,
     val weight: Float,
     val healthStatus: String,
+    val ownerId: String,
     val ownerName: String,
     val ownerPhone: String,
     val healthHistory: String = "",
@@ -58,8 +61,8 @@ data class UpdatePetRequest(
 
 @Serializable
 data class PetListResponse(
-    val pets: List<PetDto>,
-    var total: Int,
+    val pets: List<PetDto>? = null,
+    val total: Int,
     val page: Int,
     val pageSize: Int
 )
@@ -85,6 +88,7 @@ fun Pet.toDto(): PetDto = PetDto(
     age = age,
     weight = weight,
     healthStatus = healthStatus.displayName,
+    ownerId = ownerId,
     ownerName = ownerName,
     ownerPhone = ownerPhone,
     healthHistory = healthHistory,
@@ -133,6 +137,7 @@ fun PetDto.toDomain(): Pet = Pet(
     age = age,
     weight = weight,
     healthStatus = mapHealthStatusFromPortuguese(healthStatus),
+    ownerId = ownerId,
     ownerName = ownerName,
     ownerPhone = ownerPhone,
     healthHistory = healthHistory,

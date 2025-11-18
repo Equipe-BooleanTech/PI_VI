@@ -10,8 +10,6 @@ class GetLabsUseCase(
     operator fun invoke(): Flow<List<Lab>> = repository.getAllLabs()
 
     fun searchLabs(query: String): Flow<List<Lab>> = repository.searchLabs(query)
-
-    fun getLabsByVeterinaryId(veterinaryId: String): Flow<List<Lab>> = repository.getLabsByVeterinaryId(veterinaryId)
 }
 
 class GetLabByIdUseCase(
@@ -32,10 +30,7 @@ class AddLabUseCase(
     }
 
     private fun validateLab(lab: Lab): Boolean {
-        return lab.testType.isNotBlank() &&
-               lab.labName.isNotBlank() &&
-               lab.veterinaryId.isNotBlank() &&
-               lab.testDate.isNotBlank()
+        return lab.name.isNotBlank()
     }
 }
 

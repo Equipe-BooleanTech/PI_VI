@@ -1,6 +1,13 @@
 package edu.fatec.petwise.core.network.dto
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.boolean
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonPrimitive
 
 
 @Serializable
@@ -65,8 +72,7 @@ data class ForgotPasswordRequest(
 
 @Serializable
 data class ForgotPasswordResponse(
-    val message: String,
-    val resetTokenSent: Boolean
+    val message: String
 )
 
 @Serializable
@@ -92,4 +98,101 @@ data class UserProfileDto(
     val verified: Boolean = false,
     val createdAt: String,
     val updatedAt: String
-)
+) {
+    companion object {
+        fun fromJson(json: String): UserProfileDto {
+            val jsonElement = Json.parseToJsonElement(json)
+            return fromJsonElement(jsonElement)
+        }
+
+        private fun fromJsonElement(jsonElement: JsonElement): UserProfileDto {
+            val obj = jsonElement as JsonObject
+            
+            return UserProfileDto(
+                id = obj["id"]?.jsonPrimitive?.contentOrNull ?: "",
+                email = extractValue(obj["email"]) ?: "",
+                fullName = obj["fullName"]?.jsonPrimitive?.contentOrNull ?: "",
+                userType = obj["userType"]?.jsonPrimitive?.contentOrNull ?: "",
+                phone = extractValue(obj["phone"]),
+                profileImageUrl = obj["profileImageUrl"]?.jsonPrimitive?.contentOrNull,
+                verified = obj["verified"]?.jsonPrimitive?.boolean ?: false,
+                createdAt = obj["createdAt"]?.jsonPrimitive?.contentOrNull ?: "",
+                updatedAt = obj["updatedAt"]?.jsonPrimitive?.contentOrNull ?: ""
+            )
+        }
+
+        private fun extractValue(jsonElement: JsonElement?): String? {
+            return when (jsonElement) {
+                is JsonObject -> jsonElement["value"]?.jsonPrimitive?.contentOrNull
+                is JsonPrimitive -> jsonElement.contentOrNull
+                else -> null
+            }
+        }
+    }
+}
+
+@Serializable
+data class UserResponse(
+    val id: String,
+    val fullName: String,
+    val email: String,
+    val phone: String,
+    val userType: String,
+    val cpf: String? = null,
+    val crmv: String? = null,
+    val specialization: String? = null,
+    val cnpj: String? = null,
+    val companyName: String? = null,
+    val active: Boolean,
+    val createdAt: String,
+    val updatedAt: String
+) {
+    companion object {
+        fun fromJson(json: String): UserResponse {
+            val jsonElement = Json.parseToJsonElement(json)
+            return fromJsonElement(jsonElement)
+        }
+
+        internal fun fromJsonElement(jsonElement: JsonElement): UserResponse {
+            val obj = jsonElement as JsonObject
+            
+            return UserResponse(
+                id = obj["id"]?.jsonPrimitive?.contentOrNull ?: "",
+                fullName = obj["fullName"]?.jsonPrimitive?.contentOrNull ?: "",
+                email = obj["email"]?.jsonPrimitive?.contentOrNull ?: "",
+                phone = obj["phone"]?.jsonPrimitive?.contentOrNull ?: "",
+                userType = obj["userType"]?.jsonPrimitive?.contentOrNull ?: "",
+                cpf = obj["cpf"]?.jsonPrimitive?.contentOrNull,
+                crmv = obj["crmv"]?.jsonPrimitive?.contentOrNull,
+                specialization = obj["specialization"]?.jsonPrimitive?.contentOrNull,
+                cnpj = obj["cnpj"]?.jsonPrimitive?.contentOrNull,
+                companyName = obj["companyName"]?.jsonPrimitive?.contentOrNull,
+                active = obj["active"]?.jsonPrimitive?.boolean ?: true,
+                createdAt = obj["createdAt"]?.jsonPrimitive?.contentOrNull ?: "",
+                updatedAt = obj["updatedAt"]?.jsonPrimitive?.contentOrNull ?: ""
+            )
+        }
+    }
+}
+
+@Serializable
+data class UpdateProfileResponse(
+    val user: UserResponse,
+    val requiresLogout: Boolean
+) {
+    companion object {
+        fun fromJson(json: String): UpdateProfileResponse {
+            val jsonElement = Json.parseToJsonElement(json)
+            return fromJsonElement(jsonElement)
+        }
+
+        private fun fromJsonElement(jsonElement: JsonElement): UpdateProfileResponse {
+            val obj = jsonElement as JsonObject
+            
+            return UpdateProfileResponse(
+                user = UserResponse.fromJsonElement(obj["user"] as JsonObject),
+                requiresLogout = obj["requiresLogout"]?.jsonPrimitive?.boolean ?: false
+            )
+        }
+    }
+}

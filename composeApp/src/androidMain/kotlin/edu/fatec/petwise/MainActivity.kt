@@ -12,11 +12,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.graphics.toColorInt
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.ThemeDefinition
+import edu.fatec.petwise.core.storage.KeyValueStorage
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+
+        // Initialize storage with context
+        KeyValueStorage.init(this)
 
         setContent {
             PetWiseThemeWrapper(theme = PetWiseTheme.Light) {

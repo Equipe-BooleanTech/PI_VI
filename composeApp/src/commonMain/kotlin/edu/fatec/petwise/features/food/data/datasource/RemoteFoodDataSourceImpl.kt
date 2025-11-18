@@ -10,8 +10,8 @@ class RemoteFoodDataSourceImpl(
 ) : RemoteFoodDataSource {
 
     override suspend fun getAllFood(): List<Food> {
-        return when (val result = foodApiService.getAllFood()) {
-            is NetworkResult.Success -> result.data.foods.map { it.toFood() }
+        return when (val result = foodApiService.getAllFood(1, 1000)) {
+            is NetworkResult.Success -> result.data.map { it.toFood() }
             is NetworkResult.Error -> {
                 println("API Error: ${result.exception.message}")
                 emptyList()

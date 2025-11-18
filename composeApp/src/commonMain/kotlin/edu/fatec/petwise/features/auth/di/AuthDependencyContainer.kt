@@ -1,6 +1,7 @@
 package edu.fatec.petwise.features.auth.di
 
 import edu.fatec.petwise.core.network.di.NetworkModule
+import edu.fatec.petwise.core.storage.KeyValueStorage
 import kotlinx.datetime.Clock
 import edu.fatec.petwise.features.auth.data.datasource.RemoteAuthDataSource
 import edu.fatec.petwise.features.auth.data.datasource.RemoteAuthDataSourceImpl
@@ -20,72 +21,109 @@ import edu.fatec.petwise.features.auth.presentation.viewmodel.ResetPasswordViewM
 object AuthDependencyContainer {
 
     private val _tokenStorage: AuthTokenStorage by lazy {
-        AuthTokenStorageImpl()
+        AuthTokenStorageImpl(KeyValueStorage)
     }
 
     private val remoteDataSource: RemoteAuthDataSource by lazy {
         RemoteAuthDataSourceImpl(NetworkModule.authApiService)
     }
 
-    private val authRepository: AuthRepository by lazy {
-        AuthRepositoryImpl(
+    private var authRepository: AuthRepository? = null
+
+    private fun getAuthRepository(): AuthRepository {
+        val existing = authRepository
+        if (existing != null) return existing
+        val created = AuthRepositoryImpl(
             remoteDataSource = remoteDataSource,
             tokenStorage = _tokenStorage
         )
+        authRepository = created
+        return created
     }
 
-    private val loginUseCase: LoginUseCase by lazy {
-        LoginUseCase(authRepository)
+    private var loginUseCase: LoginUseCase? = null
+    private var registerUseCase: RegisterUseCase? = null
+    private var requestPasswordResetUseCase: RequestPasswordResetUseCase? = null
+    private var resetPasswordUseCase: ResetPasswordUseCase? = null
+    private var logoutUseCase: LogoutUseCase? = null
+    private var getUserProfileUseCase: GetUserProfileUseCase? = null
+    
+    private fun getLoginUseCase(): LoginUseCase {
+        val existing = loginUseCase
+        if (existing != null) return existing
+        val created = LoginUseCase(getAuthRepository())
+        loginUseCase = created
+        return created
     }
 
-    private val registerUseCase: RegisterUseCase by lazy {
-        RegisterUseCase(authRepository)
+    private fun getRegisterUseCase(): RegisterUseCase {
+        val existing = registerUseCase
+        if (existing != null) return existing
+        val created = RegisterUseCase(getAuthRepository())
+        registerUseCase = created
+        return created
     }
 
-    private val requestPasswordResetUseCase: RequestPasswordResetUseCase by lazy {
-        RequestPasswordResetUseCase(authRepository)
+    private fun getRequestPasswordResetUseCase(): RequestPasswordResetUseCase {
+        val existing = requestPasswordResetUseCase
+        if (existing != null) return existing
+        val created = RequestPasswordResetUseCase(getAuthRepository())
+        requestPasswordResetUseCase = created
+        return created
     }
 
-    private val resetPasswordUseCase: ResetPasswordUseCase by lazy {
-        ResetPasswordUseCase(authRepository)
+    private fun getResetPasswordUseCase(): ResetPasswordUseCase {
+        val existing = resetPasswordUseCase
+        if (existing != null) return existing
+        val created = ResetPasswordUseCase(getAuthRepository())
+        resetPasswordUseCase = created
+        return created
     }
 
-    private val logoutUseCase: LogoutUseCase by lazy {
-        LogoutUseCase(authRepository)
+    private fun getLogoutUseCase(): LogoutUseCase {
+        val existing = logoutUseCase
+        if (existing != null) return existing
+        val created = LogoutUseCase(getAuthRepository())
+        logoutUseCase = created
+        return created
     }
 
-    private val getUserProfileUseCase: GetUserProfileUseCase by lazy {
-        GetUserProfileUseCase(authRepository)
+    private fun getGetUserProfileUseCase(): GetUserProfileUseCase {
+        val existing = getUserProfileUseCase
+        if (existing != null) return existing
+        val created = GetUserProfileUseCase(getAuthRepository())
+        getUserProfileUseCase = created
+        return created
     }
     
     private val _authViewModel: AuthViewModel by lazy {
         AuthViewModel(
-            loginUseCase = loginUseCase,
-            registerUseCase = registerUseCase,
-            logoutUseCase = logoutUseCase
+            loginUseCase = getLoginUseCase(),
+            registerUseCase = getRegisterUseCase(),
+            logoutUseCase = getLogoutUseCase()
         )
     }
 
-    fun provideLoginUseCase(): LoginUseCase = loginUseCase
+    fun provideLoginUseCase(): LoginUseCase = getLoginUseCase()
 
-    fun provideRegisterUseCase(): RegisterUseCase = registerUseCase
+    fun provideRegisterUseCase(): RegisterUseCase = getRegisterUseCase()
 
-    fun provideRequestPasswordResetUseCase(): RequestPasswordResetUseCase = requestPasswordResetUseCase
+    fun provideRequestPasswordResetUseCase(): RequestPasswordResetUseCase = getRequestPasswordResetUseCase()
 
-    fun provideResetPasswordUseCase(): ResetPasswordUseCase = resetPasswordUseCase
+    fun provideResetPasswordUseCase(): ResetPasswordUseCase = getResetPasswordUseCase()
 
-    fun provideLogoutUseCase(): LogoutUseCase = logoutUseCase
+    fun provideLogoutUseCase(): LogoutUseCase = getLogoutUseCase()
 
-    fun provideGetUserProfileUseCase(): GetUserProfileUseCase = getUserProfileUseCase
+    fun provideGetUserProfileUseCase(): GetUserProfileUseCase = getGetUserProfileUseCase()
 
     fun provideAuthViewModel(): AuthViewModel = _authViewModel
 
     fun provideForgotPasswordViewModel(): ForgotPasswordViewModel {
-        return ForgotPasswordViewModel(requestPasswordResetUseCase = requestPasswordResetUseCase)
+        return ForgotPasswordViewModel(requestPasswordResetUseCase = getRequestPasswordResetUseCase())
     }
 
     fun provideResetPasswordViewModel(): ResetPasswordViewModel {
-        return ResetPasswordViewModel(resetPasswordUseCase = resetPasswordUseCase)
+        return ResetPasswordViewModel(resetPasswordUseCase = getResetPasswordUseCase())
     }
 
     fun getTokenStorage(): AuthTokenStorage = _tokenStorage
@@ -95,18 +133,36 @@ object AuthDependencyContainer {
             NetworkModule.setAuthToken(token)
         }
     }
+
+    fun reset() {
+        println("AuthDependencyContainer: Resetando container de autenticação")
+        authRepository = null
+        loginUseCase = null
+        registerUseCase = null
+        requestPasswordResetUseCase = null
+        resetPasswordUseCase = null
+        logoutUseCase = null
+        getUserProfileUseCase = null
+        // The ViewModel is also lazy and will be recreated
+    }
 }
 
-class AuthTokenStorageImpl : AuthTokenStorage {
+class AuthTokenStorageImpl(private val storage: KeyValueStorage) : AuthTokenStorage {
     private var token: String? = null
-    private var userId: String? = null
-    private var userType: String? = null
     private var tokenExpirationTime: Long = 0
+
+    init {
+        // Load from storage
+        token = storage.getString("access_token")
+        tokenExpirationTime = storage.getLong("token_expiration") ?: 0
+    }
 
     override fun saveToken(token: String) {
         println("AuthTokenStorage: Saving token: ${token.take(10)}...")
         this.token = token
         this.tokenExpirationTime = currentTimeMs() + (60 * 60 * 1000)
+        storage.putString("access_token", token)
+        storage.putLong("token_expiration", tokenExpirationTime)
     }
 
     override fun getToken(): String? {
@@ -121,29 +177,13 @@ class AuthTokenStorageImpl : AuthTokenStorage {
         return currentToken
     }
 
-    override fun saveUserId(userId: String) {
-        println("AuthTokenStorage: Saving userId: $userId")
-        this.userId = userId
-    }
-
-    override fun getUserId(): String? = userId
-
-    override fun saveUserType(userType: String) {
-        println("AuthTokenStorage: Saving userType: $userType")
-        this.userType = userType
-    }
-
-    override fun getUserType(): String? {
-        println("AuthTokenStorage: Returning userType: $userType")
-        return userType
-    }
-
     override fun clearTokens() {
         println("AuthTokenStorage: Clearing all tokens and user data")
         token = null
-        userId = null
-        userType = null
         tokenExpirationTime = 0
+        storage.remove("access_token")
+        storage.remove("token_expiration")
+        storage.remove("token_set_time")
     }
     
     private fun isTokenExpired(): Boolean {
@@ -162,6 +202,9 @@ class AuthTokenStorageImpl : AuthTokenStorage {
         println("AuthTokenStorage: Saving token with ${expiresInSeconds}s expiration: ${token.take(10)}...")
         this.token = token
         this.tokenExpirationTime = currentTimeMs() + (expiresInSeconds * 1000)
+        storage.putString("access_token", token)
+        storage.putLong("token_expiration", tokenExpirationTime)
+        storage.putLong("token_set_time", currentTimeMs())
     }
 }
 

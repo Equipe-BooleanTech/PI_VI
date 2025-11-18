@@ -22,7 +22,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.HealthAndSafety
 import androidx.compose.material.icons.filled.Help
 import androidx.compose.material.icons.filled.LocalPharmacy
 import androidx.compose.material.icons.filled.MedicalInformation
@@ -180,7 +179,14 @@ fun MoreMenu(
                     color = Color.LightGray
                 )
 
-                val menuItems = when (userProfile?.userType?.uppercase()) {
+                val menuItems = when (userProfile?.let { 
+                    when (it.userType.uppercase()) {
+                        "VETERINARY", "VETERINARIAN", "VET" -> "VETERINARY"
+                        "PETSHOP" -> "PETSHOP"
+                        "PHARMACY" -> "PHARMACY"
+                        else -> "OWNER"
+                    }
+                }) {
                     "VETERINARY" -> listOf(
                         MoreMenuItem(
                             title = "Consultas",
@@ -201,11 +207,6 @@ fun MoreMenu(
                             title = "Laboratório",
                             icon = Icons.Default.MedicalInformation,
                             tabScreen = NavigationManager.TabScreen.Labs
-                        ),
-                        MoreMenuItem(
-                            title = "Vacinas",
-                            icon = Icons.Default.HealthAndSafety,
-                            tabScreen = NavigationManager.TabScreen.Vaccines
                         )
                     )
                     "PHARMACY" -> listOf(

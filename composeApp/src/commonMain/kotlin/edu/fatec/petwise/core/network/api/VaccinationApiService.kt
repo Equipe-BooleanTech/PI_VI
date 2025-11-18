@@ -5,26 +5,37 @@ import edu.fatec.petwise.core.network.NetworkRequestHandler
 import edu.fatec.petwise.core.network.NetworkResult
 import edu.fatec.petwise.core.network.dto.*
 import io.ktor.client.request.*
+import kotlinx.serialization.json.Json
 
 interface VaccinationApiService {
-    suspend fun getAllVaccinations(page: Int = 1, pageSize: Int = 20): NetworkResult<VaccinationListResponse>
+    suspend fun getAllVaccinations(page: Int = 1, pageSize: Int = 20): NetworkResult<List<VaccinationDto>>
     suspend fun getVaccinationById(id: String): NetworkResult<VaccinationDto>
-    suspend fun getVaccinationsByPetId(petId: String, page: Int = 1, pageSize: Int = 20): NetworkResult<VaccinationListResponse>
+    suspend fun getVaccinationsByPetId(petId: String, page: Int = 1, pageSize: Int = 20): NetworkResult<List<VaccinationDto>>
     suspend fun createVaccination(request: CreateVaccinationRequest): NetworkResult<VaccinationDto>
     suspend fun updateVaccination(id: String, request: UpdateVaccinationRequest): NetworkResult<VaccinationDto>
     suspend fun deleteVaccination(id: String): NetworkResult<Unit>
     suspend fun markAsApplied(id: String, request: MarkAsAppliedRequest): NetworkResult<VaccinationDto>
     suspend fun scheduleNextDose(id: String, request: ScheduleNextDoseRequest): NetworkResult<VaccinationDto>
-    suspend fun getUpcomingVaccinations(days: Int = 30): NetworkResult<VaccinationListResponse>
-    suspend fun getOverdueVaccinations(): NetworkResult<VaccinationListResponse>
+    suspend fun getUpcomingVaccinations(days: Int = 30): NetworkResult<List<VaccinationDto>>
+    suspend fun getOverdueVaccinations(): NetworkResult<List<VaccinationDto>>
 }
 
 class VaccinationApiServiceImpl(
     private val networkHandler: NetworkRequestHandler
 ) : VaccinationApiService {
 
-    override suspend fun getAllVaccinations(page: Int, pageSize: Int): NetworkResult<VaccinationListResponse> {
-        return networkHandler.get<VaccinationListResponse>(ApiEndpoints.VACCINATIONS) {
+    override suspend fun getAllVaccinations(page: Int, pageSize: Int): NetworkResult<List<VaccinationDto>> {
+        return networkHandler.getWithCustomDeserializer(ApiEndpoints.VACCINATIONS, deserializer = { jsonString ->
+            val json = Json { ignoreUnknownKeys = true }
+            try {
+                // Try to parse as direct array first
+                json.decodeFromString<List<VaccinationDto>>(jsonString)
+            } catch (e: Exception) {
+                // Fallback to wrapped object
+                val wrapped = json.decodeFromString<VaccinationListResponse>(jsonString)
+                wrapped.vaccinations ?: emptyList()
+            }
+        }) {
             parameter("page", page)
             parameter("pageSize", pageSize)
         }
@@ -34,8 +45,18 @@ class VaccinationApiServiceImpl(
         return networkHandler.get<VaccinationDto>(ApiEndpoints.getVaccination(id))
     }
 
-    override suspend fun getVaccinationsByPetId(petId: String, page: Int, pageSize: Int): NetworkResult<VaccinationListResponse> {
-        return networkHandler.get<VaccinationListResponse>(ApiEndpoints.getVaccinationsByPet(petId)) {
+    override suspend fun getVaccinationsByPetId(petId: String, page: Int, pageSize: Int): NetworkResult<List<VaccinationDto>> {
+        return networkHandler.getWithCustomDeserializer(ApiEndpoints.getVaccinationsByPet(petId), deserializer = { jsonString ->
+            val json = Json { ignoreUnknownKeys = true }
+            try {
+                // Try to parse as direct array first
+                json.decodeFromString<List<VaccinationDto>>(jsonString)
+            } catch (e: Exception) {
+                // Fallback to wrapped object
+                val wrapped = json.decodeFromString<VaccinationListResponse>(jsonString)
+                wrapped.vaccinations ?: emptyList()
+            }
+        }) {
             parameter("page", page)
             parameter("pageSize", pageSize)
         }
@@ -73,13 +94,35 @@ class VaccinationApiServiceImpl(
         )
     }
 
-    override suspend fun getUpcomingVaccinations(days: Int): NetworkResult<VaccinationListResponse> {
-        return networkHandler.get<VaccinationListResponse>(ApiEndpoints.VACCINATIONS_UPCOMING) {
-            parameter("days", days)
+    override suspend fun getUpcomingVaccinations(days: Int): NetworkResult<List<VaccinationDto>> {
+        return networkHandler.getWithCustomDeserializer(ApiEndpoints.VACCINATIONS, deserializer = { jsonString ->
+            val json = Json { ignoreUnknownKeys = true }
+            try {
+                // Try to parse as direct array first
+                json.decodeFromString<List<VaccinationDto>>(jsonString)
+            } catch (e: Exception) {
+                // Fallback to wrapped object
+                val wrapped = json.decodeFromString<VaccinationListResponse>(jsonString)
+                wrapped.vaccinations ?: emptyList()
+            }
+        }) {
+            parameter("validOnly", true)
         }
     }
 
-    override suspend fun getOverdueVaccinations(): NetworkResult<VaccinationListResponse> {
-        return networkHandler.get<VaccinationListResponse>(ApiEndpoints.VACCINATIONS_OVERDUE)
+    override suspend fun getOverdueVaccinations(): NetworkResult<List<VaccinationDto>> {
+        return networkHandler.getWithCustomDeserializer(ApiEndpoints.VACCINATIONS, deserializer = { jsonString ->
+            val json = Json { ignoreUnknownKeys = true }
+            try {
+                // Try to parse as direct array first
+                json.decodeFromString<List<VaccinationDto>>(jsonString)
+            } catch (e: Exception) {
+                // Fallback to wrapped object
+                val wrapped = json.decodeFromString<VaccinationListResponse>(jsonString)
+                wrapped.vaccinations ?: emptyList()
+            }
+        }) {
+            parameter("validOnly", false)
+        }
     }
 }

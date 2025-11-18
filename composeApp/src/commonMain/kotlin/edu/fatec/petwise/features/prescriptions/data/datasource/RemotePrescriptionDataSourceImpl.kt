@@ -10,8 +10,8 @@ class RemotePrescriptionDataSourceImpl(
 ) : RemotePrescriptionDataSource {
 
     override suspend fun getAllPrescriptions(): List<Prescription> {
-        return when (val result = prescriptionApiService.getAllPrescriptions()) {
-            is NetworkResult.Success -> result.data.prescriptions.map { it.toPrescription() }
+        return when (val result = prescriptionApiService.getAllPrescriptions(1, 1000)) {
+            is NetworkResult.Success -> result.data.map { it.toPrescription() }
             is NetworkResult.Error -> {
                 println("API Error: ${result.exception.message}")
                 emptyList()

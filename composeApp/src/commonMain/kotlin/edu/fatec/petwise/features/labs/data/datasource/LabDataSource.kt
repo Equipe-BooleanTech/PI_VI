@@ -9,5 +9,4 @@ interface RemoteLabDataSource {
     suspend fun updateLab(lab: Lab): Lab
     suspend fun deleteLab(id: String)
     suspend fun searchLabs(query: String): List<Lab>
-    suspend fun getLabsByVeterinaryId(veterinaryId: String): List<Lab>
 }

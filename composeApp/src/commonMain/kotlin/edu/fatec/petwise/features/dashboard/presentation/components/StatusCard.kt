@@ -47,7 +47,8 @@ import edu.fatec.petwise.presentation.theme.fromHex
 fun StatusCard(
     statusCardData: StatusCardData,
     onClick: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isClickable: Boolean = true
 ) {
     val theme = PetWiseTheme.Light
 
@@ -75,10 +76,16 @@ fun StatusCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null
-            ) { onClick(statusCardData.route) },
+            .then(
+                if (isClickable) {
+                    Modifier.clickable(
+                        interactionSource = interactionSource,
+                        indication = null
+                    ) { onClick(statusCardData.route) }
+                } else {
+                    Modifier
+                }
+            ),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (isHovered) Color.White.copy(alpha = 0.9f) else Color.White

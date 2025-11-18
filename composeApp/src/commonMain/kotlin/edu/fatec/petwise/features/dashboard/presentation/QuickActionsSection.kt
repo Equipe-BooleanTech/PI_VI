@@ -45,25 +45,11 @@ fun QuickActionsSection(
                 background = "#00b942"
             ),
             QuickActionData(
-                id = "schedule_appointment",
-                title = "Agendar Consulta",
-                icon = Icons.Default.CalendarMonth,
-                route = "appointments",
+                id = "manage_pets",
+                title = "Gerenciar Pets",
+                icon = Icons.Default.Pets,
+                route = "pets",
                 background = "#2196F3"
-            ),
-            QuickActionData(
-                id = "add_medication",
-                title = "Nova Medicação",
-                icon = Icons.Default.Medication,
-                route = "medications",
-                background = "#9C27B0"
-            ),
-            QuickActionData(
-                id = "add_vaccine",
-                title = "Registrar Vacina",
-                icon = Icons.Default.Vaccines,
-                route = "vaccines",
-                background = "#FF9800"
             )
         )
         UserType.VETERINARY -> listOf(
@@ -75,55 +61,32 @@ fun QuickActionsSection(
                 background = "#2196F3"
             ),
             QuickActionData(
-                id = "add_patient",
-                title = "Adicionar Paciente",
-                icon = Icons.Default.Pets,
-                route = "pets",
-                background = "#00b942"
-            ),
-            QuickActionData(
-                id = "prescribe_medication",
-                title = "Prescrever Medicação",
-                icon = Icons.Default.Medication,
-                route = "medications",
-                background = "#9C27B0"
-            ),
-            QuickActionData(
                 id = "apply_vaccine",
                 title = "Aplicar Vacina",
                 icon = Icons.Default.Vaccines,
                 route = "vaccines",
                 background = "#FF9800"
-            )
-        )
-        UserType.PETSHOP -> listOf(
-            QuickActionData(
-                id = "manage_pets",
-                title = "Gerenciar Pets",
-                icon = Icons.Default.Pets,
-                route = "pets",
-                background = "#00b942"
             ),
             QuickActionData(
-                id = "manage_appointments",
-                title = "Gerenciar Consultas",
-                icon = Icons.Default.CalendarMonth,
-                route = "appointments",
-                background = "#2196F3"
-            ),
-            QuickActionData(
-                id = "manage_vaccines",
-                title = "Gerenciar Vacinas",
-                icon = Icons.Default.Vaccines,
-                route = "vaccines",
-                background = "#FF9800"
-            ),
-            QuickActionData(
-                id = "manage_medications",
-                title = "Gerenciar Medicações",
+                id = "new_prescription",
+                title = "Nova Prescrição",
                 icon = Icons.Default.Medication,
-                route = "medications",
+                route = "prescriptions",
                 background = "#9C27B0"
+            ),
+            QuickActionData(
+                id = "new_exam",
+                title = "Novo Exame",
+                icon = Icons.Default.Add,
+                route = "exams",
+                background = "#607D8B"
+            ),
+            QuickActionData(
+                id = "new_lab",
+                title = "Novo Laboratório",
+                icon = Icons.Default.FlashOn,
+                route = "labs",
+                background = "#FF5722"
             )
         )
         UserType.PHARMACY -> listOf(
@@ -138,22 +101,31 @@ fun QuickActionsSection(
                 id = "view_prescriptions",
                 title = "Ver Prescrições",
                 icon = Icons.Default.CalendarMonth,
-                route = "appointments",
+                route = "prescriptions",
+                background = "#2196F3"
+            )
+        )
+        UserType.PETSHOP -> listOf(
+            QuickActionData(
+                id = "manage_food",
+                title = "Gerenciar Ração",
+                icon = Icons.Default.Add,
+                route = "food",
+                background = "#00b942"
+            ),
+            QuickActionData(
+                id = "manage_hygiene",
+                title = "Gerenciar Higiene",
+                icon = Icons.Default.FlashOn,
+                route = "hygiene",
                 background = "#2196F3"
             ),
             QuickActionData(
-                id = "inventory",
-                title = "Estoque",
-                icon = Icons.Default.Add,
-                route = "medications",
-                background = "#607D8B"
-            ),
-            QuickActionData(
-                id = "orders",
-                title = "Pedidos",
-                icon = Icons.Default.CalendarMonth,
-                route = "medications",
-                background = "#FF5722"
+                id = "manage_toys",
+                title = "Gerenciar Brinquedos",
+                icon = Icons.Default.Pets,
+                route = "toys",
+                background = "#FF9800"
             )
         )
     }

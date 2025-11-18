@@ -75,8 +75,29 @@ fun DashboardScreen(
     val dashboardUiState by dashboardViewModel.uiState.collectAsState()
     
     var selectedPetIdForSuprimentos by remember { mutableStateOf<String?>(null) }
+    var currentUserType by remember { mutableStateOf(userType) }
+    var currentUserName by remember { mutableStateOf(userName) }
 
     LaunchedEffect(Unit) {
+        println("DashboardScreen: Fetching user profile directly")
+        getUserProfileUseCase.execute().fold(
+            onSuccess = { userProfile ->
+                currentUserName = userProfile.fullName
+                currentUserType = when (userProfile.userType.uppercase()) {
+                    "VETERINARY", "VETERINARIAN", "VET" -> UserType.VETERINARY
+                    "PETSHOP" -> UserType.PETSHOP
+                    "PHARMACY" -> UserType.PHARMACY
+                    else -> UserType.OWNER
+                }
+                println("DashboardScreen: UserType fetched successfully: ${userProfile.userType} -> $currentUserType")
+            },
+            onFailure = { error ->
+                println("DashboardScreen: Failed to fetch user profile: ${error.message}")
+                currentUserType = UserType.OWNER
+                currentUserName = userName
+            }
+        )
+        
         println("DashboardScreen: Iniciando carregamento de dados")
         dashboardViewModel.onEvent(DashboardUiEvent.RefreshDashboard)
     }
@@ -108,6 +129,7 @@ fun DashboardScreen(
         }
     }
 
+    println("DashboardScreen: Renderizando UI - currentTabScreen=$currentTabScreen, userType=$currentUserType, isLoading=${dashboardUiState.isLoading}, errorMessage=${dashboardUiState.errorMessage}")
     Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
         Scaffold(
             containerColor = Color.White,
@@ -125,27 +147,26 @@ fun DashboardScreen(
         ) { paddingValues ->
             when (currentTabScreen) {
                 NavigationManager.TabScreen.Home -> {
-                    val effectiveUserType = try {
-                        UserType.valueOf(dashboardUiState.userType.uppercase())
-                    } catch (e: IllegalArgumentException) {
-                        UserType.OWNER
-                    }
+                    val effectiveUserType = currentUserType
                     
                     HomeTabContent(
                         paddingValues = paddingValues,
                         scrollState = scrollState,
                         userType = effectiveUserType,
-                        userName = dashboardUiState.userName.ifEmpty { userName },
+                        userName = currentUserName.ifEmpty { userName },
                         dataProvider = dataProvider,
                         navigationManager = navigationManager,
                         dashboardUiState = dashboardUiState,
                         onRefresh = {
                             dashboardViewModel.onEvent(DashboardUiEvent.RefreshDashboard)
+                        },
+                        onCancelActivity = { activityId ->
+                            dashboardViewModel.onEvent(DashboardUiEvent.CancelConsulta(activityId))
                         }
                     )
                 }
                 NavigationManager.TabScreen.Pets -> {
-                    if (dashboardUiState.userType.uppercase() == "OWNER") {
+                    if (currentUserType == UserType.OWNER) {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -160,7 +181,7 @@ fun DashboardScreen(
                     }
                 }
                 NavigationManager.TabScreen.Appointments -> {
-                    if (dashboardUiState.userType.uppercase() in listOf("OWNER", "VETERINARY")) {
+                    if (currentUserType in listOf(UserType.OWNER, UserType.VETERINARY)) {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -175,7 +196,7 @@ fun DashboardScreen(
                     }
                 }
                 NavigationManager.TabScreen.Medication -> {
-                    if (dashboardUiState.userType.uppercase() == "PHARMACY") {
+                    if (currentUserType == UserType.PHARMACY) {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -202,7 +223,7 @@ fun DashboardScreen(
                     )
                 }
                 NavigationManager.TabScreen.Vaccines -> {
-                    if (dashboardUiState.userType.uppercase() in listOf("OWNER", "VETERINARY")) {
+                    if (currentUserType == UserType.VETERINARY) {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -235,7 +256,7 @@ fun DashboardScreen(
                     }
                 }
                 NavigationManager.TabScreen.Labs -> {
-                    if (dashboardUiState.userType.uppercase() == "VETERINARY") {
+                    if (currentUserType == UserType.VETERINARY) {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -248,7 +269,7 @@ fun DashboardScreen(
                     }
                 }
                 NavigationManager.TabScreen.Prescriptions -> {
-                    if (dashboardUiState.userType.uppercase() == "VETERINARY") {
+                    if (currentUserType == UserType.VETERINARY) {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -261,7 +282,7 @@ fun DashboardScreen(
                     }
                 }
                 NavigationManager.TabScreen.Exams -> {
-                    if (dashboardUiState.userType.uppercase() == "VETERINARY") {
+                    if (currentUserType == UserType.VETERINARY) {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -274,7 +295,7 @@ fun DashboardScreen(
                     }
                 }
                 NavigationManager.TabScreen.Food -> {
-                    if (dashboardUiState.userType.uppercase() == "PETSHOP") {
+                    if (currentUserType == UserType.PETSHOP) {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -287,7 +308,7 @@ fun DashboardScreen(
                     }
                 }
                 NavigationManager.TabScreen.Hygiene -> {
-                    if (dashboardUiState.userType.uppercase() == "PETSHOP") {
+                    if (currentUserType == UserType.PETSHOP) {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -300,7 +321,7 @@ fun DashboardScreen(
                     }
                 }
                 NavigationManager.TabScreen.Toys -> {
-                    if (dashboardUiState.userType.uppercase() == "PETSHOP") {
+                    if (currentUserType == UserType.PETSHOP) {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -324,22 +345,21 @@ fun DashboardScreen(
                     }
                 }
                 else -> {
-                    val effectiveUserType = try {
-                        UserType.valueOf(dashboardUiState.userType.uppercase())
-                    } catch (e: IllegalArgumentException) {
-                        UserType.OWNER
-                    }
+                    val effectiveUserType = currentUserType
                     
                     HomeTabContent(
                         paddingValues = paddingValues,
                         scrollState = scrollState,
                         userType = effectiveUserType,
-                        userName = dashboardUiState.userName.ifEmpty { userName },
+                        userName = currentUserName.ifEmpty { userName },
                         dataProvider = dataProvider,
                         navigationManager = navigationManager,
                         dashboardUiState = dashboardUiState,
                         onRefresh = {
                             dashboardViewModel.onEvent(DashboardUiEvent.RefreshDashboard)
+                        },
+                        onCancelActivity = { activityId ->
+                            dashboardViewModel.onEvent(DashboardUiEvent.CancelConsulta(activityId))
                         }
                     )
                 }
@@ -365,7 +385,8 @@ fun HomeTabContent(
     dataProvider: DashboardDataProvider,
     navigationManager: NavigationManager,
     dashboardUiState: DashboardUiState,
-    onRefresh: () -> Unit
+    onRefresh: () -> Unit,
+    onCancelActivity: (String) -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -461,15 +482,25 @@ fun HomeTabContent(
                 }
 
                 StatusCardsSection(
-                    userType = userType,
+                    userType = userType.name,
                     petCount = dashboardUiState.petCount,
                     consultasCount = dashboardUiState.consultasCount,
                     vacinasCount = dashboardUiState.vacinasCount,
+                    medicamentosCount = dashboardUiState.medicamentosCount,
+                    prescriptionsCount = dashboardUiState.prescriptionsCount,
+                    examsCount = dashboardUiState.examsCount,
+                    labsCount = dashboardUiState.labsCount,
+                    foodCount = dashboardUiState.foodCount,
+                    hygieneCount = dashboardUiState.hygieneCount,
+                    toysCount = dashboardUiState.toysCount,
                     onCardClick = { route ->
                         when(route) {
                             "pets" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Pets)
                             "appointments" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Appointments)
                             "vaccines" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Vaccines)
+                            "medications" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Medication)
+                            "prescriptions" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Prescriptions)
+                            "exams" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Exams)
                             "reminders" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Medication)
                             else -> { }
                         }
@@ -486,6 +517,9 @@ fun HomeTabContent(
                             "appointments" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Appointments)
                             "medications" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Medication)
                             "vaccines" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Vaccines)
+                            "prescriptions" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Prescriptions)
+                            "exams" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Exams)
+                            "labs" -> navigationManager.navigateToTab(NavigationManager.TabScreen.Labs)
                             else -> { }
                         }
                     }
@@ -505,6 +539,7 @@ fun HomeTabContent(
                             navigationManager.navigateToTab(NavigationManager.TabScreen.Pets)
                         }
                     },
+                    onCancelActivity = onCancelActivity,
                     onViewAllClick = {
                         navigationManager.navigateToTab(NavigationManager.TabScreen.Home)
                     }

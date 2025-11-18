@@ -6,14 +6,15 @@ import edu.fatec.petwise.core.network.NetworkResult
 import edu.fatec.petwise.core.network.dto.*
 import edu.fatec.petwise.features.suprimentos.domain.models.*
 import io.ktor.client.request.*
+import kotlinx.serialization.json.Json
 
 interface SuprimentoApiService {
-    suspend fun getAllSuprimentos(): NetworkResult<SuprimentoListResponse>
+    suspend fun getAllSuprimentos(): NetworkResult<List<SuprimentoDto>>
     suspend fun getSuprimentoById(id: String): NetworkResult<SuprimentoDto>
     suspend fun getSuprimentosByPetId(petId: String): NetworkResult<List<SuprimentoDto>>
     suspend fun getSuprimentosByCategory(category: String): NetworkResult<List<SuprimentoDto>>
-    suspend fun searchSuprimentos(query: String): NetworkResult<SuprimentoListResponse>
-    suspend fun filterSuprimentos(options: SuprimentoFilterOptions): NetworkResult<SuprimentoListResponse>
+    suspend fun searchSuprimentos(query: String): NetworkResult<List<SuprimentoDto>>
+    suspend fun filterSuprimentos(options: SuprimentoFilterOptions): NetworkResult<List<SuprimentoDto>>
     suspend fun addSuprimento(suprimento: SuprimentoDto): NetworkResult<SuprimentoDto>
     suspend fun updateSuprimento(id: String, suprimento: SuprimentoDto): NetworkResult<SuprimentoDto>
     suspend fun deleteSuprimento(id: String): NetworkResult<Unit>
@@ -26,8 +27,21 @@ class SuprimentoApiServiceImpl(
     private val networkHandler: NetworkRequestHandler
 ) : SuprimentoApiService {
 
-    override suspend fun getAllSuprimentos(): NetworkResult<SuprimentoListResponse> {
-        return networkHandler.get<SuprimentoListResponse>(ApiEndpoints.SUPRIMENTOS)
+    override suspend fun getAllSuprimentos(): NetworkResult<List<SuprimentoDto>> {
+        return networkHandler.getWithCustomDeserializer(
+            urlString = ApiEndpoints.SUPRIMENTOS,
+            deserializer = { jsonString ->
+                val json = Json { ignoreUnknownKeys = true }
+                try {
+                    // Try to parse as direct array first
+                    json.decodeFromString<List<SuprimentoDto>>(jsonString)
+                } catch (e: Exception) {
+                    // Fallback to wrapped object
+                    val wrapped = json.decodeFromString<SuprimentoListResponse>(jsonString)
+                    wrapped.suprimentos ?: emptyList()
+                }
+            }
+        )
     }
 
     override suspend fun getSuprimentoById(id: String): NetworkResult<SuprimentoDto> {
@@ -44,14 +58,40 @@ class SuprimentoApiServiceImpl(
         }
     }
 
-    override suspend fun searchSuprimentos(query: String): NetworkResult<SuprimentoListResponse> {
-        return networkHandler.get<SuprimentoListResponse>(ApiEndpoints.SUPRIMENTOS_SEARCH) {
+    override suspend fun searchSuprimentos(query: String): NetworkResult<List<SuprimentoDto>> {
+        return networkHandler.getWithCustomDeserializer(
+            urlString = ApiEndpoints.SUPRIMENTOS_SEARCH,
+            deserializer = { jsonString ->
+                val json = Json { ignoreUnknownKeys = true }
+                try {
+                    // Try to parse as direct array first
+                    json.decodeFromString<List<SuprimentoDto>>(jsonString)
+                } catch (e: Exception) {
+                    // Fallback to wrapped object
+                    val wrapped = json.decodeFromString<SuprimentoListResponse>(jsonString)
+                    wrapped.suprimentos ?: emptyList()
+                }
+            }
+        ) {
             parameter("query", query)
         }
     }
 
-    override suspend fun filterSuprimentos(options: SuprimentoFilterOptions): NetworkResult<SuprimentoListResponse> {
-        return networkHandler.get<SuprimentoListResponse>(ApiEndpoints.SUPRIMENTOS_FILTER) {
+    override suspend fun filterSuprimentos(options: SuprimentoFilterOptions): NetworkResult<List<SuprimentoDto>> {
+        return networkHandler.getWithCustomDeserializer(
+            urlString = ApiEndpoints.SUPRIMENTOS_FILTER,
+            deserializer = { jsonString ->
+                val json = Json { ignoreUnknownKeys = true }
+                try {
+                    // Try to parse as direct array first
+                    json.decodeFromString<List<SuprimentoDto>>(jsonString)
+                } catch (e: Exception) {
+                    // Fallback to wrapped object
+                    val wrapped = json.decodeFromString<SuprimentoListResponse>(jsonString)
+                    wrapped.suprimentos ?: emptyList()
+                }
+            }
+        ) {
             options.petId?.let { parameter("petId", it) }
             options.category?.let { parameter("category", it.name) }
             options.searchQuery?.let { parameter("searchQuery", it) }

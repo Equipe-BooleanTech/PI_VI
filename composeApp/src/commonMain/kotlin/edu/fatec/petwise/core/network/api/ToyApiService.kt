@@ -5,9 +5,10 @@ import edu.fatec.petwise.core.network.NetworkRequestHandler
 import edu.fatec.petwise.core.network.NetworkResult
 import edu.fatec.petwise.core.network.dto.*
 import io.ktor.client.request.*
+import kotlinx.serialization.json.Json
 
 interface ToyApiService {
-    suspend fun getAllToys(page: Int = 1, pageSize: Int = 20): NetworkResult<ToyListResponse>
+    suspend fun getAllToys(page: Int = 1, pageSize: Int = 20): NetworkResult<List<ToyDto>>
     suspend fun getToyById(id: String): NetworkResult<ToyDto>
     suspend fun getToysByCategory(category: String): NetworkResult<List<ToyDto>>
     suspend fun searchToys(query: String): NetworkResult<List<ToyDto>>
@@ -20,8 +21,21 @@ class ToyApiServiceImpl(
     private val networkHandler: NetworkRequestHandler
 ) : ToyApiService {
 
-    override suspend fun getAllToys(page: Int, pageSize: Int): NetworkResult<ToyListResponse> {
-        return networkHandler.get<ToyListResponse>(ApiEndpoints.TOYS) {
+    override suspend fun getAllToys(page: Int, pageSize: Int): NetworkResult<List<ToyDto>> {
+        return networkHandler.getWithCustomDeserializer(
+            urlString = ApiEndpoints.TOYS,
+            deserializer = { jsonString ->
+                val json = Json { ignoreUnknownKeys = true }
+                try {
+                    // Try to parse as direct array first
+                    json.decodeFromString<List<ToyDto>>(jsonString)
+                } catch (e: Exception) {
+                    // Fallback to wrapped object
+                    val wrapped = json.decodeFromString<ToyListResponse>(jsonString)
+                    wrapped.toys ?: emptyList()
+                }
+            }
+        ) {
             parameter("page", page)
             parameter("pageSize", pageSize)
         }

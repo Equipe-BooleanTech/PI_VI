@@ -2,13 +2,14 @@ package edu.fatec.petwise.core.network.di
 
 import edu.fatec.petwise.core.network.*
 import edu.fatec.petwise.core.network.api.*
+import edu.fatec.petwise.core.storage.KeyValueStorage
 import io.ktor.client.*
 import kotlinx.datetime.Clock
 
 
 object NetworkModule {
 
-    private val tokenManager: TokenManager = TokenManagerImpl()
+    private val tokenManager: TokenManager = TokenManagerImpl(KeyValueStorage)
 
     private fun createHttpClientConfig(): PetWiseHttpClientConfig {
         return PetWiseHttpClientConfig(
@@ -113,7 +114,9 @@ object NetworkModule {
         println("NetworkModule: Definindo token de autenticação: ${token.take(10)}...")
         tokenManager.setAccessToken(token)
         _networkRequestHandler = null
-        println("NetworkModule: Token atualizado, NetworkRequestHandler limpo para recriar com novo token")
+        _httpClient = null
+        _isClientClosed = false
+        println("NetworkModule: Token atualizado, HttpClient e NetworkRequestHandler limpos para recriar com novo token")
     }
     
     fun setAuthTokenWithExpiration(token: String, expiresInSeconds: Long) {
@@ -124,7 +127,9 @@ object NetworkModule {
             tokenManager.setAccessToken(token)
         }
         _networkRequestHandler = null
-        println("NetworkModule: Token atualizado, NetworkRequestHandler limpo para recriar com novo token")
+        _httpClient = null
+        _isClientClosed = false
+        println("NetworkModule: Token atualizado, HttpClient e NetworkRequestHandler limpos para recriar com novo token")
     }
 
     fun getAuthToken(): String? {
@@ -141,9 +146,11 @@ object NetworkModule {
         println("NetworkModule: Limpando token de autenticação")
         
         tokenManager.clearTokens()
+        _networkRequestHandler = null
+        _httpClient = null
+        _isClientClosed = false
                 
-        println("NetworkModule: Token limpo - requisições subsequentes não terão autenticação")
-        println("NetworkModule: HttpClient mantido ativo para prevenir JobCancellationException")
+        println("NetworkModule: Token, HttpClient e NetworkRequestHandler limpos - nova instância será criada")
     }
 }
 
@@ -155,11 +162,19 @@ interface TokenManager {
     fun clearTokens()
 }
 
-class TokenManagerImpl : TokenManager {
+class TokenManagerImpl(private val storage: KeyValueStorage) : TokenManager {
     private var accessToken: String? = null
     private var refreshToken: String? = null
     private var tokenExpirationTime: Long = 0
     private var tokenSetTime: Long = 0
+
+    init {
+        // Load from storage
+        accessToken = storage.getString("access_token")
+        refreshToken = storage.getString("refresh_token")
+        tokenExpirationTime = storage.getLong("token_expiration") ?: 0
+        tokenSetTime = storage.getLong("token_set_time") ?: 0
+    }
 
     override fun getAccessToken(): String? {
         val token = accessToken
@@ -178,6 +193,7 @@ class TokenManagerImpl : TokenManager {
         accessToken = token
         tokenSetTime = currentTimeMs()
         tokenExpirationTime = tokenSetTime + (60 * 60 * 1000)
+        saveToStorage()
     }
 
     override fun getRefreshToken(): String? = refreshToken
@@ -185,6 +201,7 @@ class TokenManagerImpl : TokenManager {
     override fun setRefreshToken(token: String) {
         println("TokenManager: Definindo token de refresh: ${token.take(10)}...")
         refreshToken = token
+        storage.putString("refresh_token", token)
     }
 
     override fun clearTokens() {
@@ -193,6 +210,10 @@ class TokenManagerImpl : TokenManager {
         refreshToken = null
         tokenExpirationTime = 0
         tokenSetTime = 0
+        storage.remove("access_token")
+        storage.remove("refresh_token")
+        storage.remove("token_expiration")
+        storage.remove("token_set_time")
     }
     
     private fun isTokenExpired(): Boolean {
@@ -216,6 +237,13 @@ class TokenManagerImpl : TokenManager {
         accessToken = token
         tokenSetTime = currentTimeMs()
         tokenExpirationTime = tokenSetTime + (expiresInSeconds * 1000)
+        saveToStorage()
+    }
+
+    private fun saveToStorage() {
+        storage.putString("access_token", accessToken ?: "")
+        storage.putLong("token_expiration", tokenExpirationTime)
+        storage.putLong("token_set_time", tokenSetTime)
     }
 }
 

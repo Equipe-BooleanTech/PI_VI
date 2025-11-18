@@ -6,8 +6,6 @@ import kotlinx.serialization.Serializable
 data class Medication(
     val id: String,
     val userId: String,
-    val petId: String,
-    val veterinarianId: String,
     val prescriptionId: String,
     val medicationName: String,
     val dosage: String,
@@ -16,6 +14,7 @@ data class Medication(
     val startDate: String,
     val endDate: String,
     val sideEffects: String = "",
+    val status: MedicationStatus = MedicationStatus.ACTIVE,
     val createdAt: String,
     val updatedAt: String
 )
@@ -40,7 +39,6 @@ enum class MedicationStatus(val displayName: String, val color: String) {
 
 data class MedicationFilterOptions(
     val petId: String? = null,
-    val veterinarianId: String? = null,
     val status: MedicationStatus? = null,
     val medicationName: String? = null,
     val searchQuery: String = ""

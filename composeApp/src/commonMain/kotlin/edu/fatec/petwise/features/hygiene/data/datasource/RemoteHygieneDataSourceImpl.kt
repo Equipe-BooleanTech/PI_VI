@@ -10,8 +10,8 @@ class RemoteHygieneDataSourceImpl(
 ) : RemoteHygieneDataSource {
 
     override suspend fun getAllHygieneProducts(): List<HygieneProduct> {
-        return when (val result = hygieneApiService.getAllHygieneProducts()) {
-            is NetworkResult.Success -> result.data.hygieneProducts.map { it.toHygieneProduct() }
+        return when (val result = hygieneApiService.getAllHygieneProducts(1, 1000)) {
+            is NetworkResult.Success -> result.data.map { it.toHygieneProduct() }
             is NetworkResult.Error -> {
                 println("API Error: ${result.exception.message}")
                 emptyList()

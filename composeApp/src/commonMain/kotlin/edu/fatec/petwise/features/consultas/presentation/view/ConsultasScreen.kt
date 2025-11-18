@@ -13,12 +13,14 @@ import androidx.compose.ui.*
 import edu.fatec.petwise.features.consultas.domain.models.*
 import edu.fatec.petwise.features.consultas.presentation.components.*
 import edu.fatec.petwise.features.consultas.presentation.viewmodel.*
+import edu.fatec.petwise.features.dashboard.domain.usecases.GetUserTypeUseCase
 import edu.fatec.petwise.features.consultas.di.ConsultaDependencyContainer
-import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.fromHex
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import edu.fatec.petwise.features.auth.di.AuthDependencyContainer
+import edu.fatec.petwise.features.dashboard.domain.models.UserType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,11 +31,12 @@ fun ConsultasScreen(
     val consultasViewModel = remember { ConsultaDependencyContainer.provideConsultasViewModel() }
     val addConsultaViewModel = remember { ConsultaDependencyContainer.provideAddConsultaViewModel() }
     val updateConsultaViewModel = remember { ConsultaDependencyContainer.provideUpdateConsultaViewModel() }
-    val theme = PetWiseTheme.Light
+    val getUserProfileUseCase = remember { AuthDependencyContainer.provideGetUserProfileUseCase() }
     val consultasState by consultasViewModel.uiState.collectAsState()
     val addConsultaState by addConsultaViewModel.uiState.collectAsState()
     val updateConsultaState by updateConsultaViewModel.uiState.collectAsState()
 
+    var userType by remember { mutableStateOf(UserType.OWNER) }
     var showSearchBar by remember { mutableStateOf(false) }
     var showFilterSheet by remember { mutableStateOf(false) }
     var selectionMode by remember { mutableStateOf(false) }
@@ -41,6 +44,22 @@ fun ConsultasScreen(
     var showDeleteConfirmation by remember { mutableStateOf(false) }
     var showEditConsultaDialog by remember { mutableStateOf(false) }
     var consultaToEdit by remember { mutableStateOf<Consulta?>(null) }
+
+    LaunchedEffect(Unit) {
+        getUserProfileUseCase.execute().fold(
+            onSuccess = { userProfile ->
+                userType = when (userProfile.userType.uppercase()) {
+                    "VETERINARY", "VETERINARIAN", "VET" -> UserType.VETERINARY
+                    "PETSHOP" -> UserType.PETSHOP
+                    "PHARMACY" -> UserType.PHARMACY
+                    else -> UserType.OWNER
+                }
+            },
+            onFailure = {
+                userType = UserType.OWNER
+            }
+        )
+    }
 
     LaunchedEffect(navigationKey) {
         println("ConsultasScreen: Recarregando consultas - navigationKey: $navigationKey")
@@ -73,6 +92,7 @@ fun ConsultasScreen(
             consultaCount = consultasState.filteredConsultas.size,
             selectionMode = selectionMode,
             selectedCount = selectedConsultaIds.size,
+            userType = userType,
             onSearchClick = { showSearchBar = !showSearchBar },
             onFilterClick = { showFilterSheet = true },
             onAddConsultaClick = { 
@@ -116,6 +136,7 @@ fun ConsultasScreen(
                         consultas = consultasState.filteredConsultas,
                         selectionMode = selectionMode,
                         selectedConsultaIds = selectedConsultaIds,
+                        userType = userType,
                         onConsultaClick = { consulta ->
                             if (selectionMode) {
                                 selectedConsultaIds = if (selectedConsultaIds.contains(consulta.id)) {
@@ -130,6 +151,13 @@ fun ConsultasScreen(
                         onEditClick = { consulta ->
                             consultaToEdit = consulta
                             showEditConsultaDialog = true
+                        },
+                        onCancelClick = { consulta ->
+                            consultasViewModel.onEvent(ConsultasUiEvent.UpdateConsultaStatus(consulta.id, ConsultaStatus.CANCELLED))
+                        },
+                        onDeleteClick = { consulta ->
+                            // For now, delete also cancels. In the future, this could be actual deletion
+                            consultasViewModel.onEvent(ConsultasUiEvent.DeleteConsulta(consulta.id))
                         },
                         onStatusChange = { consultaId ->
                         },
@@ -223,13 +251,13 @@ private fun ConsultasHeader(
     consultaCount: Int,
     selectionMode: Boolean,
     selectedCount: Int,
+    userType: UserType,
     onSearchClick: () -> Unit,
     onFilterClick: () -> Unit,
     onAddConsultaClick: () -> Unit,
     onSelectionModeToggle: () -> Unit,
     onDeleteSelected: () -> Unit
 ) {
-    val theme = PetWiseTheme.Light
 
     Card(
         modifier = Modifier
@@ -304,12 +332,16 @@ private fun ConsultasHeader(
                                 tint = Color.White
                             )
                         }
-                        IconButton(onClick = onSelectionModeToggle) {
-                            Icon(
-                                imageVector = Icons.Default.CheckCircle,
-                                contentDescription = "Selecionar",
-                                tint = Color.White
-                            )
+                        // Only show selection mode for VETERINARY users (can cancel/delete)
+                        // OWNER users can cancel from individual cards but not bulk delete
+                        if (userType == UserType.VETERINARY) {
+                            IconButton(onClick = onSelectionModeToggle) {
+                                Icon(
+                                    imageVector = Icons.Default.CheckCircle,
+                                    contentDescription = "Selecionar",
+                                    tint = Color.White
+                                )
+                            }
                         }
                     }
                 }
@@ -375,7 +407,6 @@ private fun SearchBar(
     onQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val theme = PetWiseTheme.Light
 
     Card(
         modifier = modifier,
@@ -393,7 +424,7 @@ private fun SearchBar(
                 Text(
                     "Buscar por pet, veterinário ou sintomas...",
                     style = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color.fromHex(theme.palette.textSecondary)
+                        color = Color.Gray
                     )
                 )
             },
@@ -410,7 +441,7 @@ private fun SearchBar(
                         Icon(
                             imageVector = Icons.Default.Clear,
                             contentDescription = "Limpar",
-                            tint = Color.fromHex(theme.palette.textSecondary)
+                            tint = Color.Gray
                         )
                     }
                 }
@@ -419,7 +450,7 @@ private fun SearchBar(
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color.fromHex("#2196F3"),
-                unfocusedBorderColor = Color.fromHex(theme.palette.textSecondary).copy(alpha = 0.3f),
+                unfocusedBorderColor = Color.Gray.copy(alpha = 0.3f),
                 focusedContainerColor = Color.White,
                 unfocusedContainerColor = Color.White
             )
@@ -502,8 +533,11 @@ private fun ConsultasListContent(
     consultas: List<Consulta>,
     selectionMode: Boolean,
     selectedConsultaIds: Set<String>,
+    userType: UserType,
     onConsultaClick: (Consulta) -> Unit,
     onEditClick: (Consulta) -> Unit,
+    onCancelClick: (Consulta) -> Unit,
+    onDeleteClick: (Consulta) -> Unit,
     onStatusChange: ((String) -> Unit)? = null,
     onMarkAsPaid: ((String) -> Unit)? = null
 ) {
@@ -517,8 +551,11 @@ private fun ConsultasListContent(
                 consulta = consulta,
                 selectionMode = selectionMode,
                 isSelected = selectedConsultaIds.contains(consulta.id),
+                userType = userType,
                 onClick = onConsultaClick,
                 onEditClick = onEditClick,
+                onCancelClick = onCancelClick,
+                onDeleteClick = onDeleteClick,
                 onStatusChange = onStatusChange,
                 onMarkAsPaid = onMarkAsPaid
             )
@@ -532,7 +569,6 @@ private fun DeleteConfirmationDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    val theme = PetWiseTheme.Light
     
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -551,7 +587,7 @@ private fun DeleteConfirmationDialog(
                 text = "Confirmar Cancelamento",
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold,
-                    color = Color.fromHex(theme.palette.textPrimary)
+                    color = Color.Black
                 )
             )
         },
@@ -559,7 +595,7 @@ private fun DeleteConfirmationDialog(
             Text(
                 text = "Tem certeza que deseja cancelar ${if (consultaCount == 1) "esta consulta" else "estas $consultaCount consultas"}? O status será alterado para \"Cancelada\".",
                 style = MaterialTheme.typography.bodyMedium.copy(
-                    color = Color.fromHex(theme.palette.textSecondary)
+                    color = Color.Gray
                 )
             )
         },
@@ -579,7 +615,7 @@ private fun DeleteConfirmationDialog(
                 onClick = onDismiss,
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = Color.fromHex(theme.palette.textPrimary)
+                    contentColor = Color.Black
                 )
             ) {
                 Text("Cancelar")

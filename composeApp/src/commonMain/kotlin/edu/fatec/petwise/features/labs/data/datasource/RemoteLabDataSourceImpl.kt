@@ -10,8 +10,8 @@ class RemoteLabDataSourceImpl(
 ) : RemoteLabDataSource {
 
     override suspend fun getAllLabs(): List<Lab> {
-        return when (val result = labApiService.getAllLabs()) {
-            is NetworkResult.Success -> result.data.labs.map { it.toLab() }
+        return when (val result = labApiService.getAllLabs(1, 1000)) {
+            is NetworkResult.Success -> result.data.map { it.toLab() }
             is NetworkResult.Error -> {
                 println("API Error: ${result.exception.message}")
                 emptyList()
@@ -33,13 +33,8 @@ class RemoteLabDataSourceImpl(
 
     override suspend fun createLab(lab: Lab): Lab {
         val request = CreateLabRequest(
-            veterinaryId = lab.veterinaryId,
-            labName = lab.labName,
-            testType = lab.testType,
-            testDate = lab.testDate,
-            results = lab.results,
-            status = lab.status,
-            notes = lab.notes
+            name = lab.name,
+            contactInfo = lab.contactInfo
         )
         return when (val result = labApiService.createLab(request)) {
             is NetworkResult.Success -> result.data.toLab()
@@ -50,12 +45,8 @@ class RemoteLabDataSourceImpl(
 
     override suspend fun updateLab(lab: Lab): Lab {
         val request = UpdateLabRequest(
-            labName = lab.labName,
-            testType = lab.testType,
-            testDate = lab.testDate,
-            results = lab.results,
-            status = lab.status,
-            notes = lab.notes
+            name = lab.name,
+            contactInfo = lab.contactInfo
         )
         return when (val result = labApiService.updateLab(lab.id, request)) {
             is NetworkResult.Success -> result.data.toLab()
@@ -74,20 +65,8 @@ class RemoteLabDataSourceImpl(
 
     override suspend fun searchLabs(query: String): List<Lab> {
         return getAllLabs().filter {
-            it.labName.contains(query, ignoreCase = true) ||
-            it.testType.contains(query, ignoreCase = true) ||
-            it.notes?.contains(query, ignoreCase = true) == true
-        }
-    }
-
-    override suspend fun getLabsByVeterinaryId(veterinaryId: String): List<Lab> {
-        return when (val result = labApiService.getLabsByVeterinaryId(veterinaryId)) {
-            is NetworkResult.Success -> result.data.map { it.toLab() }
-            is NetworkResult.Error -> {
-                println("API Error: ${result.exception.message}")
-                emptyList()
-            }
-            is NetworkResult.Loading -> emptyList()
+            it.name.contains(query, ignoreCase = true) ||
+            it.contactInfo?.contains(query, ignoreCase = true) == true
         }
     }
 }

@@ -155,6 +155,11 @@ fun MedicationsScreen(
                             updateMedicationViewModel.loadMedication(medication.id)
                             showEditMedicationDialog = true
                         },
+                        onDeleteClick = { medication ->
+                            // Handle single medication delete
+                            selectedMedicationIds = setOf(medication.id)
+                            showDeleteConfirmation = true
+                        },
                         onMarkAsCompletedClick = { medicationId ->
                             medicationsViewModel.onEvent(MedicationsUiEvent.MarkAsCompleted(medicationId))
                         },
@@ -219,8 +224,9 @@ fun MedicationsScreen(
         }.joinToString(", ")
         
         DeleteMedicationConfirmationDialog(
+            medicationId = selectedMedicationIds.first(), // For bulk delete, use first ID (though this should be updated for proper bulk handling)
             medicationName = if (selectedMedicationIds.size == 1) medicationNames else "${selectedMedicationIds.size} medicamentos",
-            onConfirm = {
+            onSuccess = {
                 selectedMedicationIds.forEach { medicationId ->
                     medicationsViewModel.onEvent(MedicationsUiEvent.DeleteMedication(medicationId))
                 }
@@ -498,6 +504,7 @@ private fun MedicationsList(
     selectedIds: Set<String>,
     onMedicationClick: (Medication) -> Unit,
     onEditClick: (Medication) -> Unit,
+    onDeleteClick: (Medication) -> Unit,
     onMarkAsCompletedClick: (String) -> Unit,
     onPauseResumeClick: (String) -> Unit,
     modifier: Modifier = Modifier
@@ -515,6 +522,7 @@ private fun MedicationsList(
                 medication = medication,
                 onClick = onMedicationClick,
                 onEditClick = onEditClick,
+                onDeleteClick = onDeleteClick,
                 onMarkAsCompletedClick = onMarkAsCompletedClick,
                 onPauseResumeClick = onPauseResumeClick,
                 selectionMode = selectionMode,

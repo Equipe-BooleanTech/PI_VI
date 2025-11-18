@@ -5,6 +5,7 @@ import edu.fatec.petwise.core.network.NetworkRequestHandler
 import edu.fatec.petwise.core.network.NetworkResult
 import edu.fatec.petwise.core.network.dto.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 
 
 interface AuthApiService {
@@ -71,6 +72,9 @@ class AuthApiServiceImpl(
     }
 
     override suspend fun getUserProfile(): NetworkResult<UserProfileDto> {
-        return networkHandler.get<UserProfileDto>(ApiEndpoints.USER_PROFILE)
+        return networkHandler.getWithCustomDeserializer(
+            urlString = ApiEndpoints.USER_PROFILE,
+            deserializer = { jsonString -> UserProfileDto.fromJson(jsonString) }
+        )
     }
 }

@@ -9,9 +9,7 @@ import kotlinx.serialization.Serializable
 data class MedicationDto(
     val id: String,
     val userId: String,
-    val petId: String,
-    val veterinarianId: String,
-    val prescriptionId: String? = null,
+    val prescriptionId: String,
     val medicationName: String,
     val dosage: String,
     val frequency: String,
@@ -19,15 +17,14 @@ data class MedicationDto(
     val startDate: String,
     val endDate: String,
     val sideEffects: String = "",
+    val status: String = "ACTIVE",
     val createdAt: String,
     val updatedAt: String
 )
 
 @Serializable
 data class CreateMedicationRequest(
-    val petId: String,
-    val veterinarianId: String,
-    val prescriptionId: String? = null,
+    val prescriptionId: String,
     val medicationName: String,
     val dosage: String,
     val frequency: String,
@@ -48,7 +45,7 @@ data class UpdateMedicationRequest(
 
 @Serializable
 data class MedicationListResponse(
-    val medications: List<MedicationDto>,
+    val medications: List<MedicationDto>? = null,
     val total: Int,
     val page: Int,
     val pageSize: Int
@@ -57,7 +54,6 @@ data class MedicationListResponse(
 @Serializable
 data class MedicationFilterRequest(
     val petId: String? = null,
-    val veterinarianId: String? = null,
     val status: String? = null,
     val medicationName: String? = null,
     val searchQuery: String = ""
@@ -77,9 +73,7 @@ data class CompleteMedicationRequest(
 fun Medication.toDto(): MedicationDto = MedicationDto(
     id = id,
     userId = userId,
-    petId = petId,
-    veterinarianId = veterinarianId,
-    prescriptionId = prescriptionId.takeIf { it.isNotBlank() },
+    prescriptionId = prescriptionId,
     medicationName = medicationName,
     dosage = dosage,
     frequency = frequency,
@@ -87,6 +81,7 @@ fun Medication.toDto(): MedicationDto = MedicationDto(
     startDate = startDate,
     endDate = endDate,
     sideEffects = sideEffects,
+    status = status.name,
     createdAt = createdAt,
     updatedAt = updatedAt
 )
@@ -94,9 +89,7 @@ fun Medication.toDto(): MedicationDto = MedicationDto(
 fun MedicationDto.toDomain(): Medication = Medication(
     id = id,
     userId = userId,
-    petId = petId,
-    veterinarianId = veterinarianId,
-    prescriptionId = prescriptionId ?: "",
+    prescriptionId = prescriptionId,
     medicationName = medicationName,
     dosage = dosage,
     frequency = frequency,
@@ -104,6 +97,7 @@ fun MedicationDto.toDomain(): Medication = Medication(
     startDate = startDate,
     endDate = endDate,
     sideEffects = sideEffects,
+    status = MedicationStatus.valueOf(status),
     createdAt = createdAt,
     updatedAt = updatedAt
 )

@@ -28,6 +28,7 @@ fun MedicationCard(
     medication: Medication,
     onClick: (Medication) -> Unit,
     onEditClick: (Medication) -> Unit,
+    onDeleteClick: (Medication) -> Unit,
     onMarkAsCompletedClick: (String) -> Unit,
     onPauseResumeClick: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -190,6 +191,18 @@ fun MedicationCard(
                                 imageVector = Icons.Default.Edit,
                                 contentDescription = "Editar",
                                 tint = Color.fromHex(theme.palette.primary),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+
+                        IconButton(
+                            onClick = { onDeleteClick(medication) },
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Excluir",
+                                tint = Color.fromHex("#F44336"),
                                 modifier = Modifier.size(20.dp)
                             )
                         }

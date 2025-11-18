@@ -1,11 +1,11 @@
 package edu.fatec.petwise.features.profile.presentation.view
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -34,6 +34,8 @@ fun EditProfileScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val theme = PetWiseTheme.Light
+    
+    var showDeleteDialog by remember { mutableStateOf(false) }
     
     val formConfiguration = remember(uiState.userProfile?.userType) {
         uiState.userProfile?.let { profile ->
@@ -87,13 +89,13 @@ fun EditProfileScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navigationManager.navigateToTab(NavigationManager.TabScreen.Home) }) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Voltar",
-                            tint = Color.fromHex("#1a1a1a")
-                        )
-                    }
+                    Text(
+                        text = "←",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            color = Color.fromHex("#1a1a1a")
+                        ),
+                        modifier = Modifier.padding(start = 16.dp)
+                    )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.White
@@ -185,6 +187,49 @@ fun EditProfileScreen(
                             println("EditProfileScreen: Form submission error - ${error.message}")
                         }
                     )
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    // Delete Account Section
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.fromHex("#FF3B30").copy(alpha = 0.05f)
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp)
+                        ) {
+                            Text(
+                                text = "Zona de Perigo",
+                                style = theme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.fromHex("#FF3B30")
+                                ),
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                            
+                            Text(
+                                text = "A exclusão da conta é permanente e não pode ser desfeita. Todos os seus dados serão removidos do sistema.",
+                                style = theme.typography.bodySmall,
+                                color = Color.fromHex("#666666"),
+                                modifier = Modifier.padding(bottom = 16.dp)
+                            )
+                            
+                            Button(
+                                onClick = { showDeleteDialog = true },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color.fromHex("#FF3B30")
+                                ),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = "🗑️ Excluir Conta",
+                                    style = theme.typography.labelLarge
+                                )
+                            }
+                        }
+                    }
                 }
             }
 
@@ -218,5 +263,49 @@ fun EditProfileScreen(
                 }
             }
         }
+    }
+
+    // Delete Account Confirmation Dialog
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = {
+                Text(
+                    text = "Confirmar Exclusão",
+                    style = theme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+            },
+            text = {
+                Text(
+                    text = "Tem certeza de que deseja excluir sua conta? Esta ação não pode ser desfeita e todos os seus dados serão permanentemente removidos.",
+                    style = theme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDeleteDialog = false
+                        viewModel.deleteProfile()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.fromHex("#FF3B30")
+                    )
+                ) {
+                    Text(
+                        text = "Excluir",
+                        color = Color.White
+                    )
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = { showDeleteDialog = false }
+                ) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 }

@@ -5,13 +5,12 @@ import edu.fatec.petwise.core.network.NetworkRequestHandler
 import edu.fatec.petwise.core.network.NetworkResult
 import edu.fatec.petwise.core.network.dto.*
 import io.ktor.client.request.*
+import kotlinx.serialization.json.Json
 
 interface MedicationApiService {
-    suspend fun getAllMedications(page: Int = 1, pageSize: Int = 20): NetworkResult<MedicationListResponse>
+    suspend fun getAllMedications(page: Int = 1, pageSize: Int = 20): NetworkResult<List<MedicationDto>>
     suspend fun getMedicationById(id: String): NetworkResult<MedicationDto>
-    suspend fun getMedicationsByPetId(petId: String): NetworkResult<List<MedicationDto>>
-    suspend fun getActiveMedicationsByPetId(petId: String): NetworkResult<List<MedicationDto>>
-    suspend fun searchMedications(filter: MedicationFilterRequest, page: Int = 1, pageSize: Int = 20): NetworkResult<MedicationListResponse>
+    suspend fun searchMedications(filter: MedicationFilterRequest, page: Int = 1, pageSize: Int = 20): NetworkResult<List<MedicationDto>>
     suspend fun createMedication(request: CreateMedicationRequest): NetworkResult<MedicationDto>
     suspend fun updateMedication(id: String, request: UpdateMedicationRequest): NetworkResult<MedicationDto>
     suspend fun updateMedicationStatus(id: String, status: String): NetworkResult<MedicationDto>
@@ -25,8 +24,21 @@ class MedicationApiServiceImpl(
     private val networkHandler: NetworkRequestHandler
 ) : MedicationApiService {
 
-    override suspend fun getAllMedications(page: Int, pageSize: Int): NetworkResult<MedicationListResponse> {
-        return networkHandler.get<MedicationListResponse>(ApiEndpoints.MEDICATIONS) {
+    override suspend fun getAllMedications(page: Int, pageSize: Int): NetworkResult<List<MedicationDto>> {
+        return networkHandler.getWithCustomDeserializer(
+            urlString = ApiEndpoints.MEDICATIONS,
+            deserializer = { jsonString ->
+                val json = Json { ignoreUnknownKeys = true }
+                try {
+                    // Try to parse as direct array first
+                    json.decodeFromString<List<MedicationDto>>(jsonString)
+                } catch (e: Exception) {
+                    // Fallback to wrapped object
+                    val wrapped = json.decodeFromString<MedicationListResponse>(jsonString)
+                    wrapped.medications ?: emptyList()
+                }
+            }
+        ) {
             parameter("page", page)
             parameter("pageSize", pageSize)
         }
@@ -36,20 +48,24 @@ class MedicationApiServiceImpl(
         return networkHandler.get<MedicationDto>(ApiEndpoints.getMedication(id))
     }
 
-    override suspend fun getMedicationsByPetId(petId: String): NetworkResult<List<MedicationDto>> {
-        return networkHandler.get<List<MedicationDto>>(ApiEndpoints.getMedicationsByPet(petId))
-    }
-
-    override suspend fun getActiveMedicationsByPetId(petId: String): NetworkResult<List<MedicationDto>> {
-        return networkHandler.get<List<MedicationDto>>(ApiEndpoints.getActiveMedicationsByPet(petId))
-    }
-
-    override suspend fun searchMedications(filter: MedicationFilterRequest, page: Int, pageSize: Int): NetworkResult<MedicationListResponse> {
-        return networkHandler.get<MedicationListResponse>(ApiEndpoints.MEDICATIONS_SEARCH) {
+    override suspend fun searchMedications(filter: MedicationFilterRequest, page: Int, pageSize: Int): NetworkResult<List<MedicationDto>> {
+        return networkHandler.getWithCustomDeserializer(
+            urlString = ApiEndpoints.MEDICATIONS_SEARCH,
+            deserializer = { jsonString ->
+                val json = Json { ignoreUnknownKeys = true }
+                try {
+                    // Try to parse as direct array first
+                    json.decodeFromString<List<MedicationDto>>(jsonString)
+                } catch (e: Exception) {
+                    // Fallback to wrapped object
+                    val wrapped = json.decodeFromString<MedicationListResponse>(jsonString)
+                    wrapped.medications ?: emptyList()
+                }
+            }
+        ) {
             parameter("page", page)
             parameter("pageSize", pageSize)
             filter.petId?.let { parameter("petId", it) }
-            filter.veterinarianId?.let { parameter("veterinarianId", it) }
             filter.status?.let { parameter("status", it) }
             filter.medicationName?.let { parameter("medicationName", it) }
             if (filter.searchQuery.isNotBlank()) {
@@ -95,10 +111,10 @@ class MedicationApiServiceImpl(
     }
 
     override suspend fun getUpcomingMedications(): NetworkResult<List<MedicationDto>> {
-        return networkHandler.get<List<MedicationDto>>(ApiEndpoints.MEDICATIONS_UPCOMING)
+        return networkHandler.get<List<MedicationDto>>(ApiEndpoints.MEDICATIONS)
     }
 
     override suspend fun getExpiredMedications(): NetworkResult<List<MedicationDto>> {
-        return networkHandler.get<List<MedicationDto>>(ApiEndpoints.MEDICATIONS_EXPIRED)
+        return networkHandler.get<List<MedicationDto>>(ApiEndpoints.MEDICATIONS)
     }
 }

@@ -16,7 +16,7 @@ class RemoteSuprimentoDataSourceImpl(
     override suspend fun getAllSuprimentos(): NetworkResult<List<Suprimento>> {
         return when (val result = apiService.getAllSuprimentos()) {
             is NetworkResult.Success -> NetworkResult.Success(
-                data = result.data.suprimentos.map { it.toDomain() },
+                data = result.data.map { it.toDomain() },
                 metadata = result.metadata
             )
             is NetworkResult.Error -> result
@@ -60,7 +60,7 @@ class RemoteSuprimentoDataSourceImpl(
     override suspend fun searchSuprimentos(criteria: SuprimentoSearchCriteria): NetworkResult<List<Suprimento>> {
         return when (val result = apiService.searchSuprimentos(criteria.query)) {
             is NetworkResult.Success -> NetworkResult.Success(
-                data = result.data.suprimentos.map { it.toDomain() },
+                data = result.data.map { it.toDomain() },
                 metadata = result.metadata
             )
             is NetworkResult.Error -> result
@@ -71,7 +71,7 @@ class RemoteSuprimentoDataSourceImpl(
     override suspend fun filterSuprimentos(options: SuprimentoFilterOptions): NetworkResult<List<Suprimento>> {
         return when (val result = apiService.filterSuprimentos(options)) {
             is NetworkResult.Success -> NetworkResult.Success(
-                data = result.data.suprimentos.map { it.toDomain() },
+                data = result.data.map { it.toDomain() },
                 metadata = result.metadata
             )
             is NetworkResult.Error -> result

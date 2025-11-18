@@ -14,14 +14,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.viewmodel.compose.viewModel
 import edu.fatec.petwise.features.suprimentos.domain.models.*
 import edu.fatec.petwise.features.suprimentos.presentation.components.*
 import edu.fatec.petwise.features.suprimentos.presentation.viewmodel.*
 import edu.fatec.petwise.features.suprimentos.di.SuprimentoDependencyContainer
+import edu.fatec.petwise.features.suprimentos.presentation.forms.createAddSuprimentoFormConfigurationForPet
+import edu.fatec.petwise.features.suprimentos.presentation.forms.createEditSuprimentoFormConfiguration
+import edu.fatec.petwise.presentation.shared.form.*
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.fromHex
-import java.text.NumberFormat
-import java.util.*
+import edu.fatec.petwise.presentation.shared.NumberFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -375,8 +380,7 @@ private fun SuprimentosStatusCard(
                 StatisticItem(
                     icon = Icons.Default.AttachMoney,
                     label = "Gasto Total",
-                    value = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
-                        .format(totalGasto),
+                    value = NumberFormatter.formatCurrency(totalGasto),
                     color = Color(0xFF4CAF50)
                 )
 
@@ -596,17 +600,161 @@ private fun AddSuprimentoDialog(
     errorMessage: String?,
     onDismiss: () -> Unit
 ) {
-    // TODO: Implement add dialog using DynamicForm with AddSuprimentoFormSchema
-    AlertDialog(
+    val theme = PetWiseTheme.Light
+    val addSuprimentoState by addSuprimentoViewModel.uiState.collectAsState()
+
+    val formConfiguration = createAddSuprimentoFormConfigurationForPet()
+
+    val formViewModel = viewModel<DynamicFormViewModel>(key = "add_suprimento_form") {
+        DynamicFormViewModel(initialConfiguration = formConfiguration)
+    }
+
+    LaunchedEffect(addSuprimentoState.addedSuprimento) {
+        if (addSuprimentoState.addedSuprimento != null) {
+            formViewModel.resetForm()
+        }
+    }
+
+    Dialog(
         onDismissRequest = onDismiss,
-        title = { Text("Adicionar Suprimento") },
-        text = { Text("Dialog em implementação") },
-        confirmButton = {
-            Button(onClick = onDismiss) {
-                Text("Fechar")
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true
+        )
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth(0.95f)
+                .fillMaxHeight(0.9f)
+                .padding(16.dp),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(20.dp)
+            ) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.fromHex("#2196F3")
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Adicionar Suprimento",
+                                style = MaterialTheme.typography.titleLarge.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            )
+                            Text(
+                                text = "Registre um novo suprimento para este pet",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    color = Color.White.copy(alpha = 0.9f)
+                                )
+                            )
+                        }
+
+                        IconButton(onClick = onDismiss) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Fechar",
+                                tint = Color.White
+                            )
+                        }
+                    }
+                }
+
+                errorMessage?.let { message ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.fromHex("#FFEBEE")
+                        )
+                    ) {
+                        Text(
+                            text = message,
+                            color = Color.fromHex("#C62828"),
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
+                }
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(vertical = 8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.fromHex("#F8F9FA")
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp)
+                    ) {
+                        DynamicForm(
+                            viewModel = formViewModel,
+                            modifier = Modifier.fillMaxSize(),
+                            colorScheme = MaterialTheme.colorScheme.copy(
+                                primary = Color.fromHex("#2196F3"),
+                                error = Color.fromHex("#d32f2f")
+                            ),
+                            onSubmitSuccess = { values ->
+                                val category = SuprimentCategory.fromDisplayName(values["category"]?.toString() ?: "")
+                                val price = values["price"]?.toString()?.toFloatOrNull() ?: 0.0f
+
+                                val suprimento = addSuprimentoViewModel.createSuprimento(
+                                    petId = petId,
+                                    description = values["description"]?.toString() ?: "",
+                                    category = category.displayName,
+                                    price = price,
+                                    orderDate = values["orderDate"]?.toString() ?: "",
+                                    shopName = values["shopName"]?.toString() ?: ""
+                                )
+
+                                addSuprimentoViewModel.handleEvent(AddSuprimentoUiEvent.AddSuprimento(suprimento))
+                            }
+                        )
+                    }
+                }
+
+                if (isLoading) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = Color.fromHex("#2196F3")
+                        )
+                    }
+                }
             }
         }
-    )
+    }
 }
 
 @Composable
@@ -617,15 +765,168 @@ private fun EditSuprimentoDialog(
     errorMessage: String?,
     onDismiss: () -> Unit
 ) {
-    // TODO: Implement edit dialog using DynamicForm with EditSuprimentoFormSchema
-    AlertDialog(
+    val theme = PetWiseTheme.Light
+    val updateSuprimentoState by updateSuprimentoViewModel.uiState.collectAsState()
+
+    val formConfiguration = remember(suprimento) {
+        createEditSuprimentoFormConfiguration(suprimento, emptyList())
+    }
+
+    val formViewModel = viewModel<DynamicFormViewModel>(key = "edit_suprimento_form_${suprimento.id}") {
+        DynamicFormViewModel(initialConfiguration = formConfiguration)
+    }
+
+    LaunchedEffect(suprimento) {
+        formViewModel.resetForm()
+        formViewModel.updateConfiguration(createEditSuprimentoFormConfiguration(suprimento, emptyList()))
+        updateSuprimentoViewModel.handleEvent(UpdateSuprimentoUiEvent.LoadSuprimento(suprimento.id))
+    }
+
+    LaunchedEffect(updateSuprimentoState.updatedSuprimento) {
+        if (updateSuprimentoState.updatedSuprimento != null) {
+            formViewModel.resetForm()
+        }
+    }
+
+    Dialog(
         onDismissRequest = onDismiss,
-        title = { Text("Editar Suprimento") },
-        text = { Text("Dialog em implementação") },
-        confirmButton = {
-            Button(onClick = onDismiss) {
-                Text("Fechar")
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true
+        )
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth(0.95f)
+                .fillMaxHeight(0.9f)
+                .padding(16.dp),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(20.dp)
+            ) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.fromHex("#2196F3")
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Editar Suprimento",
+                                style = MaterialTheme.typography.titleLarge.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            )
+                            Text(
+                                text = "Atualize as informações do suprimento",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    color = Color.White.copy(alpha = 0.9f)
+                                )
+                            )
+                        }
+
+                        IconButton(onClick = onDismiss) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Fechar",
+                                tint = Color.White
+                            )
+                        }
+                    }
+                }
+
+                errorMessage?.let { message ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.fromHex("#FFEBEE")
+                        )
+                    ) {
+                        Text(
+                            text = message,
+                            color = Color.fromHex("#C62828"),
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
+                }
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(vertical = 8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.fromHex("#F8F9FA")
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp)
+                    ) {
+                        DynamicForm(
+                            viewModel = formViewModel,
+                            modifier = Modifier.fillMaxSize(),
+                            colorScheme = MaterialTheme.colorScheme.copy(
+                                primary = Color.fromHex("#2196F3"),
+                                error = Color.fromHex("#d32f2f")
+                            ),
+                            onSubmitSuccess = { values ->
+                                val category = SuprimentCategory.fromDisplayName(values["category"]?.toString() ?: "")
+                                val price = values["price"]?.toString()?.toFloatOrNull() ?: 0.0f
+
+                                val updatedSuprimento = updateSuprimentoViewModel.updateSuprimentoData(
+                                    current = suprimento,
+                                    petId = suprimento.petId, // Keep the same petId
+                                    description = values["description"]?.toString() ?: "",
+                                    category = category.displayName,
+                                    price = price,
+                                    orderDate = values["orderDate"]?.toString() ?: "",
+                                    shopName = values["shopName"]?.toString() ?: ""
+                                )
+
+                                updateSuprimentoViewModel.handleEvent(UpdateSuprimentoUiEvent.UpdateSuprimento(updatedSuprimento))
+                            }
+                        )
+                    }
+                }
+
+                if (isLoading) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = Color.fromHex("#2196F3")
+                        )
+                    }
+                }
             }
         }
-    )
+    }
 }

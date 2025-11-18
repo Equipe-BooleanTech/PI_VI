@@ -5,6 +5,7 @@ import edu.fatec.petwise.core.network.api.ConsultaApiService
 import edu.fatec.petwise.core.network.dto.*
 import edu.fatec.petwise.features.consultas.domain.models.Consulta
 import edu.fatec.petwise.features.consultas.domain.models.ConsultaStatus
+import kotlinx.datetime.LocalDateTime
 
 class RemoteConsultaDataSourceImpl(
     private val consultaApiService: ConsultaApiService
@@ -12,7 +13,7 @@ class RemoteConsultaDataSourceImpl(
 
     override suspend fun getAllConsultas(): List<Consulta> {
         return when (val result = consultaApiService.getAllConsultas()) {
-            is NetworkResult.Success -> result.data.consultas.map { it.toDomain() }
+            is NetworkResult.Success -> result.data.map { it.toDomain() }
             is NetworkResult.Error -> throw result.exception
             is NetworkResult.Loading -> emptyList()
         }
@@ -38,7 +39,7 @@ class RemoteConsultaDataSourceImpl(
             petName = consulta.petName,
             veterinarianName = consulta.veterinarianName,
             consultaType = consulta.consultaType.name,
-            consultaDate = consulta.consultaDate,
+            consultaDate = consulta.consultaDate.toString(),
             consultaTime = consulta.consultaTime,
             symptoms = consulta.symptoms,
             notes = consulta.notes
@@ -55,7 +56,7 @@ class RemoteConsultaDataSourceImpl(
         val request = UpdateConsultaRequest(
             veterinarianName = consulta.veterinarianName,
             consultaType = consulta.consultaType.name,
-            consultaDate = consulta.consultaDate,
+            consultaDate = consulta.consultaDate.toString(),
             consultaTime = consulta.consultaTime,
             status = consulta.status.name,
             symptoms = consulta.symptoms,
@@ -63,7 +64,7 @@ class RemoteConsultaDataSourceImpl(
             treatment = consulta.treatment,
             prescriptions = consulta.prescriptions,
             notes = consulta.notes,
-            nextAppointment = consulta.nextAppointment,
+            nextAppointment = consulta.nextAppointment?.toString(),
             price = consulta.price,
             isPaid = consulta.isPaid
         )
@@ -117,7 +118,7 @@ class RemoteConsultaDataSourceImpl(
 
     suspend fun searchConsultas(query: String): List<Consulta> {
         return when (val result = consultaApiService.searchConsultas(query)) {
-            is NetworkResult.Success -> result.data.consultas.map { it.toDomain() }
+            is NetworkResult.Success -> result.data.map { it.toDomain() }
             is NetworkResult.Error -> throw result.exception
             is NetworkResult.Loading -> emptyList()
         }
@@ -125,7 +126,7 @@ class RemoteConsultaDataSourceImpl(
 
     suspend fun getUpcomingConsultas(): List<Consulta> {
         return when (val result = consultaApiService.getUpcomingConsultas()) {
-            is NetworkResult.Success -> result.data.consultas.map { it.toDomain() }
+            is NetworkResult.Success -> result.data.map { it.toDomain() }
             is NetworkResult.Error -> throw result.exception
             is NetworkResult.Loading -> emptyList()
         }
@@ -133,9 +134,11 @@ class RemoteConsultaDataSourceImpl(
 
     suspend fun getConsultasByPet(petId: String): List<Consulta> {
         return when (val result = consultaApiService.getConsultasByPet(petId)) {
-            is NetworkResult.Success -> result.data.consultas.map { it.toDomain() }
+            is NetworkResult.Success -> result.data.map { it.toDomain() }
             is NetworkResult.Error -> throw result.exception
             is NetworkResult.Loading -> emptyList()
         }
     }
 }
+
+

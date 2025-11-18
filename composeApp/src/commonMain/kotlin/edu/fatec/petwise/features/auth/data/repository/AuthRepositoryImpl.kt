@@ -25,6 +25,13 @@ class AuthRepositoryImpl(
         return try {
             println("Repositório: Iniciando login para email '$email' via API")
             
+            // Clear existing tokens to ensure fresh authentication
+            println("Repositório: Limpando tokens existentes para garantir autenticação fresca")
+            withContext(NonCancellable) {
+                tokenStorage?.clearTokens()
+                NetworkModule.clearAuthToken()
+            }
+            
             val authService = getAuthService()
             val result = authService.login(
                 LoginRequest(
@@ -43,8 +50,6 @@ class AuthRepositoryImpl(
                         } else {
                             tokenStorage?.saveToken(result.data.token)
                         }
-                        tokenStorage?.saveUserId(result.data.userId)
-                        tokenStorage?.saveUserType(result.data.userType)
                         
                         NetworkModule.setAuthTokenWithExpiration(result.data.token, result.data.expiresIn)
                     }
@@ -240,9 +245,5 @@ class AuthRepositoryImpl(
 interface AuthTokenStorage {
     fun saveToken(token: String)
     fun getToken(): String?
-    fun saveUserId(userId: String)
-    fun getUserId(): String?
-    fun saveUserType(userType: String)
-    fun getUserType(): String?
     fun clearTokens()
 }

@@ -5,9 +5,10 @@ import edu.fatec.petwise.core.network.NetworkRequestHandler
 import edu.fatec.petwise.core.network.NetworkResult
 import edu.fatec.petwise.core.network.dto.*
 import io.ktor.client.request.*
+import kotlinx.serialization.json.Json
 
 interface FoodApiService {
-    suspend fun getAllFood(page: Int = 1, pageSize: Int = 20): NetworkResult<FoodListResponse>
+    suspend fun getAllFood(page: Int = 1, pageSize: Int = 20): NetworkResult<List<FoodDto>>
     suspend fun getFoodById(id: String): NetworkResult<FoodDto>
     suspend fun getFoodByCategory(category: String): NetworkResult<List<FoodDto>>
     suspend fun searchFood(query: String): NetworkResult<List<FoodDto>>
@@ -20,8 +21,21 @@ class FoodApiServiceImpl(
     private val networkHandler: NetworkRequestHandler
 ) : FoodApiService {
 
-    override suspend fun getAllFood(page: Int, pageSize: Int): NetworkResult<FoodListResponse> {
-        return networkHandler.get<FoodListResponse>(ApiEndpoints.FOOD) {
+    override suspend fun getAllFood(page: Int, pageSize: Int): NetworkResult<List<FoodDto>> {
+        return networkHandler.getWithCustomDeserializer(
+            urlString = ApiEndpoints.FOOD,
+            deserializer = { jsonString ->
+                val json = Json { ignoreUnknownKeys = true }
+                try {
+                    // Try to parse as direct array first
+                    json.decodeFromString<List<FoodDto>>(jsonString)
+                } catch (e: Exception) {
+                    // Fallback to wrapped object
+                    val wrapped = json.decodeFromString<FoodListResponse>(jsonString)
+                    wrapped.foods ?: emptyList()
+                }
+            }
+        ) {
             parameter("page", page)
             parameter("pageSize", pageSize)
         }

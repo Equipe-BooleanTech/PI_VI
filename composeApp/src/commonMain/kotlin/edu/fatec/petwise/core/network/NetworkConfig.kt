@@ -1,7 +1,7 @@
 package edu.fatec.petwise.core.network
 
 object NetworkConfig {
-    const val API_URL = "http://localhost:8080/api" // Para TESTES LOCAIS APENAS!!!
+    const val API_URL = "http://localhost:8080" // Para TESTES LOCAIS APENAS!!!
     const val REQUEST_TIMEOUT = 30_000L
     const val CONNECT_TIMEOUT = 15_000L
     const val SOCKET_TIMEOUT = 30_000L
@@ -46,8 +46,6 @@ object ApiEndpoints {
 
     const val MEDICATIONS = "/api/medications"
     fun getMedication(id: String) = "$MEDICATIONS/$id"
-    fun getMedicationsByPet(petId: String) = "$MEDICATIONS/pet/$petId"
-    fun getActiveMedicationsByPet(petId: String) = "$MEDICATIONS/pet/$petId/active"
     const val MEDICATIONS_SEARCH = "$MEDICATIONS/search"
     const val MEDICATIONS_UPCOMING = "$MEDICATIONS/upcoming"
     const val MEDICATIONS_EXPIRED = "$MEDICATIONS/expired"
@@ -55,23 +53,22 @@ object ApiEndpoints {
     fun completeMedication(id: String) = "$MEDICATIONS/$id/complete"
 
     const val USER_PROFILE = "/api/auth/profile"
-    const val PROFILE = "/api/profile"
-
+    fun updateUserProfile() = "/api/auth/profile"
+    
     const val EXAMS = "/api/exams"
     fun getExam(id: String) = "$EXAMS/$id"
     fun getExamsByPet(petId: String) = "/api/pets/$petId/exams"
     fun getExamsByVeterinary(veterinaryId: String) = "/api/veterinaries/$veterinaryId/exams"
 
-    const val PRESCRIPTIONS = "/api/prescriptions"
+    const val PRESCRIPTIONS = "/api/vet"
     fun getPrescription(id: String) = "$PRESCRIPTIONS/$id"
     fun getPrescriptionsByPet(petId: String) = "/api/pets/$petId/prescriptions"
     fun getPrescriptionsByVeterinary(veterinaryId: String) = "/api/veterinaries/$veterinaryId/prescriptions"
 
     const val LABS = "/api/labs"
     fun getLab(id: String) = "$LABS/$id"
-    fun getLabsByVeterinary(veterinaryId: String) = "/api/veterinaries/$veterinaryId/labs"
 
-    const val FOOD = "/api/food"
+    const val FOOD = "/api/foods"
     fun getFood(id: String) = "$FOOD/$id"
     const val FOOD_SEARCH = "$FOOD/search"
     const val FOOD_BY_CATEGORY = "$FOOD/category"

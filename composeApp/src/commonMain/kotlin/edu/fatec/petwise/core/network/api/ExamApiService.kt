@@ -5,9 +5,10 @@ import edu.fatec.petwise.core.network.NetworkRequestHandler
 import edu.fatec.petwise.core.network.NetworkResult
 import edu.fatec.petwise.core.network.dto.*
 import io.ktor.client.request.*
+import kotlinx.serialization.json.Json
 
 interface ExamApiService {
-    suspend fun getAllExams(page: Int = 1, pageSize: Int = 20): NetworkResult<ExamListResponse>
+    suspend fun getAllExams(page: Int = 1, pageSize: Int = 20): NetworkResult<List<ExamDto>>
     suspend fun getExamById(id: String): NetworkResult<ExamDto>
     suspend fun getExamsByPetId(petId: String): NetworkResult<List<ExamDto>>
     suspend fun getExamsByVeterinaryId(veterinaryId: String): NetworkResult<List<ExamDto>>
@@ -20,8 +21,21 @@ class ExamApiServiceImpl(
     private val networkHandler: NetworkRequestHandler
 ) : ExamApiService {
 
-    override suspend fun getAllExams(page: Int, pageSize: Int): NetworkResult<ExamListResponse> {
-        return networkHandler.get<ExamListResponse>(ApiEndpoints.EXAMS) {
+    override suspend fun getAllExams(page: Int, pageSize: Int): NetworkResult<List<ExamDto>> {
+        return networkHandler.getWithCustomDeserializer(
+            urlString = ApiEndpoints.EXAMS,
+            deserializer = { jsonString ->
+                val json = Json { ignoreUnknownKeys = true }
+                try {
+                    // Try to parse as direct array first
+                    json.decodeFromString<List<ExamDto>>(jsonString)
+                } catch (e: Exception) {
+                    // Fallback to wrapped object
+                    val wrapped = json.decodeFromString<ExamListResponse>(jsonString)
+                    wrapped.exams ?: emptyList()
+                }
+            }
+        ) {
             parameter("page", page)
             parameter("pageSize", pageSize)
         }
