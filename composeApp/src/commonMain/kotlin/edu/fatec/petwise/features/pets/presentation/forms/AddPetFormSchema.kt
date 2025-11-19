@@ -54,7 +54,13 @@ val addPetFormConfiguration: FormConfiguration = FormConfiguration(
             id = "species",
             label = "Espécie",
             type = FormFieldType.SELECT,
-            options = listOf("Cão", "Gato", "Ave", "Coelho", "Outro"),
+            options = listOf(
+                "Cão",
+                "Gato",
+                "Ave",
+                "Coelho",
+                "Outro"
+            ),
             validators = listOf(
                 ValidationRule(
                     type = ValidationType.REQUIRED,

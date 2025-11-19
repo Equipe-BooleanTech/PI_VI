@@ -34,16 +34,10 @@ class RemotePrescriptionDataSourceImpl(
     override suspend fun createPrescription(prescription: Prescription): Prescription {
         val request = CreatePrescriptionRequest(
             petId = prescription.petId,
-            veterinaryId = prescription.veterinaryId,
-            medicationName = prescription.medicationName,
-            dosage = prescription.dosage,
-            frequency = prescription.frequency,
-            duration = prescription.duration,
-            instructions = prescription.instructions,
-            startDate = prescription.startDate,
-            endDate = prescription.endDate,
-            status = prescription.status,
-            notes = prescription.notes
+            veterinarian = prescription.veterinaryId,
+            prescriptionDate = prescription.startDate,
+            instructions = prescription.instructions ?: "",
+            medications = "${prescription.medicationName} ${prescription.dosage} ${prescription.frequency} ${prescription.duration}"
         )
         return when (val result = prescriptionApiService.createPrescription(request)) {
             is NetworkResult.Success -> result.data.toPrescription()

@@ -11,7 +11,7 @@ interface VaccinationApiService {
     suspend fun getAllVaccinations(page: Int = 1, pageSize: Int = 20): NetworkResult<List<VaccinationDto>>
     suspend fun getVaccinationById(id: String): NetworkResult<VaccinationDto>
     suspend fun getVaccinationsByPetId(petId: String, page: Int = 1, pageSize: Int = 20): NetworkResult<List<VaccinationDto>>
-    suspend fun createVaccination(request: CreateVaccinationRequest): NetworkResult<VaccinationDto>
+    suspend fun createVaccination(petId: String, request: CreateVaccinationRequest): NetworkResult<VaccinationDto>
     suspend fun updateVaccination(id: String, request: UpdateVaccinationRequest): NetworkResult<VaccinationDto>
     suspend fun deleteVaccination(id: String): NetworkResult<Unit>
     suspend fun markAsApplied(id: String, request: MarkAsAppliedRequest): NetworkResult<VaccinationDto>
@@ -62,11 +62,13 @@ class VaccinationApiServiceImpl(
         }
     }
 
-    override suspend fun createVaccination(request: CreateVaccinationRequest): NetworkResult<VaccinationDto> {
+    override suspend fun createVaccination(petId: String, request: CreateVaccinationRequest): NetworkResult<VaccinationDto> {
         return networkHandler.post<VaccinationDto, CreateVaccinationRequest>(
             urlString = ApiEndpoints.VACCINATIONS,
             body = request
-        )
+        ) {
+            parameter("petId", petId)
+        }
     }
 
     override suspend fun updateVaccination(id: String, request: UpdateVaccinationRequest): NetworkResult<VaccinationDto> {

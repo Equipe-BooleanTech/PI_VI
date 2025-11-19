@@ -411,7 +411,13 @@ fun EditConsultaDialog(
                                         petName = petName,
                                         veterinarianName = values["veterinarianName"]?.toString() ?: consulta.veterinarianName,
                                         consultaType = consultaType,
-                                        consultaDate = values["consultaDate"]?.toString()?.let { kotlinx.datetime.LocalDateTime.parse(it) } ?: consulta.consultaDate,
+                                        consultaDate = run {
+                                            val dateStr = values["consultaDate"] as String
+                                            val timeStr = values["consultaTime"] as String
+                                            val date = kotlinx.datetime.LocalDate.parse(dateStr)
+                                            val time = kotlinx.datetime.LocalTime.parse(timeStr)
+                                            kotlinx.datetime.LocalDateTime(date, time)
+                                        },
                                         consultaTime = values["consultaTime"]?.toString() ?: consulta.consultaTime,
                                         symptoms = values["symptoms"]?.toString() ?: consulta.symptoms,
                                         diagnosis = values["diagnosis"]?.toString() ?: consulta.diagnosis,

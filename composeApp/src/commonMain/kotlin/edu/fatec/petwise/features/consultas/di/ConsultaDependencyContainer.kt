@@ -100,9 +100,9 @@ object ConsultaDependencyContainer {
     }
 
     fun reset() {
-        consultasViewModel?.viewModelScope?.cancel()
-        addConsultaViewModel?.viewModelScope?.cancel()
-        updateConsultaViewModel?.viewModelScope?.cancel()
+        consultasViewModel?.let { it.viewModelScope.cancel() }
+        addConsultaViewModel?.let { it.viewModelScope.cancel() }
+        updateConsultaViewModel?.let { it.viewModelScope.cancel() }
 
         consultasViewModel = null
         addConsultaViewModel = null

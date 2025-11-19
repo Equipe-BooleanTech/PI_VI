@@ -71,6 +71,16 @@ class UpdateConsultaViewModel(
             _uiState.value = UpdateConsultaUiState(isLoading = true)
 
             try {
+                val priceValue = event.price.toFloatOrNull()
+
+                if (priceValue == null || priceValue < 0) {
+                    _uiState.value = UpdateConsultaUiState(
+                        isLoading = false,
+                        errorMessage = "Preço deve ser um número válido maior ou igual a 0"
+                    )
+                    return@launch
+                }
+
                 val consulta = Consulta(
                     id = event.id,
                     petId = event.petId,
@@ -86,7 +96,7 @@ class UpdateConsultaViewModel(
                     prescriptions = event.prescriptions,
                     notes = event.notes,
                     nextAppointment = event.nextAppointment,
-                    price = event.price.toFloatOrNull() ?: 0f,
+                    price = priceValue,
                     isPaid = false,
                     createdAt = "", 
                     updatedAt = "" 

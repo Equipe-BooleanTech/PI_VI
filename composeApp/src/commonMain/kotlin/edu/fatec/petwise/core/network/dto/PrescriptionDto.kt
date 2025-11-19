@@ -32,16 +32,13 @@ data class PrescriptionListResponse(
 @Serializable
 data class CreatePrescriptionRequest(
     val petId: String,
-    val veterinaryId: String,
-    val medicationName: String,
-    val dosage: String,
-    val frequency: String,
-    val duration: String,
-    val startDate: String,
-    val endDate: String? = null,
-    val instructions: String? = null,
-    val notes: String? = null,
-    val status: String = "ACTIVE"
+    val veterinarian: String,
+    val prescriptionDate: String,
+    val instructions: String,
+    val diagnosis: String? = null,
+    val validUntil: String? = null,
+    val medications: String? = null,
+    val observations: String? = null
 )
 
 @Serializable
