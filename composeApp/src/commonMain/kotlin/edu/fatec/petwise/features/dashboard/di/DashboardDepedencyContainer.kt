@@ -238,7 +238,10 @@ object DashboardDepedencyContainer {
     private fun getPrescriptionDataSource(): RemotePrescriptionDataSourceImpl {
         val existing = prescriptionDataSource
         if (existing != null) return existing
-        val created = RemotePrescriptionDataSourceImpl(NetworkModule.prescriptionApiService)
+        val created = RemotePrescriptionDataSourceImpl(
+            NetworkModule.prescriptionApiService,
+            AuthDependencyContainer.provideGetUserProfileUseCase()
+        )
         prescriptionDataSource = created
         return created
     }
@@ -246,7 +249,10 @@ object DashboardDepedencyContainer {
     private fun getExamDataSource(): RemoteExamDataSourceImpl {
         val existing = examDataSource
         if (existing != null) return existing
-        val created = RemoteExamDataSourceImpl(NetworkModule.examApiService)
+        val created = RemoteExamDataSourceImpl(
+            NetworkModule.examApiService,
+            AuthDependencyContainer.provideGetUserProfileUseCase()
+        )
         examDataSource = created
         return created
     }
@@ -294,8 +300,16 @@ object DashboardDepedencyContainer {
             GetUpcomingConsultasUseCase(getConsultaRemoteDataSource()),
             GetUserNameUseCase(getAuthRepository()),
             GetUserTypeUseCase(getAuthRepository()),
-            GetPrescriptionsCountUseCase(getPrescriptionRepository()),
-            GetExamsCountUseCase(getExamRepository()),
+            GetPrescriptionsCountUseCase(
+                getPrescriptionRepository(),
+                getPetRepository(),
+                AuthDependencyContainer.provideGetUserProfileUseCase()
+            ),
+            GetExamsCountUseCase(
+                getExamRepository(),
+                getPetRepository(),
+                AuthDependencyContainer.provideGetUserProfileUseCase()
+            ),
             GetLabsCountUseCase(getLabRepository()),
             GetFoodCountUseCase(getFoodRepository()),
             GetHygieneCountUseCase(getHygieneRepository()),

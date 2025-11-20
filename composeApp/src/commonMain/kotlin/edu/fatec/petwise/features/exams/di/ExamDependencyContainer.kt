@@ -14,7 +14,10 @@ import edu.fatec.petwise.features.exams.presentation.viewmodel.UpdateExamViewMod
 object ExamDependencyContainer {
     
     private val remoteDataSource: RemoteExamDataSource by lazy {
-        RemoteExamDataSourceImpl(NetworkModule.examApiService)
+        RemoteExamDataSourceImpl(
+            NetworkModule.examApiService,
+            AuthDependencyContainer.provideGetUserProfileUseCase()
+        )
     }
 
     private val repository: ExamRepository by lazy {

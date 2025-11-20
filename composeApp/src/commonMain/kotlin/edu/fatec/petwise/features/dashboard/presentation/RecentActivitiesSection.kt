@@ -45,7 +45,6 @@ fun RecentActivitiesSection(
 
     val activities = when (userType) {
         UserType.OWNER -> {
-            // For OWNER, show detailed pet activities with cancel option
             upcomingConsultas.take(3).map { consulta ->
                 PetActivityData(
                     id = consulta.id,
@@ -81,7 +80,6 @@ fun RecentActivitiesSection(
         }
         UserType.PHARMACY -> {
             // For PHARMACY, show medication-related activities
-            // TODO: Replace with actual medication activities when available
             upcomingConsultas.take(3).map { consulta ->
                 val date = consulta.consultaDate
                 val formattedDate = "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year} ${consulta.consultaTime}"

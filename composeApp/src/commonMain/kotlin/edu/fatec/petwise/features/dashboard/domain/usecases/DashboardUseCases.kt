@@ -12,6 +12,7 @@ import edu.fatec.petwise.features.labs.domain.repository.LabRepository
 import edu.fatec.petwise.features.food.domain.repository.FoodRepository
 import edu.fatec.petwise.features.hygiene.domain.repository.HygieneRepository
 import edu.fatec.petwise.features.toys.domain.repository.ToyRepository
+import edu.fatec.petwise.features.auth.domain.usecases.GetUserProfileUseCase
 import kotlinx.coroutines.flow.first
 
 class GetCardsStatisticsUseCase(
@@ -22,22 +23,23 @@ class GetCardsStatisticsUseCase(
 ) {
     suspend operator fun invoke(userType: String): List<Int> {
         val petCount = when (userType) {
-            "OWNER" -> 0 // OWNER users should not access system-wide pet statistics
+            "OWNER" -> petRepository.getAllPets().first().size
             "VETERINARY" -> petRepository.getAllPets().first().size
             else -> 0
         }
         val consultaCount = when (userType) {
-            "OWNER" -> 0 // OWNER users should not access system-wide consultation statistics
+            "OWNER" -> 0 // OWNER cannot access general appointments endpoint
             "VETERINARY" -> consultaRepository.getUpcomingConsultas().size
             else -> 0
         }
         val vacinaCount = when (userType) {
+            "OWNER" -> 0 // TODO: implement upcoming vaccines for owner
             "VETERINARY" -> vacinaRepository.getAllVaccinations().first().size
             else -> 0
         }
         val medicamentoCount = when (userType) {
+            "OWNER" -> 0 // TODO: implement medications for owner
             "PHARMACY" -> medicamentoRepository.getAllMedications().first().size
-            "VETERINARY" -> medicamentoRepository.getAllMedications().first().size
             else -> 0
         }
         return listOf(petCount, consultaCount, vacinaCount, medicamentoCount)
@@ -49,7 +51,7 @@ class GetUpcomingConsultasUseCase(
 ) {
     suspend operator fun invoke(userType: String): List<Consulta> {
         return when (userType) {
-            "OWNER" -> emptyList() // OWNER users should not access system-wide upcoming consultations
+            "OWNER" -> emptyList() // OWNER cannot access general appointments endpoint
             "VETERINARY" -> consultaRepository.getUpcomingConsultas()
             else -> emptyList()
         }
@@ -90,18 +92,62 @@ class GetUserTypeUseCase(
 }
 
 class GetPrescriptionsCountUseCase(
-    private val prescriptionRepository: PrescriptionRepository
+    private val prescriptionRepository: PrescriptionRepository,
+    private val petRepository: PetRepository,
+    private val getUserProfileUseCase: GetUserProfileUseCase
 ) {
-    suspend operator fun invoke(): Int {
-        return prescriptionRepository.getAllPrescriptions().first().size
+    suspend operator fun invoke(userType: String = "OWNER"): Int {
+        return when (userType) {
+            "OWNER" -> {
+                try {
+                    // For OWNER users, get only prescriptions for their pets
+                    val userProfile = getUserProfileUseCase.execute().getOrNull()
+                    if (userProfile != null) {
+                        val userPets = petRepository.getAllPets().first()
+                        val userPetIds = userPets.map { it.id }.toSet()
+                        val allPrescriptions = prescriptionRepository.getAllPrescriptions().first()
+                        allPrescriptions.count { it.petId in userPetIds }
+                    } else {
+                        0
+                    }
+                } catch (e: Exception) {
+                    println("Error filtering prescriptions for OWNER: ${e.message}")
+                    0
+                }
+            }
+            "VETERINARY" -> prescriptionRepository.getAllPrescriptions().first().size
+            else -> 0
+        }
     }
 }
 
 class GetExamsCountUseCase(
-    private val examRepository: ExamRepository
+    private val examRepository: ExamRepository,
+    private val petRepository: PetRepository,
+    private val getUserProfileUseCase: GetUserProfileUseCase
 ) {
-    suspend operator fun invoke(): Int {
-        return examRepository.getAllExams().first().size
+    suspend operator fun invoke(userType: String = "OWNER"): Int {
+        return when (userType) {
+            "OWNER" -> {
+                try {
+                    // For OWNER users, get only exams for their pets
+                    val userProfile = getUserProfileUseCase.execute().getOrNull()
+                    if (userProfile != null) {
+                        val userPets = petRepository.getAllPets().first()
+                        val userPetIds = userPets.map { it.id }.toSet()
+                        val allExams = examRepository.getAllExams().first()
+                        allExams.count { it.petId in userPetIds }
+                    } else {
+                        0
+                    }
+                } catch (e: Exception) {
+                    println("Error filtering exams for OWNER: ${e.message}")
+                    0
+                }
+            }
+            "VETERINARY" -> examRepository.getAllExams().first().size
+            else -> 0
+        }
     }
 }
 

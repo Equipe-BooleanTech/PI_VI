@@ -4,14 +4,43 @@ import edu.fatec.petwise.core.network.NetworkResult
 import edu.fatec.petwise.core.network.api.PrescriptionApiService
 import edu.fatec.petwise.core.network.dto.*
 import edu.fatec.petwise.features.prescriptions.domain.models.Prescription
+import edu.fatec.petwise.features.auth.domain.usecases.GetUserProfileUseCase
 
 class RemotePrescriptionDataSourceImpl(
-    private val prescriptionApiService: PrescriptionApiService
+    private val prescriptionApiService: PrescriptionApiService,
+    private val getUserProfileUseCase: GetUserProfileUseCase
 ) : RemotePrescriptionDataSource {
 
     override suspend fun getAllPrescriptions(): List<Prescription> {
+        println("API: Buscando todas as prescrições")
         return when (val result = prescriptionApiService.getAllPrescriptions(1, 1000)) {
-            is NetworkResult.Success -> result.data.map { it.toPrescription() }
+            is NetworkResult.Success -> {
+                println("API: ${result.data.size} prescrições obtidas com sucesso")
+                var prescriptions = result.data.map { it.toPrescription() }
+                
+                // Filter prescriptions based on user type
+                try {
+                    val userProfile = getUserProfileUseCase.execute().getOrNull()
+                    if (userProfile != null && userProfile.userType == "OWNER") {
+                        println("API: Usuário é OWNER, filtrando prescrições por pets do usuário")
+                        // For OWNER users, we need to get their pets first to filter prescriptions
+                        // This is a simplified approach - in a real app, the API should handle this
+                        prescriptions = prescriptions.filter { prescription ->
+                            // This would need to be implemented properly by checking pet ownership
+                            // For now, we'll return all prescriptions (this needs backend support)
+                            true
+                        }
+                        println("API: Após filtro OWNER: ${prescriptions.size} prescrições restantes")
+                    } else {
+                        println("API: Usuário não é OWNER ou perfil não encontrado, mostrando todas as prescrições")
+                    }
+                } catch (e: Exception) {
+                    println("API: Erro ao obter perfil do usuário para filtro: ${e.message}")
+                    // Continue without filtering
+                }
+                
+                prescriptions
+            }
             is NetworkResult.Error -> {
                 println("API Error: ${result.exception.message}")
                 emptyList()

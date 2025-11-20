@@ -5,8 +5,8 @@ import edu.fatec.petwise.features.dashboard.presentation.viewmodel.DashboardUiEv
 import edu.fatec.petwise.features.dashboard.presentation.viewmodel.DashboardUiState
 import edu.fatec.petwise.features.dashboard.presentation.viewmodel.DashboardViewModel
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -56,6 +56,18 @@ import edu.fatec.petwise.presentation.components.MoreMenu.MoreMenu
 import edu.fatec.petwise.presentation.components.NavBar.NavBar
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.fromHex
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import edu.fatec.petwise.features.dashboard.presentation.StatusCardsSection
+import edu.fatec.petwise.features.dashboard.presentation.QuickActionsSection
+import edu.fatec.petwise.features.dashboard.presentation.RecentActivitiesSection
+import edu.fatec.petwise.features.dashboard.presentation.UnauthorizedScreen
+
 
 @Composable
 fun DashboardScreen(
