@@ -5,7 +5,7 @@ import edu.fatec.petwise.features.toys.domain.models.Toy
 
 @Serializable
 data class ToyDto(
-    val id: String,
+    val id: String?,
     val name: String,
     val brand: String,
     val category: String,
@@ -61,7 +61,7 @@ data class UpdateToyRequest(
 
 fun ToyDto.toToy(): Toy {
     return Toy(
-        id = id,
+        id = id ?: "",
         name = name,
         brand = brand,
         category = category,

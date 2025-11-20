@@ -50,7 +50,6 @@ fun VaccinationsScreen(
             it.status == VaccinationStatus.ATRASADA || it.status == VaccinationStatus.AGENDADA
         }
     }
-    val theme = PetWiseTheme.Light
 
     var showAddDialog by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
@@ -82,7 +81,7 @@ fun VaccinationsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.fromHex("#F7F7F7"))
+            .background(Color(0xFFF7F7F7))
     ) {
         VaccinationsHeader(
             vaccinationCount = vaccinations.size,
@@ -169,6 +168,26 @@ fun VaccinationsScreen(
             )
         }
     }
+
+    // Edit Dialog
+    vaccinationToEdit?.let { vaccination ->
+        if (showEditDialog) {
+            EditVaccinationDialog(
+                updateVaccinationViewModel = updateVaccinationViewModel,
+                vaccination = vaccination,
+                isLoading = updateUiState.isLoading,
+                errorMessage = updateUiState.errorMessage,
+                onDismiss = {
+                    showEditDialog = false
+                    vaccinationToEdit = null
+                    updateVaccinationViewModel.onEvent(UpdateVaccinationUiEvent.ClearState)
+                },
+                onSuccess = {
+                    viewModel.onEvent(VaccinationsUiEvent.LoadVaccinations)
+                }
+            )
+        }
+    }
 }
 
 @Composable
@@ -177,14 +196,13 @@ private fun VaccinationsHeader(
     pendingCount: Int,
     onAddVaccinationClick: () -> Unit
 ) {
-    val theme = PetWiseTheme.Light
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.fromHex("#4CAF50")
+            containerColor = Color(0xFF4CAF50)
         ),
         shape = RoundedCornerShape(16.dp)
     ) {
@@ -252,7 +270,7 @@ private fun VaccinationsHeader(
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.White,
-                        contentColor = Color.fromHex("#4CAF50")
+                        contentColor = Color(0xFF4CAF50)
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
@@ -269,10 +287,9 @@ private fun VaccinationsHeader(
                         )
                     )
                 }
-            }
         }
     }
-
+}
 
 @Composable
 private fun LoadingContent() {
@@ -281,7 +298,7 @@ private fun LoadingContent() {
         contentAlignment = Alignment.Center
     ) {
         CircularProgressIndicator(
-            color = Color.fromHex("#4CAF50")
+            color = Color(0xFF4CAF50)
         )
     }
 }
@@ -329,7 +346,7 @@ private fun EmptyContent(
             Button(
                     onClick = onAddVaccinationClick,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.fromHex("#4CAF50")
+                        containerColor = Color(0xFF4CAF50)
                     )
                 ) {
                     Icon(
@@ -339,9 +356,9 @@ private fun EmptyContent(
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Adicionar Vacina")
                 }
-            }
         }
     }
+}
 
 @Composable
 private fun VaccinationsListContent(
@@ -744,6 +761,5 @@ private fun VaccinationCard(
             }
         }
     }
-
-
 }
+

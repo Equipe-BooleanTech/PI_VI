@@ -22,11 +22,13 @@ class GetCardsStatisticsUseCase(
 ) {
     suspend operator fun invoke(userType: String): List<Int> {
         val petCount = when (userType) {
-            "OWNER" -> petRepository.getAllPets().first().size
+            "OWNER" -> 0 // OWNER users should not access system-wide pet statistics
+            "VETERINARY" -> petRepository.getAllPets().first().size
             else -> 0
         }
         val consultaCount = when (userType) {
-            "OWNER", "VETERINARY" -> consultaRepository.getAllConsultas().size
+            "OWNER" -> 0 // OWNER users should not access system-wide consultation statistics
+            "VETERINARY" -> consultaRepository.getUpcomingConsultas().size
             else -> 0
         }
         val vacinaCount = when (userType) {
@@ -35,6 +37,7 @@ class GetCardsStatisticsUseCase(
         }
         val medicamentoCount = when (userType) {
             "PHARMACY" -> medicamentoRepository.getAllMedications().first().size
+            "VETERINARY" -> medicamentoRepository.getAllMedications().first().size
             else -> 0
         }
         return listOf(petCount, consultaCount, vacinaCount, medicamentoCount)
@@ -46,7 +49,8 @@ class GetUpcomingConsultasUseCase(
 ) {
     suspend operator fun invoke(userType: String): List<Consulta> {
         return when (userType) {
-            "OWNER", "VETERINARY" -> consultaRepository.getUpcomingConsultas()
+            "OWNER" -> emptyList() // OWNER users should not access system-wide upcoming consultations
+            "VETERINARY" -> consultaRepository.getUpcomingConsultas()
             else -> emptyList()
         }
     }
@@ -105,7 +109,7 @@ class GetLabsCountUseCase(
     private val labRepository: LabRepository
 ) {
     suspend operator fun invoke(): Int {
-        return labRepository.getAllLabs().first().size
+        return labRepository.getAllLabResults().first().size
     }
 }
 

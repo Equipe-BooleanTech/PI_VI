@@ -28,12 +28,10 @@ data class ExamListResponse(
 
 @Serializable
 data class CreateExamRequest(
-    val petId: String,
-    val veterinaryId: String,
     val examType: String,
     val examDate: String,
     val results: String? = null,
-    val status: String = "PENDING",
+    val status: String,
     val notes: String? = null,
     val attachmentUrl: String? = null
 )

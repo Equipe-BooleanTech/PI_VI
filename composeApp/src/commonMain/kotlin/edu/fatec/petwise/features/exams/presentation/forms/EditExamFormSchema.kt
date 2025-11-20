@@ -1,13 +1,13 @@
-package edu.fatec.petwise.features.labs.presentation.forms
+package edu.fatec.petwise.features.exams.presentation.forms
 
-import edu.fatec.petwise.features.labs.domain.models.LabResult
+import edu.fatec.petwise.features.exams.domain.models.Exam
 import edu.fatec.petwise.presentation.shared.form.*
 import kotlinx.serialization.json.JsonPrimitive
 
-fun createEditLabResultFormConfiguration(labResult: LabResult): FormConfiguration = FormConfiguration(
-    id = "edit_lab_result_form",
-    title = "Editar Resultado de Exame - ${labResult.labType}",
-    description = "Atualize as informações do resultado de exame laboratorial.",
+fun createEditExamFormConfiguration(exam: Exam): FormConfiguration = FormConfiguration(
+    id = "edit_exam_form",
+    title = "Editar Exame - ${exam.examType}",
+    description = "Atualize as informações do exame.",
     layout = FormLayout(
         columns = 1,
         maxWidth = 600,
@@ -16,11 +16,11 @@ fun createEditLabResultFormConfiguration(labResult: LabResult): FormConfiguratio
     ),
     fields = listOf(
         FormFieldDefinition(
-            id = "labType",
+            id = "examType",
             label = "Tipo de Exame",
             type = FormFieldType.TEXT,
             placeholder = "Ex: Hemograma, Bioquímica, Urinálise...",
-            default = JsonPrimitive(labResult.labType),
+            default = JsonPrimitive(exam.examType),
             validators = listOf(
                 ValidationRule(
                     type = ValidationType.REQUIRED,
@@ -35,11 +35,11 @@ fun createEditLabResultFormConfiguration(labResult: LabResult): FormConfiguratio
             formatting = FieldFormatting(capitalize = true)
         ),
         FormFieldDefinition(
-            id = "labDate",
+            id = "examDate",
             label = "Data do Exame",
             type = FormFieldType.DATE,
             placeholder = "Selecione a data do exame",
-            default = JsonPrimitive(labResult.labDate),
+            default = JsonPrimitive(exam.examDate),
             validators = listOf(
                 ValidationRule(
                     type = ValidationType.REQUIRED,
@@ -52,7 +52,7 @@ fun createEditLabResultFormConfiguration(labResult: LabResult): FormConfiguratio
             label = "Resultados",
             type = FormFieldType.TEXTAREA,
             placeholder = "Descreva os resultados do exame...",
-            default = JsonPrimitive(labResult.results ?: ""),
+            default = JsonPrimitive(exam.results ?: ""),
             validators = emptyList()
         ),
         FormFieldDefinition(
@@ -60,7 +60,7 @@ fun createEditLabResultFormConfiguration(labResult: LabResult): FormConfiguratio
             label = "Status",
             type = FormFieldType.SELECT,
             placeholder = "Selecione o status",
-            default = JsonPrimitive(labResult.status),
+            default = JsonPrimitive(exam.status),
             options = listOf("PENDING", "IN_PROGRESS", "COMPLETED", "CANCELLED"),
             validators = listOf(
                 ValidationRule(
@@ -74,7 +74,7 @@ fun createEditLabResultFormConfiguration(labResult: LabResult): FormConfiguratio
             label = "Observações",
             type = FormFieldType.TEXTAREA,
             placeholder = "Observações adicionais...",
-            default = JsonPrimitive(labResult.notes ?: ""),
+            default = JsonPrimitive(exam.notes ?: ""),
             validators = emptyList()
         ),
         FormFieldDefinition(
@@ -86,9 +86,9 @@ fun createEditLabResultFormConfiguration(labResult: LabResult): FormConfiguratio
     validationBehavior = ValidationBehavior.ON_BLUR,
     submitBehavior = SubmitBehavior.API_CALL,
     styling = FormStyling(
-        primaryColor = "#009688",
-        errorColor = "#FF3B30",
-        successColor = "#34C759",
+        primaryColor = "#2196F3",
+        errorColor = "#F44336",
+        successColor = "#4CAF50",
         fieldHeight = 56,
         borderRadius = 8,
         spacing = 16

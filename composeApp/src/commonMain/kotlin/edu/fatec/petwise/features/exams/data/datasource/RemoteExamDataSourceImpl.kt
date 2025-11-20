@@ -34,16 +34,14 @@ class RemoteExamDataSourceImpl(
 
     override suspend fun createExam(exam: Exam): Exam {
         val request = CreateExamRequest(
-            petId = exam.petId,
-            veterinaryId = exam.veterinaryId,
             examType = exam.examType,
-            examDate = parseDateToIso(exam.examDate),
+            examDate = exam.examDate,
             results = exam.results,
             status = exam.status,
             notes = exam.notes,
             attachmentUrl = exam.attachmentUrl
         )
-        return when (val result = examApiService.createExam(request)) {
+        return when (val result = examApiService.createExam(exam.petId, request)) {
             is NetworkResult.Success -> result.data.toExam()
             is NetworkResult.Error -> throw Exception(result.exception.message)
             is NetworkResult.Loading -> throw Exception("Request in progress")

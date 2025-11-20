@@ -102,6 +102,10 @@ object MedicationDependencyContainer {
         return created
     }
 
+    fun provideMedicationRepository(): MedicationRepository {
+        return getRepository()
+    }
+
     fun reset() {
         medicationsViewModel?.viewModelScope?.cancel()
         addMedicationViewModel?.viewModelScope?.cancel()

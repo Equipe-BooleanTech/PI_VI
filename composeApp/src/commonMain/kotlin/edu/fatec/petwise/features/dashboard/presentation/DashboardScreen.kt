@@ -43,6 +43,7 @@ import edu.fatec.petwise.features.consultas.presentation.view.ConsultasScreen
 import edu.fatec.petwise.features.dashboard.domain.models.DashboardDataProvider
 import edu.fatec.petwise.features.dashboard.domain.models.DefaultDashboardDataProvider
 import edu.fatec.petwise.features.dashboard.domain.models.UserType
+import edu.fatec.petwise.features.exams.di.ExamDependencyContainer
 import edu.fatec.petwise.features.medications.presentation.view.MedicationsScreen
 import edu.fatec.petwise.features.pets.presentation.view.PetsScreen
 import edu.fatec.petwise.features.suprimentos.presentation.view.SuprimentosPetSelectionScreen
@@ -262,7 +263,9 @@ fun DashboardScreen(
                                 .fillMaxSize()
                                 .padding(paddingValues)
                         ) {
-                            edu.fatec.petwise.features.labs.presentation.LabsScreen()
+                            edu.fatec.petwise.features.labs.presentation.LabsScreen(
+                                viewModel = edu.fatec.petwise.features.labs.di.LabDependencyContainer.labsViewModel
+                            )
                         }
                     } else {
                         UnauthorizedScreen(paddingValues, "Você não tem permissão para acessar Laboratório")
@@ -288,7 +291,9 @@ fun DashboardScreen(
                                 .fillMaxSize()
                                 .padding(paddingValues)
                         ) {
-                            edu.fatec.petwise.features.exams.presentation.ExamsScreen()
+                            edu.fatec.petwise.features.exams.presentation.ExamsScreen(
+                                viewModel = ExamDependencyContainer.examsViewModel
+                            )
                         }
                     } else {
                         UnauthorizedScreen(paddingValues, "Você não tem permissão para acessar Exames")

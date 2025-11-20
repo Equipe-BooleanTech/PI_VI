@@ -54,7 +54,7 @@ fun RecentActivitiesSection(
                     activityType = "consulta",
                     title = consulta.consultaType.displayName,
                     description = consulta.symptoms.ifEmpty { "Consulta veterinária" },
-                    date = consulta.consultaDate.toString().substring(0, 10), // YYYY-MM-DD
+                    date = "${consulta.consultaDate.dayOfMonth.toString().padStart(2, '0')}/${consulta.consultaDate.monthNumber.toString().padStart(2, '0')}/${consulta.consultaDate.year}",
                     time = consulta.consultaTime,
                     price = if (consulta.price > 0) consulta.price.toString() else null,
                     status = consulta.status.displayName.lowercase(),
@@ -65,7 +65,8 @@ fun RecentActivitiesSection(
         UserType.VETERINARY -> {
             // For VETERINARY, show medical activities (consultations, vaccines, prescriptions, exams, labs)
             upcomingConsultas.take(3).map { consulta ->
-                val formattedDate = "${consulta.consultaDate.toString().substring(0, 10)} ${consulta.consultaTime}"
+                val date = consulta.consultaDate
+                val formattedDate = "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year} ${consulta.consultaTime}"
 
                 RecentActivityData(
                     id = consulta.id,
@@ -82,7 +83,8 @@ fun RecentActivitiesSection(
             // For PHARMACY, show medication-related activities
             // TODO: Replace with actual medication activities when available
             upcomingConsultas.take(3).map { consulta ->
-                val formattedDate = "${consulta.consultaDate.toString().substring(0, 10)} ${consulta.consultaTime}"
+                val date = consulta.consultaDate
+                val formattedDate = "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year} ${consulta.consultaTime}"
 
                 RecentActivityData(
                     id = consulta.id,
@@ -99,7 +101,8 @@ fun RecentActivitiesSection(
             // For PETSHOP, show product-related activities
             // TODO: Replace with actual product activities when available
             upcomingConsultas.take(3).map { consulta ->
-                val formattedDate = "${consulta.consultaDate.toString().substring(0, 10)} ${consulta.consultaTime}"
+                val date = consulta.consultaDate
+                val formattedDate = "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year} ${consulta.consultaTime}"
 
                 RecentActivityData(
                     id = consulta.id,

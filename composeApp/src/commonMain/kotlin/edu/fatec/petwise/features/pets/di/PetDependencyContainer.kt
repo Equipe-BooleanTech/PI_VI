@@ -3,18 +3,16 @@ package edu.fatec.petwise.features.pets.di
 import androidx.lifecycle.viewModelScope
 import edu.fatec.petwise.core.network.di.NetworkModule
 import edu.fatec.petwise.features.auth.di.AuthDependencyContainer
+import edu.fatec.petwise.features.consultas.di.ConsultaDependencyContainer
+import edu.fatec.petwise.features.vaccinations.di.VaccinationDependencyContainer
+import edu.fatec.petwise.features.medications.di.MedicationDependencyContainer
+import edu.fatec.petwise.features.exams.di.ExamDependencyContainer
+import edu.fatec.petwise.features.prescriptions.di.PrescriptionDependencyContainer
 import edu.fatec.petwise.features.pets.data.datasource.RemotePetDataSourceImpl
 import edu.fatec.petwise.features.pets.data.repository.PetRepositoryImpl
 import edu.fatec.petwise.features.pets.domain.repository.PetRepository
-import edu.fatec.petwise.features.pets.domain.usecases.AddPetUseCase
-import edu.fatec.petwise.features.pets.domain.usecases.DeletePetUseCase
-import edu.fatec.petwise.features.pets.domain.usecases.GetPetsUseCase
-import edu.fatec.petwise.features.pets.domain.usecases.ToggleFavoriteUseCase
-import edu.fatec.petwise.features.pets.domain.usecases.UpdateHealthStatusUseCase
-import edu.fatec.petwise.features.pets.domain.usecases.UpdatePetUseCase
-import edu.fatec.petwise.features.pets.presentation.viewmodel.AddPetViewModel
-import edu.fatec.petwise.features.pets.presentation.viewmodel.PetsViewModel
-import edu.fatec.petwise.features.pets.presentation.viewmodel.UpdatePetViewModel
+import edu.fatec.petwise.features.pets.domain.usecases.*
+import edu.fatec.petwise.features.pets.presentation.viewmodel.*
 import kotlinx.coroutines.cancel
 
 object PetDependencyContainer {
@@ -33,6 +31,9 @@ object PetDependencyContainer {
 
     
     private var updatePetViewModel: UpdatePetViewModel? = null
+
+    
+    private var petDetailsViewModel: PetDetailsViewModel? = null
 
     private fun getRemoteDataSource(): RemotePetDataSourceImpl {
         val existing = remoteDataSource
@@ -77,6 +78,16 @@ object PetDependencyContainer {
         )
     }
 
+    private fun buildPetDetailsViewModel(): PetDetailsViewModel {
+        return PetDetailsViewModel(
+            getConsultasByPetUseCase = GetConsultasByPetUseCase(ConsultaDependencyContainer.provideConsultaRepository()),
+            getVaccinationsByPetUseCase = GetVaccinationsByPetUseCase(VaccinationDependencyContainer.provideVaccinationRepository()),
+            getMedicationsByPetUseCase = GetMedicationsByPetUseCase(MedicationDependencyContainer.provideMedicationRepository()),
+            getExamsByPetUseCase = GetExamsByPetUseCase(ExamDependencyContainer.provideExamRepository()),
+            getPrescriptionsByPetUseCase = GetPrescriptionsByPetUseCase(PrescriptionDependencyContainer.providePrescriptionRepository())
+        )
+    }
+
     fun providePetsViewModel(): PetsViewModel {
         val existing = petsViewModel
         if (existing != null) return existing
@@ -101,14 +112,24 @@ object PetDependencyContainer {
         return created
     }
 
+    fun providePetDetailsViewModel(): PetDetailsViewModel {
+        val existing = petDetailsViewModel
+        if (existing != null) return existing
+        val created = buildPetDetailsViewModel()
+        petDetailsViewModel = created
+        return created
+    }
+
     fun reset() {
         petsViewModel?.viewModelScope?.cancel()
         addPetViewModel?.viewModelScope?.cancel()
         updatePetViewModel?.viewModelScope?.cancel()
+        petDetailsViewModel?.viewModelScope?.cancel()
 
         petsViewModel = null
         addPetViewModel = null
         updatePetViewModel = null
+        petDetailsViewModel = null
 
         repository = null
         remoteDataSource = null

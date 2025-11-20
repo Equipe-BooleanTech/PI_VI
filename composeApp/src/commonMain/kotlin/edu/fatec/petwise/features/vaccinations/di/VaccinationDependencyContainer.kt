@@ -111,6 +111,10 @@ object VaccinationDependencyContainer {
         return DeleteVaccinationUseCase(getRepository())
     }
 
+    fun provideVaccinationRepository(): VaccinationRepository {
+        return getRepository()
+    }
+
     fun reset() {
         vaccinationsViewModel?.viewModelScope?.cancel()
         addVaccinationViewModel?.viewModelScope?.cancel()

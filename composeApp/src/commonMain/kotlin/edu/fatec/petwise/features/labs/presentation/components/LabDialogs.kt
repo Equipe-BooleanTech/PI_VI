@@ -14,29 +14,31 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.lifecycle.viewmodel.compose.viewModel
-import edu.fatec.petwise.presentation.shared.form.*
-import edu.fatec.petwise.features.labs.domain.models.Lab
-import edu.fatec.petwise.features.labs.presentation.forms.addLabFormConfiguration
-import edu.fatec.petwise.features.labs.presentation.forms.createEditLabFormConfiguration
-import edu.fatec.petwise.features.labs.di.LabDependencyContainer
-import edu.fatec.petwise.presentation.theme.PetWiseTheme
-import edu.fatec.petwise.presentation.theme.fromHex
+import edu.fatec.petwise.features.labs.domain.models.LabResult
+import edu.fatec.petwise.features.labs.presentation.viewmodel.AddLabResultViewModel
+import edu.fatec.petwise.features.labs.presentation.viewmodel.AddLabResultUiEvent
+import edu.fatec.petwise.features.labs.presentation.viewmodel.UpdateLabResultViewModel
+import edu.fatec.petwise.features.labs.presentation.viewmodel.UpdateLabResultUiEvent
+import edu.fatec.petwise.features.labs.presentation.forms.addLabResultFormConfiguration
+import edu.fatec.petwise.features.labs.presentation.forms.createEditLabResultFormConfiguration
+import edu.fatec.petwise.presentation.shared.form.DynamicForm
+import edu.fatec.petwise.presentation.shared.form.DynamicFormViewModel
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.JsonPrimitive
+import edu.fatec.petwise.features.labs.di.LabDependencyContainer
 
 @Composable
-fun AddLabDialog(
+fun AddLabResultDialog(
+    addLabResultViewModel: AddLabResultViewModel,
     isLoading: Boolean,
     errorMessage: String?,
     onDismiss: () -> Unit,
-    onSuccess: (Map<String, Any>) -> Unit = {}
+    onSuccess: () -> Unit
 ) {
-    val theme = PetWiseTheme.Light
 
-    val formConfiguration = addLabFormConfiguration
-
-    val formViewModel = viewModel<DynamicFormViewModel>(key = "add_lab_form") {
-        DynamicFormViewModel(initialConfiguration = formConfiguration)
+    val formConfiguration = remember { addLabResultFormConfiguration }
+    val formViewModel = remember(formConfiguration) {
+        DynamicFormViewModel(formConfiguration)
     }
 
     Dialog(
@@ -78,7 +80,7 @@ fun AddLabDialog(
                             bottomStart = 0.dp,
                             bottomEnd = 0.dp
                         ),
-                        color = Color.fromHex("#009688"),
+                        color = Color(0xFF4CAF50),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
@@ -89,7 +91,7 @@ fun AddLabDialog(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Adicionar Laboratório",
+                                text = "Adicionar Exame Laboratorial",
                                 style = MaterialTheme.typography.titleLarge.copy(
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White
@@ -125,13 +127,13 @@ fun AddLabDialog(
                                     verticalArrangement = Arrangement.Center
                                 ) {
                                     CircularProgressIndicator(
-                                        color = Color.fromHex("#009688")
+                                        color = Color(0xFF4CAF50)
                                     )
                                     Spacer(modifier = Modifier.height(16.dp))
                                     Text(
-                                        text = "Adicionando laboratório...",
+                                        text = "Adicionando exame...",
                                         style = MaterialTheme.typography.bodyMedium.copy(
-                                            color = Color.fromHex(theme.palette.textSecondary)
+                                            color = Color.Gray
                                         )
                                     )
                                 }
@@ -141,7 +143,17 @@ fun AddLabDialog(
                                 viewModel = formViewModel,
                                 modifier = Modifier.fillMaxSize(),
                                 onSubmitSuccess = { formData ->
-                                    onSuccess(formData)
+                                    val jsonFormData = formData.mapValues { (_, value) ->
+                                        when (value) {
+                                            is String -> JsonPrimitive(value)
+                                            is Number -> JsonPrimitive(value.toString())
+                                            is Boolean -> JsonPrimitive(value)
+                                            else -> JsonPrimitive(value.toString())
+                                        }
+                                    }
+                                    addLabResultViewModel.onEvent(
+                                        AddLabResultUiEvent.Submit(jsonFormData)
+                                    )
                                 },
                                 onSubmitError = { error ->
                                     println("Erro no formulário: ${error.message}")
@@ -162,19 +174,18 @@ fun AddLabDialog(
 }
 
 @Composable
-fun EditLabDialog(
-    lab: Lab,
+fun EditLabResultDialog(
+    updateLabResultViewModel: UpdateLabResultViewModel,
+    labResult: LabResult,
     isLoading: Boolean,
     errorMessage: String?,
     onDismiss: () -> Unit,
-    onSuccess: (Map<String, Any>) -> Unit = {}
+    onSuccess: () -> Unit
 ) {
-    val theme = PetWiseTheme.Light
 
-    val formConfiguration = createEditLabFormConfiguration(lab)
-
-    val formViewModel = viewModel<DynamicFormViewModel>(key = "edit_lab_form_${lab.id}") {
-        DynamicFormViewModel(initialConfiguration = formConfiguration)
+    val formConfiguration = remember(labResult) { createEditLabResultFormConfiguration(labResult) }
+    val formViewModel = remember(formConfiguration) {
+        DynamicFormViewModel(formConfiguration)
     }
 
     Dialog(
@@ -216,7 +227,7 @@ fun EditLabDialog(
                             bottomStart = 0.dp,
                             bottomEnd = 0.dp
                         ),
-                        color = Color.fromHex("#009688"),
+                        color = Color(0xFF4CAF50),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
@@ -227,7 +238,7 @@ fun EditLabDialog(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Editar Laboratório",
+                                text = "Editar Exame Laboratorial",
                                 style = MaterialTheme.typography.titleLarge.copy(
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White
@@ -263,13 +274,13 @@ fun EditLabDialog(
                                     verticalArrangement = Arrangement.Center
                                 ) {
                                     CircularProgressIndicator(
-                                        color = Color.fromHex("#009688")
+                                        color = Color(0xFF4CAF50)
                                     )
                                     Spacer(modifier = Modifier.height(16.dp))
                                     Text(
-                                        text = "Atualizando laboratório...",
+                                        text = "Atualizando exame...",
                                         style = MaterialTheme.typography.bodyMedium.copy(
-                                            color = Color.fromHex(theme.palette.textSecondary)
+                                            color = Color.Gray
                                         )
                                     )
                                 }
@@ -279,7 +290,17 @@ fun EditLabDialog(
                                 viewModel = formViewModel,
                                 modifier = Modifier.fillMaxSize(),
                                 onSubmitSuccess = { formData ->
-                                    onSuccess(formData)
+                                    val jsonFormData = formData.mapValues { (_, value) ->
+                                        when (value) {
+                                            is String -> JsonPrimitive(value)
+                                            is Number -> JsonPrimitive(value.toString())
+                                            is Boolean -> JsonPrimitive(value)
+                                            else -> JsonPrimitive(value.toString())
+                                        }
+                                    }
+                                    updateLabResultViewModel.onEvent(
+                                        UpdateLabResultUiEvent.UpdateLabResult(labResult.id, jsonFormData)
+                                    )
                                 },
                                 onSubmitError = { error ->
                                     println("Erro no formulário: ${error.message}")
@@ -300,9 +321,9 @@ fun EditLabDialog(
 }
 
 @Composable
-fun DeleteLabConfirmationDialog(
-    labId: String,
-    labName: String,
+fun DeleteLabResultConfirmationDialog(
+    labResultId: String,
+    labResultName: String,
     onSuccess: () -> Unit,
     onCancel: () -> Unit
 ) {
@@ -310,7 +331,6 @@ fun DeleteLabConfirmationDialog(
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    val theme = PetWiseTheme.Light
 
     AlertDialog(
         onDismissRequest = { if (!isLoading) onCancel() },
@@ -319,16 +339,16 @@ fun DeleteLabConfirmationDialog(
                 text = "Confirmar Exclusão",
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold,
-                    color = Color.fromHex(theme.palette.textPrimary)
+                    color = Color.Black
                 )
             )
         },
         text = {
             Column {
                 Text(
-                    text = "Tem certeza que deseja excluir o laboratório \"$labName\"?\n\nEsta ação não pode ser desfeita.",
+                    text = "Tem certeza que deseja excluir o exame \"$labResultName\"?\n\nEsta ação não pode ser desfeita.",
                     style = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color.fromHex(theme.palette.textSecondary)
+                        color = Color.Gray
                     )
                 )
                 if (errorMessage != null) {
@@ -347,13 +367,13 @@ fun DeleteLabConfirmationDialog(
                     coroutineScope.launch {
                         isLoading = true
                         errorMessage = null
-                        val result = LabDependencyContainer.deleteLabUseCase(labId)
+                        val result = LabDependencyContainer.deleteLabResultUseCase(labResultId)
                         result.fold(
                             onSuccess = {
                                 onSuccess()
                             },
                             onFailure = { error ->
-                                errorMessage = error.message ?: "Erro ao excluir laboratório"
+                                errorMessage = error.message ?: "Erro ao excluir exame"
                             }
                         )
                         isLoading = false
@@ -361,7 +381,7 @@ fun DeleteLabConfirmationDialog(
                 },
                 enabled = !isLoading,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.fromHex("#F44336"),
+                    containerColor = Color(0xFFF44336),
                     contentColor = Color.White
                 )
             ) {
@@ -383,7 +403,7 @@ fun DeleteLabConfirmationDialog(
             ) {
                 Text(
                     "Cancelar",
-                    color = Color.fromHex(theme.palette.textSecondary)
+                    color = Color.Gray
                 )
             }
         },

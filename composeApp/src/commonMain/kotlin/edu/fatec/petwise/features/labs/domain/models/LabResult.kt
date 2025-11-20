@@ -1,9 +1,15 @@
 package edu.fatec.petwise.features.labs.domain.models
 
-data class Lab(
+data class LabResult(
     val id: String,
-    val name: String,
-    val contactInfo: String?,
+    val petId: String,
+    val veterinaryId: String,
+    val labType: String,
+    val labDate: String,
+    val results: String?,
+    val status: String,
+    val notes: String?,
+    val attachmentUrl: String?,
     val createdAt: String,
     val updatedAt: String
 )

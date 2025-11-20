@@ -5,7 +5,7 @@ import edu.fatec.petwise.features.food.domain.models.Food
 
 @Serializable
 data class FoodDto(
-    val id: String,
+    val id: String?,
     val name: String,
     val brand: String,
     val category: String,
@@ -58,7 +58,7 @@ data class UpdateFoodRequest(
 
 fun FoodDto.toFood(): Food {
     return Food(
-        id = id,
+        id = id ?: "",
         name = name,
         brand = brand,
         category = category,

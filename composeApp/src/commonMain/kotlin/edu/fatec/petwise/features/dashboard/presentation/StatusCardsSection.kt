@@ -81,6 +81,13 @@ fun StatusCardsSection(
         )
         "VETERINARY" -> listOf(
             StatusCardData(
+                title = "Pacientes",
+                value = petCount.toString(),
+                icon = "pets",
+                route = "patients",
+                color = "#00b942"
+            ),
+            StatusCardData(
                 title = "Consultas Hoje",
                 value = consultasCount.toString(),
                 icon = "event",

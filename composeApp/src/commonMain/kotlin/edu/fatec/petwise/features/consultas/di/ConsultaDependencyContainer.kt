@@ -99,6 +99,10 @@ object ConsultaDependencyContainer {
         return created
     }
 
+    fun provideConsultaRepository(): ConsultaRepository {
+        return getRepository()
+    }
+
     fun reset() {
         consultasViewModel?.let { it.viewModelScope.cancel() }
         addConsultaViewModel?.let { it.viewModelScope.cancel() }

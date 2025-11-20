@@ -40,6 +40,18 @@ class MedicationRepositoryImpl(
         }
     }
 
+    override fun getMedicationsByPetId(petId: String): Flow<List<Medication>> = flow {
+        try {
+            println("Repositório: Buscando medicamentos do pet '$petId' via API")
+            val medications = remoteDataSource.getMedicationsByPetId(petId)
+            println("Repositório: ${medications.size} medicamentos encontrados para o pet")
+            emit(medications)
+        } catch (e: Exception) {
+            println("Repositório: Erro ao buscar medicamentos do pet '$petId' - ${e.message}")
+            throw e
+        }
+    }
+
     override fun getMedicationsByPrescriptionId(prescriptionId: String): Flow<List<Medication>> = flow {
         try {
             println("Repositório: Buscando medicamentos para a prescrição '$prescriptionId' via API")

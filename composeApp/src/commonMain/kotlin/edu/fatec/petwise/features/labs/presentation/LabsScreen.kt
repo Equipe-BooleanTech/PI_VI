@@ -17,172 +17,188 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import edu.fatec.petwise.features.labs.domain.models.Lab
-import edu.fatec.petwise.features.labs.presentation.components.AddLabDialog
-import edu.fatec.petwise.features.labs.presentation.components.DeleteLabConfirmationDialog
-import edu.fatec.petwise.features.labs.presentation.components.EditLabDialog
-import edu.fatec.petwise.presentation.theme.PetWiseTheme
-import edu.fatec.petwise.presentation.theme.fromHex
+import androidx.compose.ui.unit.sp
+import edu.fatec.petwise.features.labs.domain.models.LabResult
+import edu.fatec.petwise.features.labs.presentation.components.AddLabResultDialog
+import edu.fatec.petwise.features.labs.presentation.components.EditLabResultDialog
+import edu.fatec.petwise.features.labs.presentation.components.DeleteLabResultConfirmationDialog
+import edu.fatec.petwise.features.labs.presentation.viewmodel.LabsViewModel
+import edu.fatec.petwise.features.labs.presentation.viewmodel.LabsUiEvent
+import edu.fatec.petwise.features.labs.presentation.viewmodel.UpdateLabResultViewModel
+import edu.fatec.petwise.features.labs.presentation.viewmodel.UpdateLabResultUiEvent
+import edu.fatec.petwise.features.labs.presentation.viewmodel.AddLabResultViewModel
+import edu.fatec.petwise.features.labs.presentation.viewmodel.AddLabResultUiEvent
+import edu.fatec.petwise.features.labs.di.LabDependencyContainer
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LabsScreen() {
-    var labs by remember { mutableStateOf<List<Lab>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(false) }
-    var showSearchBar by remember { mutableStateOf(false) }
-    var searchQuery by remember { mutableStateOf("") }
-    var selectionMode by remember { mutableStateOf(false) }
-    var selectedLabIds by remember { mutableStateOf(setOf<String>()) }
+fun LabsScreen(
+    viewModel: LabsViewModel,
+    navigationKey: Any? = null
+) {
+    val addLabResultViewModel = remember { LabDependencyContainer.addLabResultViewModel }
+    val updateLabResultViewModel = remember { LabDependencyContainer.updateLabResultViewModel }
+    val uiState by viewModel.uiState.collectAsState()
+    val addUiState by addLabResultViewModel.uiState.collectAsState()
+    val updateUiState by updateLabResultViewModel.uiState.collectAsState()
+    val labResults = uiState.labResults
+    val pendingLabResults = remember(labResults) {
+        labResults.filter {
+            it.status == "PENDING" || it.status == "IN_PROGRESS"
+        }
+    }
 
-    // Dialog states
-    var showAddLabDialog by remember { mutableStateOf(false) }
-    var showEditLabDialog by remember { mutableStateOf(false) }
-    var showDeleteLabDialog by remember { mutableStateOf(false) }
-    var selectedLab by remember { mutableStateOf<Lab?>(null) }
-    var isSubmitting by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var showAddDialog by remember { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var labResultToEdit by remember { mutableStateOf<LabResult?>(null) }
+    var labResultToDelete by remember { mutableStateOf<LabResult?>(null) }
 
-    val theme = PetWiseTheme.Light
+    LaunchedEffect(navigationKey) {
+        viewModel.onEvent(LabsUiEvent.LoadLabResults)
+    }
 
-    var filteredLabs = remember(labs, searchQuery) {
-        if (searchQuery.isEmpty()) {
-            labs
-        } else {
-            labs.filter {
-                it.name.contains(searchQuery, ignoreCase = true) ||
-                it.contactInfo?.contains(searchQuery, ignoreCase = true) == true
-            }
+    LaunchedEffect(addUiState.isSuccess) {
+        if (addUiState.isSuccess) {
+            showAddDialog = false
+            viewModel.onEvent(LabsUiEvent.LoadLabResults)
+            addLabResultViewModel.onEvent(AddLabResultUiEvent.ClearState)
+        }
+    }
+
+    LaunchedEffect(updateUiState.isSuccess) {
+        if (updateUiState.isSuccess) {
+            showEditDialog = false
+            labResultToEdit = null
+            viewModel.onEvent(LabsUiEvent.LoadLabResults)
+            updateLabResultViewModel.onEvent(UpdateLabResultUiEvent.ClearState)
         }
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.fromHex("#F7F7F7"))
+            .background(Color(0xFFF7F7F7))
     ) {
         LabsHeader(
-            labCount = filteredLabs.size,
-            selectionMode = selectionMode,
-            selectedCount = selectedLabIds.size,
-            onSearchClick = { showSearchBar = !showSearchBar },
-            onFilterClick = { /* TODO: Implement filter */ },
-            onAddLabClick = { showAddLabDialog = true },
-            onSelectionModeToggle = {
-                selectionMode = !selectionMode
-                if (!selectionMode) selectedLabIds = setOf()
-            },
-            onDeleteSelected = {
-                // TODO: Implement delete selected labs
-                println("Delete selected labs: $selectedLabIds")
-            }
+            labResultCount = labResults.size,
+            pendingCount = pendingLabResults.size,
+            onAddLabResultClick = { showAddDialog = true }
         )
-
-        if (showSearchBar) {
-            SearchBar(
-                query = searchQuery,
-                onQueryChange = { searchQuery = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            )
-        }
 
         Box(modifier = Modifier.fillMaxSize()) {
             when {
-                isLoading -> {
+                uiState.isLoading -> {
                     LoadingContent()
                 }
-                filteredLabs.isEmpty() && searchQuery.isEmpty() -> {
+                labResults.isEmpty() -> {
                     EmptyContent(
-                        onAddLabClick = { showAddLabDialog = true }
+                        onAddLabResultClick = { showAddDialog = true }
                     )
                 }
-                filteredLabs.isEmpty() && searchQuery.isNotEmpty() -> {
-                    NoResultsContent(onClearSearch = { searchQuery = "" })
-                }
                 else -> {
-                    LabsList(
-                        labs = filteredLabs,
-                        selectionMode = selectionMode,
-                        selectedIds = selectedLabIds,
-                        onLabClick = { lab ->
-                            if (selectionMode) {
-                                selectedLabIds = if (selectedLabIds.contains(lab.id)) {
-                                    selectedLabIds - lab.id
-                                } else {
-                                    selectedLabIds + lab.id
-                                }
-                            }
+                    LabResultsListContent(
+                        labResults = labResults,
+                        pendingLabResults = pendingLabResults,
+                        onEditLabResult = { labResult ->
+                            labResultToEdit = labResult
+                            showEditDialog = true
                         },
-                        onEditClick = { lab ->
-                            selectedLab = lab
-                            showEditLabDialog = true
-                        },
-                        onDeleteClick = { lab ->
-                            selectedLab = lab
-                            showDeleteLabDialog = true
+                        onDeleteLabResult = { labResult ->
+                            labResultToDelete = labResult
+                            showDeleteDialog = true
                         }
                     )
                 }
             }
-        }
 
-        LabsDialogs(
-            showAddLabDialog = showAddLabDialog,
-            showEditLabDialog = showEditLabDialog,
-            showDeleteLabDialog = showDeleteLabDialog,
-            selectedLab = selectedLab,
-            isSubmitting = isSubmitting,
-            errorMessage = errorMessage,
-            onDismissAdd = {
-                showAddLabDialog = false
-                errorMessage = null
+            uiState.error?.let { errorMessage ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter)
+                ) {
+                    LabResultErrorSnackbar(
+                        message = errorMessage,
+                        isError = true,
+                        onDismiss = { /* Clear error event */ },
+                        actionLabel = "Tentar Novamente",
+                        onAction = { viewModel.onEvent(LabsUiEvent.LoadLabResults) }
+                    )
+                }
+            }
+        }
+    }
+
+    // Add Dialog
+    if (showAddDialog) {
+        AddLabResultDialog(
+            addLabResultViewModel = addLabResultViewModel,
+            isLoading = addUiState.isLoading,
+            errorMessage = addUiState.errorMessage,
+            onDismiss = {
+                showAddDialog = false
+                addLabResultViewModel.onEvent(AddLabResultUiEvent.ClearState)
             },
-            onDismissEdit = {
-                showEditLabDialog = false
-                selectedLab = null
-                errorMessage = null
-            },
-            onDismissDelete = {
-                showDeleteLabDialog = false
-                selectedLab = null
-            },
-            onAddSuccess = { formData ->
-                // TODO: Handle add lab success
-                println("Add lab success: $formData")
-                showAddLabDialog = false
-            },
-            onEditSuccess = { formData ->
-                // TODO: Handle edit lab success
-                println("Edit lab success: $formData")
-                showEditLabDialog = false
-                selectedLab = null
-            },
-            onDeleteSuccess = {
-                showDeleteLabDialog = false
-                selectedLab = null
+            onSuccess = {
+                viewModel.onEvent(LabsUiEvent.LoadLabResults)
             }
         )
+    }
+
+    // Delete Dialog
+    labResultToDelete?.let { labResult ->
+        if (showDeleteDialog) {
+            DeleteLabResultConfirmationDialog(
+                labResultId = labResult.id,
+                labResultName = labResult.labType,
+                onSuccess = {
+                    showDeleteDialog = false
+                    labResultToDelete = null
+                    viewModel.onEvent(LabsUiEvent.LoadLabResults)
+                },
+                onCancel = {
+                    showDeleteDialog = false
+                    labResultToDelete = null
+                }
+            )
+        }
+    }
+
+    // Edit Dialog
+    labResultToEdit?.let { labResult ->
+        if (showEditDialog) {
+            EditLabResultDialog(
+                updateLabResultViewModel = updateLabResultViewModel,
+                labResult = labResult,
+                isLoading = updateUiState.isLoading,
+                errorMessage = updateUiState.errorMessage,
+                onDismiss = {
+                    showEditDialog = false
+                    labResultToEdit = null
+                    updateLabResultViewModel.onEvent(UpdateLabResultUiEvent.ClearState)
+                },
+                onSuccess = {
+                    viewModel.onEvent(LabsUiEvent.LoadLabResults)
+                }
+            )
+        }
     }
 }
 
 @Composable
 private fun LabsHeader(
-    labCount: Int,
-    selectionMode: Boolean,
-    selectedCount: Int,
-    onSearchClick: () -> Unit,
-    onFilterClick: () -> Unit,
-    onAddLabClick: () -> Unit,
-    onSelectionModeToggle: () -> Unit,
-    onDeleteSelected: () -> Unit
+    labResultCount: Int,
+    pendingCount: Int,
+    onAddLabResultClick: () -> Unit
 ) {
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (selectionMode) Color.fromHex("#d32f2f") else Color.fromHex("#009688")
+            containerColor = Color(0xFF4CAF50)
         ),
         shape = RoundedCornerShape(16.dp)
     ) {
@@ -198,17 +214,17 @@ private fun LabsHeader(
             ) {
                 Column {
                     Text(
-                        text = if (selectionMode) "Selecionados" else "Laboratórios",
+                        text = "Exames Laboratoriais",
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold,
                             color = Color.White
                         )
                     )
                     Text(
-                        text = if (selectionMode) {
-                            "$selectedCount laboratório(s) selecionado(s)"
+                        text = if (labResultCount > 0) {
+                            "$labResultCount exame(s) registrado(s)"
                         } else {
-                            if (labCount > 0) "$labCount laboratórios registrados" else "Nenhum laboratório cadastrado"
+                            "Nenhum exame registrado"
                         },
                         style = MaterialTheme.typography.bodyMedium.copy(
                             color = Color.White.copy(alpha = 0.9f)
@@ -216,45 +232,27 @@ private fun LabsHeader(
                     )
                 }
 
-                Row {
-                    if (selectionMode) {
-                        IconButton(
-                            onClick = onDeleteSelected,
-                            enabled = selectedCount > 0
+                if (pendingCount > 0) {
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = Color(0xFFDC3545)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Excluir selecionados",
-                                tint = Color.White
+                                imageVector = Icons.Default.Notifications,
+                                contentDescription = "Pendentes",
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
                             )
-                        }
-                        IconButton(onClick = onSelectionModeToggle) {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = "Cancelar seleção",
-                                tint = Color.White
-                            )
-                        }
-                    } else {
-                        IconButton(onClick = onSearchClick) {
-                            Icon(
-                                imageVector = Icons.Default.Search,
-                                contentDescription = "Buscar",
-                                tint = Color.White
-                            )
-                        }
-                        IconButton(onClick = onFilterClick) {
-                            Icon(
-                                imageVector = Icons.Default.FilterList,
-                                contentDescription = "Filtrar",
-                                tint = Color.White
-                            )
-                        }
-                        IconButton(onClick = onSelectionModeToggle) {
-                            Icon(
-                                imageVector = Icons.Default.CheckCircle,
-                                contentDescription = "Selecionar",
-                                tint = Color.White
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "$pendingCount",
+                                color = Color.White,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
                             )
                         }
                     }
@@ -263,52 +261,27 @@ private fun LabsHeader(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            if (!selectionMode) {
-                Button(
-                    onClick = onAddLabClick,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color.fromHex("#009688")
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Adicionar",
-                        modifier = Modifier.size(20.dp)
+            Button(
+                onClick = onAddLabResultClick,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.White,
+                    contentColor = Color(0xFF4CAF50)
+                ),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Adicionar",
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Adicionar Exame",
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontWeight = FontWeight.SemiBold
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Adicionar Laboratório",
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    )
-                }
-            } else if (selectedCount > 0) {
-                Button(
-                    onClick = onDeleteSelected,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color.fromHex("#d32f2f")
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Excluir",
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Excluir Selecionados ($selectedCount)",
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    )
-                }
+                )
             }
         }
     }
@@ -321,7 +294,6 @@ private fun SearchBar(
     onQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val theme = PetWiseTheme.Light
 
     Card(
         modifier = modifier,
@@ -339,7 +311,7 @@ private fun SearchBar(
                 Text(
                     "Buscar por nome ou contato...",
                     style = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color.fromHex(theme.palette.textSecondary)
+                        color = Color.Gray
                     )
                 )
             },
@@ -347,7 +319,7 @@ private fun SearchBar(
                 Icon(
                     imageVector = Icons.Default.Search,
                     contentDescription = "Buscar",
-                    tint = Color.fromHex("#009688")
+                    tint = Color(0xFF009688)
                 )
             },
             trailingIcon = {
@@ -356,7 +328,7 @@ private fun SearchBar(
                         Icon(
                             imageVector = Icons.Default.Clear,
                             contentDescription = "Limpar",
-                            tint = Color.fromHex(theme.palette.textSecondary)
+                            tint = Color.Gray
                         )
                     }
                 }
@@ -364,8 +336,8 @@ private fun SearchBar(
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color.fromHex("#009688"),
-                unfocusedBorderColor = Color.fromHex(theme.palette.textSecondary).copy(alpha = 0.3f),
+                focusedBorderColor = Color(0xFF009688),
+                unfocusedBorderColor = Color.Gray.copy(alpha = 0.3f),
                 focusedContainerColor = Color.White,
                 unfocusedContainerColor = Color.White
             )
@@ -380,14 +352,14 @@ private fun LoadingContent() {
         contentAlignment = Alignment.Center
     ) {
         CircularProgressIndicator(
-            color = Color.fromHex("#009688")
+            color = Color(0xFF009688)
         )
     }
 }
 
 @Composable
 private fun EmptyContent(
-    onAddLabClick: () -> Unit
+    onAddLabResultClick: () -> Unit
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -399,7 +371,7 @@ private fun EmptyContent(
         ) {
             Icon(
                 imageVector = Icons.Default.Biotech,
-                contentDescription = "Nenhum resultado",
+                contentDescription = "Nenhum exame",
                 tint = Color.Gray,
                 modifier = Modifier.size(80.dp)
             )
@@ -407,7 +379,7 @@ private fun EmptyContent(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Nenhum laboratório cadastrado",
+                text = "Nenhum exame laboratorial registrado",
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
                     color = Color.Gray
@@ -417,7 +389,7 @@ private fun EmptyContent(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Adicione seu primeiro laboratório para começar!",
+                text = "Registre o primeiro exame para começar!",
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = Color.Gray
                 )
@@ -426,21 +398,21 @@ private fun EmptyContent(
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = onAddLabClick,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.fromHex("#009688")
-                )
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Adicionar"
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Adicionar Laboratório")
+                    onClick = onAddLabResultClick,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF4CAF50)
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Adicionar"
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Adicionar Exame")
+                }
             }
         }
     }
-}
 
 @Composable
 private fun NoResultsContent(
@@ -483,188 +455,406 @@ private fun NoResultsContent(
             Spacer(modifier = Modifier.height(24.dp))
 
             TextButton(onClick = onClearSearch) {
-                Text("Limpar busca", color = Color.fromHex("#009688"))
+                Text("Limpar busca", color = Color(0xFF009688))
             }
         }
     }
 }
 
 @Composable
-private fun LabsList(
-    labs: List<Lab>,
-    selectionMode: Boolean,
-    selectedIds: Set<String>,
-    onLabClick: (Lab) -> Unit,
-    onEditClick: (Lab) -> Unit,
-    onDeleteClick: (Lab) -> Unit
+private fun LabResultsListContent(
+    labResults: List<LabResult>,
+    pendingLabResults: List<LabResult>,
+    onEditLabResult: (LabResult) -> Unit,
+    onDeleteLabResult: (LabResult) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        items(labs, key = { it.id }) { lab ->
-            LabCard(
-                lab = lab,
-                selectionMode = selectionMode,
-                isSelected = selectedIds.contains(lab.id),
-                onClick = onLabClick,
-                onEditClick = onEditClick,
-                onDeleteClick = onDeleteClick
+        if (pendingLabResults.isNotEmpty()) {
+            item {
+                PendingLabResultsCard(pendingLabResults = pendingLabResults)
+            }
+        }
+
+        item {
+            LabResultStatsRow(
+                total = labResults.size,
+                pending = pendingLabResults.size
+            )
+        }
+
+        items(
+            items = labResults,
+            key = { labResult: LabResult -> labResult.id }
+        ) { labResult: LabResult ->
+            LabResultCard(
+                labResult = labResult,
+                onEdit = { onEditLabResult(labResult) },
+                onDelete = { onDeleteLabResult(labResult) }
             )
         }
     }
 }
 
 @Composable
-fun LabCard(
-    lab: Lab,
-    selectionMode: Boolean = false,
-    isSelected: Boolean = false,
-    onClick: (Lab) -> Unit = {},
-    onEditClick: (Lab) -> Unit = {},
-    onDeleteClick: (Lab) -> Unit = {}
+private fun LabResultErrorSnackbar(
+    message: String,
+    isError: Boolean,
+    onDismiss: () -> Unit,
+    actionLabel: String? = null,
+    onAction: (() -> Unit)? = null
 ) {
-    val theme = PetWiseTheme.Light
-    val interactionSource = remember { MutableInteractionSource() }
-    val isHovered by interactionSource.collectIsHoveredAsState()
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null
-            ) { onClick(lab) }
-            .padding(vertical = 4.dp),
+            .padding(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = when {
-                isSelected -> Color.fromHex("#009688").copy(alpha = 0.1f)
-                isHovered -> Color.White.copy(alpha = 0.9f)
-                else -> Color.White
-            }
+            containerColor = if (isError) Color(0xFFDC3545) else Color(0xFF28A745)
         ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isHovered) 3.dp else 1.dp
-        ),
-        border = if (isSelected) {
-            androidx.compose.foundation.BorderStroke(2.dp, Color.fromHex("#009688"))
-        } else null,
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(8.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (selectionMode) {
-                Checkbox(
-                    checked = isSelected,
-                    onCheckedChange = { onClick(lab) },
-                    colors = CheckboxDefaults.colors(
-                        checkedColor = Color.fromHex("#009688")
-                    ),
-                    modifier = Modifier.padding(end = 16.dp)
-                )
-            }
-
-            Column(
+            Text(
+                text = message,
+                color = Color.White,
+                style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = lab.name,
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = Color.fromHex(theme.palette.textPrimary)
-                    )
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                if (lab.contactInfo != null) {
-                    Text(
-                        text = "Contato: ${lab.contactInfo}",
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            color = Color.fromHex(theme.palette.textSecondary)
-                        )
-                    )
-                }
-            }
+            )
 
-            if (!selectionMode) {
-                Row {
-                    IconButton(
-                        onClick = { onEditClick(lab) },
-                        modifier = Modifier.size(36.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Editar",
-                            tint = Color.fromHex("#009688"),
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                    IconButton(
-                        onClick = { onDeleteClick(lab) },
-                        modifier = Modifier.size(36.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Excluir",
-                            tint = Color.fromHex("#F44336"),
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
+            if (actionLabel != null && onAction != null) {
+                TextButton(onClick = onAction) {
+                    Text(
+                        text = actionLabel,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }
     }
 }
 
-// Dialogs
 @Composable
-private fun LabsDialogs(
-    showAddLabDialog: Boolean,
-    showEditLabDialog: Boolean,
-    showDeleteLabDialog: Boolean,
-    selectedLab: Lab?,
-    isSubmitting: Boolean,
-    errorMessage: String?,
-    onDismissAdd: () -> Unit,
-    onDismissEdit: () -> Unit,
-    onDismissDelete: () -> Unit,
-    onAddSuccess: (Map<String, Any>) -> Unit,
-    onEditSuccess: (Map<String, Any>) -> Unit,
-    onDeleteSuccess: () -> Unit
+private fun PendingLabResultsCard(pendingLabResults: List<LabResult>) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        color = Color(0xFFFFF3CD),
+        shadowElevation = 0.dp
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(bottom = 12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Notifications,
+                    contentDescription = null,
+                    tint = Color(0xFFFF9800),
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Exames Laboratoriais Pendentes",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF856404)
+                )
+            }
+
+            pendingLabResults.forEach { labResult: LabResult ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "${labResult.petId} - ${labResult.labType}",
+                        fontSize = 14.sp,
+                        color = Color(0xFF856404)
+                    )
+                    Text(
+                        text = labResult.labDate,
+                        fontSize = 14.sp,
+                        color = Color(0xFF856404)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LabResultStatsRow(total: Int, pending: Int) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        StatCard(
+            modifier = Modifier.weight(1f),
+            label = "Total",
+            value = total.toString(),
+            iconTint = Color(0xFF2196F3),
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Biotech,
+                    contentDescription = null,
+                    tint = Color(0xFF2196F3),
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        )
+
+        StatCard(
+            modifier = Modifier.weight(1f),
+            label = "Pendentes",
+            value = pending.toString(),
+            iconTint = Color(0xFFFF9800),
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Notifications,
+                    contentDescription = null,
+                    tint = Color(0xFFFF9800),
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        )
+    }
+}
+
+@Composable
+private fun StatCard(
+    modifier: Modifier = Modifier,
+    label: String,
+    value: String,
+    iconTint: Color,
+    icon: @Composable (() -> Unit)? = null
 ) {
-    if (showAddLabDialog) {
-        AddLabDialog(
-            isLoading = isSubmitting,
-            errorMessage = errorMessage,
-            onDismiss = onDismissAdd,
-            onSuccess = onAddSuccess
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(12.dp),
+        color = Color.White,
+        shadowElevation = 2.dp
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(
+                        iconTint.copy(alpha = 0.1f),
+                        RoundedCornerShape(8.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                if (icon != null) {
+                    icon()
+                }
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column {
+                Text(
+                    text = label,
+                    fontSize = 13.sp,
+                    color = Color(0xFF757575)
+                )
+                Text(
+                    text = value,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF1F1F1F)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun LabResultInfoRow(
+    label: String,
+    value: String,
+    valueColor: Color = Color(0xFF757575)
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 3.dp)
+    ) {
+        Text(
+            text = label,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium,
+            color = Color(0xFF1F1F1F)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = value,
+            fontSize = 14.sp,
+            color = valueColor
         )
     }
+}
 
-    if (showEditLabDialog && selectedLab != null) {
-        EditLabDialog(
-            lab = selectedLab,
-            isLoading = isSubmitting,
-            errorMessage = errorMessage,
-            onDismiss = onDismissEdit,
-            onSuccess = onEditSuccess
-        )
-    }
+@Composable
+private fun LabResultCard(
+    labResult: LabResult,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        color = Color.White,
+        shadowElevation = 2.dp
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = Color(0xFF2196F3).copy(alpha = 0.1f)
+                ) {
+                    Text(
+                        text = labResult.petId,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                        fontSize = 13.sp,
+                        color = Color(0xFF2196F3),
+                        fontWeight = FontWeight.Medium
+                    )
+                }
 
-    if (showDeleteLabDialog && selectedLab != null) {
-        DeleteLabConfirmationDialog(
-            labId = selectedLab.id,
-            labName = selectedLab.name,
-            onSuccess = {
-                // TODO: Handle delete success - refresh labs list
-                println("Lab deleted successfully")
-                onDeleteSuccess()
-            },
-            onCancel = onDismissDelete
-        )
+                val statusColor = when (labResult.status) {
+                    "COMPLETED" -> Color(0xFF4CAF50)
+                    "IN_PROGRESS" -> Color(0xFFFF9800)
+                    "CANCELLED" -> Color(0xFFDC3545)
+                    else -> Color(0xFF757575)
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = statusColor.copy(alpha = 0.1f)
+                ) {
+                    Text(
+                        text = when (labResult.status) {
+                            "PENDING" -> "Pendente"
+                            "IN_PROGRESS" -> "Em Andamento"
+                            "COMPLETED" -> "Concluído"
+                            "CANCELLED" -> "Cancelado"
+                            else -> labResult.status
+                        },
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                        fontSize = 13.sp,
+                        color = statusColor,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = labResult.labType,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF1F1F1F)
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            LabResultInfoRow(
+                label = "Data do Exame:",
+                value = labResult.labDate
+            )
+
+            if (labResult.results != null) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Resultados:",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFF1F1F1F)
+                )
+                Text(
+                    text = labResult.results,
+                    fontSize = 14.sp,
+                    color = Color(0xFF757575),
+                    lineHeight = 20.sp
+                )
+            }
+
+            if (labResult.notes != null && labResult.notes.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Observações:",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFF1F1F1F)
+                )
+                Text(
+                    text = labResult.notes,
+                    fontSize = 14.sp,
+                    color = Color(0xFF757575),
+                    lineHeight = 20.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedButton(
+                    onClick = onEdit,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color(0xFF666666)
+                    )
+                ) {
+                    Text(
+                        text = "Editar",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+
+                OutlinedButton(
+                    onClick = onDelete,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color(0xFFDC3545)
+                    )
+                ) {
+                    Text(
+                        text = "Excluir",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+        }
     }
 }

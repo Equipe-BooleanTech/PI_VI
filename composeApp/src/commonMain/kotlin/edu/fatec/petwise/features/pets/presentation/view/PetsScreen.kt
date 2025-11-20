@@ -71,6 +71,15 @@ fun PetsScreen(
         }
     }
 
+    // Show pet details screen if a pet is selected
+    petsState.selectedPet?.let { selectedPet ->
+        PetDetailsScreen(
+            pet = selectedPet,
+            onBackClick = { petsViewModel.onEvent(PetsUiEvent.SelectPet(null)) }
+        )
+        return
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()

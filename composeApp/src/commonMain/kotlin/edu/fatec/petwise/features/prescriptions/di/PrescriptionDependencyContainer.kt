@@ -36,4 +36,8 @@ object PrescriptionDependencyContainer {
     val deletePrescriptionUseCase: DeletePrescriptionUseCase by lazy {
         DeletePrescriptionUseCase(repository)
     }
+
+    fun providePrescriptionRepository(): PrescriptionRepository {
+        return repository
+    }
 }

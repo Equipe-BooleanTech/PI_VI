@@ -5,7 +5,7 @@ import edu.fatec.petwise.features.hygiene.domain.models.HygieneProduct
 
 @Serializable
 data class HygieneDto(
-    val id: String,
+    val id: String?,
     val name: String,
     val brand: String,
     val category: String,
@@ -58,7 +58,7 @@ data class UpdateHygieneRequest(
 
 fun HygieneDto.toHygieneProduct(): HygieneProduct {
     return HygieneProduct(
-        id = id,
+        id = id ?: "",
         name = name,
         brand = brand,
         category = category,
