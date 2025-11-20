@@ -18,29 +18,58 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import edu.fatec.petwise.features.exams.domain.models.Exam
-import edu.fatec.petwise.presentation.theme.PetWiseTheme
+import edu.fatec.petwise.features.exams.presentation.components.AddExamDialog
+import edu.fatec.petwise.features.exams.presentation.components.EditExamDialog
+import edu.fatec.petwise.features.exams.presentation.components.DeleteExamConfirmationDialog
+import edu.fatec.petwise.features.exams.presentation.viewmodel.AddExamViewModel
+import edu.fatec.petwise.features.exams.presentation.viewmodel.AddExamUiEvent
+import edu.fatec.petwise.features.exams.presentation.viewmodel.ExamsViewModel
+import edu.fatec.petwise.features.exams.presentation.viewmodel.ExamsUiEvent
+import edu.fatec.petwise.features.exams.presentation.viewmodel.UpdateExamViewModel
+import edu.fatec.petwise.features.exams.presentation.viewmodel.UpdateExamUiEvent
+import edu.fatec.petwise.features.exams.di.ExamDependencyContainer
 import edu.fatec.petwise.presentation.theme.fromHex
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExamsScreen() {
-    var exams by remember { mutableStateOf<List<Exam>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(false) }
-    var showSearchBar by remember { mutableStateOf(false) }
-    var searchQuery by remember { mutableStateOf("") }
-    var selectionMode by remember { mutableStateOf(false) }
-    var selectedExamIds by remember { mutableStateOf(setOf<String>()) }
+fun ExamsScreen(
+    viewModel: ExamsViewModel,
+    navigationKey: Any? = null
+) {
+    val addExamViewModel = remember { ExamDependencyContainer.addExamViewModel }
+    val updateExamViewModel = remember { ExamDependencyContainer.updateExamViewModel }
+    val uiState by viewModel.uiState.collectAsState()
+    val addUiState by addExamViewModel.uiState.collectAsState()
+    val updateUiState by updateExamViewModel.uiState.collectAsState()
 
-    val theme = PetWiseTheme.Light
+    var showAddDialog by remember { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var showFilterDialog by remember { mutableStateOf(false) }
+    var examToEdit by remember { mutableStateOf<edu.fatec.petwise.features.exams.domain.models.Exam?>(null) }
+    var examToDelete by remember { mutableStateOf<edu.fatec.petwise.features.exams.domain.models.Exam?>(null) }
 
-    val filteredExams = remember(exams, searchQuery) {
-        if (searchQuery.isEmpty()) {
-            exams
-        } else {
-            exams.filter {
-                it.examType.contains(searchQuery, ignoreCase = true) ||
-                it.status.contains(searchQuery, ignoreCase = true)
-            }
+
+    val exams = uiState.filteredExams
+
+    LaunchedEffect(navigationKey) {
+        viewModel.onEvent(ExamsUiEvent.LoadExams)
+    }
+
+    LaunchedEffect(addUiState.isSuccess) {
+        if (addUiState.isSuccess) {
+            showAddDialog = false
+            viewModel.onEvent(ExamsUiEvent.LoadExams)
+            addExamViewModel.onEvent(AddExamUiEvent.ClearState)
+        }
+    }
+
+    LaunchedEffect(updateUiState.isSuccess) {
+        if (updateUiState.isSuccess) {
+            showEditDialog = false
+            examToEdit = null
+            viewModel.onEvent(ExamsUiEvent.LoadExams)
+            updateExamViewModel.onEvent(UpdateExamUiEvent.ClearState)
         }
     }
 
@@ -50,60 +79,107 @@ fun ExamsScreen() {
             .background(Color.fromHex("#F7F7F7"))
     ) {
         ExamsHeader(
-            examCount = filteredExams.size,
-            selectionMode = selectionMode,
-            selectedCount = selectedExamIds.size,
-            onSearchClick = { showSearchBar = !showSearchBar },
-            onFilterClick = { /* TODO: Implement filter */ },
-            onAddExamClick = { /* TODO: Implement add */ },
-            onSelectionModeToggle = {
-                selectionMode = !selectionMode
-                if (!selectionMode) selectedExamIds = setOf()
-            },
-            onDeleteSelected = { /* TODO: Implement delete */ }
+            examCount = exams.size,
+            onAddExamClick = { showAddDialog = true },
+            onSearchClick = { /* TODO: Implement search */ },
+            onFilterClick = { showFilterDialog = true }
         )
-
-        if (showSearchBar) {
-            SearchBar(
-                query = searchQuery,
-                onQueryChange = { searchQuery = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            )
-        }
 
         Box(modifier = Modifier.fillMaxSize()) {
             when {
-                isLoading -> {
+                uiState.isLoading -> {
                     LoadingContent()
                 }
-                filteredExams.isEmpty() && searchQuery.isEmpty() -> {
+                exams.isEmpty() -> {
                     EmptyContent(
-                        onAddExamClick = { /* TODO: Implement add */ }
+                        onAddExamClick = { showAddDialog = true }
                     )
                 }
-                filteredExams.isEmpty() && searchQuery.isNotEmpty() -> {
-                    NoResultsContent(onClearSearch = { searchQuery = "" })
-                }
                 else -> {
-                    ExamsList(
-                        exams = filteredExams,
-                        selectionMode = selectionMode,
-                        selectedIds = selectedExamIds,
-                        onExamClick = { exam ->
-                            if (selectionMode) {
-                                selectedExamIds = if (selectedExamIds.contains(exam.id)) {
-                                    selectedExamIds - exam.id
-                                } else {
-                                    selectedExamIds + exam.id
-                                }
-                            }
+                    ExamsListContent(
+                        exams = exams,
+                        onEditExam = { exam ->
+                            examToEdit = exam
+                            showEditDialog = true
                         },
-                        onEditClick = { /* TODO: Implement edit */ }
+                        onDeleteExam = { exam ->
+                            examToDelete = exam
+                            showDeleteDialog = true
+                        }
                     )
                 }
             }
+
+            uiState.error?.let { errorMessage ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter)
+                ) {
+                    ExamErrorSnackbar(
+                        message = errorMessage,
+                        isError = true,
+                        onDismiss = { viewModel.onEvent(ExamsUiEvent.ClearError) },
+                        actionLabel = "Tentar Novamente",
+                        onAction = { viewModel.onEvent(ExamsUiEvent.LoadExams) }
+                    )
+                }
+            }
+        }
+    }
+
+    // Add Dialog
+    if (showAddDialog) {
+        AddExamDialog(
+            addExamViewModel = addExamViewModel,
+            isLoading = addUiState.isLoading,
+            errorMessage = addUiState.errorMessage,
+            onDismiss = {
+                showAddDialog = false
+                addExamViewModel.onEvent(AddExamUiEvent.ClearState)
+            },
+            onSuccess = {
+                viewModel.onEvent(ExamsUiEvent.LoadExams)
+            }
+        )
+    }
+
+    // Delete Dialog
+    examToDelete?.let { exam ->
+        if (showDeleteDialog) {
+            DeleteExamConfirmationDialog(
+                examId = exam.id,
+                examName = exam.examType,
+                onSuccess = {
+                    showDeleteDialog = false
+                    examToDelete = null
+                    viewModel.onEvent(ExamsUiEvent.LoadExams)
+                },
+                onCancel = {
+                    showDeleteDialog = false
+                    examToDelete = null
+                }
+            )
+        }
+    }
+
+    // Edit Dialog
+    examToEdit?.let { exam ->
+        if (showEditDialog) {
+            EditExamDialog(
+                updateExamViewModel = updateExamViewModel,
+                exam = exam,
+                isLoading = updateUiState.isLoading,
+                errorMessage = updateUiState.errorMessage,
+                onDismiss = {
+                    showEditDialog = false
+                    examToEdit = null
+                    updateExamViewModel.onEvent(UpdateExamUiEvent.ClearState)
+                },
+                onSuccess = {
+                    viewModel.onEvent(ExamsUiEvent.LoadExams)
+                }
+            )
         }
     }
 }
@@ -111,20 +187,16 @@ fun ExamsScreen() {
 @Composable
 private fun ExamsHeader(
     examCount: Int,
-    selectionMode: Boolean,
-    selectedCount: Int,
-    onSearchClick: () -> Unit,
-    onFilterClick: () -> Unit,
     onAddExamClick: () -> Unit,
-    onSelectionModeToggle: () -> Unit,
-    onDeleteSelected: () -> Unit
+    onSearchClick: () -> Unit,
+    onFilterClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (selectionMode) Color.fromHex("#d32f2f") else Color.fromHex("#2196F3")
+            containerColor = Color.fromHex("#2196F3")
         ),
         shape = RoundedCornerShape(16.dp)
     ) {
@@ -140,18 +212,14 @@ private fun ExamsHeader(
             ) {
                 Column {
                     Text(
-                        text = if (selectionMode) "Selecionados" else "Exames",
+                        text = "Exames",
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold,
                             color = Color.White
                         )
                     )
                     Text(
-                        text = if (selectionMode) {
-                            "$selectedCount exame(s) selecionado(s)"
-                        } else {
-                            if (examCount > 0) "$examCount exames registrados" else "Nenhum exame cadastrado"
-                        },
+                        text = if (examCount > 0) "$examCount exames registrados" else "Nenhum exame cadastrado",
                         style = MaterialTheme.typography.bodyMedium.copy(
                             color = Color.White.copy(alpha = 0.9f)
                         )
@@ -159,54 +227,26 @@ private fun ExamsHeader(
                 }
 
                 Row {
-                    if (selectionMode) {
-                        IconButton(
-                            onClick = onDeleteSelected,
-                            enabled = selectedCount > 0
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Excluir selecionados",
-                                tint = Color.White
-                            )
-                        }
-                        IconButton(onClick = onSelectionModeToggle) {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = "Cancelar seleção",
-                                tint = Color.White
-                            )
-                        }
-                    } else {
-                        IconButton(onClick = onSearchClick) {
-                            Icon(
-                                imageVector = Icons.Default.Search,
-                                contentDescription = "Buscar",
-                                tint = Color.White
-                            )
-                        }
-                        IconButton(onClick = onFilterClick) {
-                            Icon(
-                                imageVector = Icons.Default.FilterList,
-                                contentDescription = "Filtrar",
-                                tint = Color.White
-                            )
-                        }
-                        IconButton(onClick = onSelectionModeToggle) {
-                            Icon(
-                                imageVector = Icons.Default.CheckCircle,
-                                contentDescription = "Selecionar",
-                                tint = Color.White
-                            )
-                        }
+                    IconButton(onClick = onSearchClick) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Buscar",
+                            tint = Color.White
+                        )
+                    }
+                    IconButton(onClick = onFilterClick) {
+                        Icon(
+                            imageVector = Icons.Default.FilterList,
+                            contentDescription = "Filtrar",
+                            tint = Color.White
+                        )
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            if (!selectionMode) {
-                Button(
+            Button(
                     onClick = onAddExamClick,
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
@@ -228,30 +268,6 @@ private fun ExamsHeader(
                         )
                     )
                 }
-            } else if (selectedCount > 0) {
-                Button(
-                    onClick = onDeleteSelected,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color.fromHex("#d32f2f")
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Excluir",
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Excluir Selecionados ($selectedCount)",
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    )
-                }
-            }
         }
     }
 }
@@ -263,8 +279,6 @@ private fun SearchBar(
     onQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val theme = PetWiseTheme.Light
-
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(
@@ -281,7 +295,7 @@ private fun SearchBar(
                 Text(
                     "Buscar por tipo de exame ou status...",
                     style = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color.fromHex(theme.palette.textSecondary)
+                        color = Color.Gray
                     )
                 )
             },
@@ -298,7 +312,7 @@ private fun SearchBar(
                         Icon(
                             imageVector = Icons.Default.Clear,
                             contentDescription = "Limpar",
-                            tint = Color.fromHex(theme.palette.textSecondary)
+                            tint = Color.Gray
                         )
                     }
                 }
@@ -307,7 +321,7 @@ private fun SearchBar(
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color.fromHex("#2196F3"),
-                unfocusedBorderColor = Color.fromHex(theme.palette.textSecondary).copy(alpha = 0.3f),
+                unfocusedBorderColor = Color.Gray.copy(alpha = 0.3f),
                 focusedContainerColor = Color.White,
                 unfocusedContainerColor = Color.White
             )
@@ -432,12 +446,10 @@ private fun NoResultsContent(
 }
 
 @Composable
-private fun ExamsList(
+private fun ExamsListContent(
     exams: List<Exam>,
-    selectionMode: Boolean,
-    selectedIds: Set<String>,
-    onExamClick: (Exam) -> Unit,
-    onEditClick: (Exam) -> Unit
+    onEditExam: (Exam) -> Unit,
+    onDeleteExam: (Exam) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -447,11 +459,53 @@ private fun ExamsList(
         items(exams, key = { it.id }) { exam ->
             ExamCard(
                 exam = exam,
-                selectionMode = selectionMode,
-                isSelected = selectedIds.contains(exam.id),
-                onClick = onExamClick,
-                onEditClick = onEditClick
+                onClick = { /* Could be used for details view */ },
+                onEditClick = onEditExam
             )
+        }
+    }
+}
+
+@Composable
+private fun ExamErrorSnackbar(
+    message: String,
+    isError: Boolean,
+    onDismiss: () -> Unit,
+    actionLabel: String? = null,
+    onAction: (() -> Unit)? = null
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isError) Color(0xFFDC3545) else Color(0xFF28A745)
+        ),
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = message,
+                color = Color.White,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.weight(1f)
+            )
+
+            if (actionLabel != null && onAction != null) {
+                TextButton(onClick = onAction) {
+                    Text(
+                        text = actionLabel,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
         }
     }
 }
@@ -459,12 +513,9 @@ private fun ExamsList(
 @Composable
 fun ExamCard(
     exam: Exam,
-    selectionMode: Boolean = false,
-    isSelected: Boolean = false,
     onClick: (Exam) -> Unit = {},
     onEditClick: (Exam) -> Unit = {}
 ) {
-    val theme = PetWiseTheme.Light
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
 
@@ -477,18 +528,11 @@ fun ExamCard(
             ) { onClick(exam) }
             .padding(vertical = 4.dp),
         colors = CardDefaults.cardColors(
-            containerColor = when {
-                isSelected -> Color.fromHex("#2196F3").copy(alpha = 0.1f)
-                isHovered -> Color.White.copy(alpha = 0.9f)
-                else -> Color.White
-            }
+            containerColor = if (isHovered) Color.White.copy(alpha = 0.9f) else Color.White
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = if (isHovered) 3.dp else 1.dp
         ),
-        border = if (isSelected) {
-            androidx.compose.foundation.BorderStroke(2.dp, Color.fromHex("#2196F3"))
-        } else null,
         shape = RoundedCornerShape(12.dp)
     ) {
         Row(
@@ -497,16 +541,6 @@ fun ExamCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (selectionMode) {
-                Checkbox(
-                    checked = isSelected,
-                    onCheckedChange = { onClick(exam) },
-                    colors = CheckboxDefaults.colors(
-                        checkedColor = Color.fromHex("#2196F3")
-                    ),
-                    modifier = Modifier.padding(end = 16.dp)
-                )
-            }
 
             Column(
                 modifier = Modifier.weight(1f)
@@ -515,20 +549,20 @@ fun ExamCard(
                     text = exam.examType,
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
-                        color = Color.fromHex(theme.palette.textPrimary)
+                        color = Color.Black
                     )
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "Pet ID: ${exam.petId}",
                     style = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color.fromHex(theme.palette.textSecondary)
+                        color = Color.Gray
                     )
                 )
                 Text(
                     text = "Veterinário ID: ${exam.veterinaryId}",
                     style = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color.fromHex(theme.palette.textSecondary)
+                        color = Color.Gray
                     )
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -566,19 +600,18 @@ fun ExamCard(
                 }
             }
 
-            if (!selectionMode) {
-                IconButton(
-                    onClick = { onEditClick(exam) },
-                    modifier = Modifier.size(36.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Editar",
-                        tint = Color.fromHex("#2196F3"),
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+            IconButton(
+                onClick = { onEditClick(exam) },
+                modifier = Modifier.size(36.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Editar",
+                    tint = Color.fromHex("#2196F3"),
+                    modifier = Modifier.size(20.dp)
+                )
             }
         }
     }
 }
+

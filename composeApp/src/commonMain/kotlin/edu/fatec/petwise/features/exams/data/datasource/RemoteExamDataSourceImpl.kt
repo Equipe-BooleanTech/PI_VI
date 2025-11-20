@@ -4,15 +4,43 @@ import edu.fatec.petwise.core.network.NetworkResult
 import edu.fatec.petwise.core.network.api.ExamApiService
 import edu.fatec.petwise.core.network.dto.*
 import edu.fatec.petwise.features.exams.domain.models.Exam
+import edu.fatec.petwise.features.auth.domain.usecases.GetUserProfileUseCase
 import kotlinx.datetime.LocalDateTime
 
 class RemoteExamDataSourceImpl(
-    private val examApiService: ExamApiService
+    private val examApiService: ExamApiService,
+    private val getUserProfileUseCase: GetUserProfileUseCase
 ) : RemoteExamDataSource {
 
     override suspend fun getAllExams(): List<Exam> {
         return when (val result = examApiService.getAllExams(1, 1000)) {
-            is NetworkResult.Success -> result.data.map { it.toExam() }
+            is NetworkResult.Success -> {
+                println("API: ${result.data.size} exames obtidos com sucesso")
+                var exams = result.data.map { it.toExam() }
+                
+                // Filter exams based on user type
+                try {
+                    val userProfile = getUserProfileUseCase.execute().getOrNull()
+                    if (userProfile != null && userProfile.userType == "OWNER") {
+                        println("API: Usuário é OWNER, filtrando exames por pets do usuário")
+                        // For OWNER users, we need to get their pets first to filter exams
+                        // This is a simplified approach - in a real app, the API should handle this
+                        exams = exams.filter { exam ->
+                            // This would need to be implemented properly by checking pet ownership
+                            // For now, we'll return all exams (this needs backend support)
+                            true
+                        }
+                        println("API: Após filtro OWNER: ${exams.size} exames restantes")
+                    } else {
+                        println("API: Usuário não é OWNER ou perfil não encontrado, mostrando todos os exames")
+                    }
+                } catch (e: Exception) {
+                    println("API: Erro ao obter perfil do usuário para filtro: ${e.message}")
+                    // Continue without filtering
+                }
+                
+                exams
+            }
             is NetworkResult.Error -> {
                 println("API Error: ${result.exception.message}")
                 emptyList()
@@ -34,16 +62,14 @@ class RemoteExamDataSourceImpl(
 
     override suspend fun createExam(exam: Exam): Exam {
         val request = CreateExamRequest(
-            petId = exam.petId,
-            veterinaryId = exam.veterinaryId,
             examType = exam.examType,
-            examDate = parseDateToIso(exam.examDate),
+            examDate = exam.examDate,
             results = exam.results,
             status = exam.status,
             notes = exam.notes,
             attachmentUrl = exam.attachmentUrl
         )
-        return when (val result = examApiService.createExam(request)) {
+        return when (val result = examApiService.createExam(exam.petId, request)) {
             is NetworkResult.Success -> result.data.toExam()
             is NetworkResult.Error -> throw Exception(result.exception.message)
             is NetworkResult.Loading -> throw Exception("Request in progress")

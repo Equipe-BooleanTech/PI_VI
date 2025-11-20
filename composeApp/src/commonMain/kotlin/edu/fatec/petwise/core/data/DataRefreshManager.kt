@@ -11,12 +11,16 @@ sealed class DataRefreshEvent {
     object PetsUpdated : DataRefreshEvent()
     object ConsultasUpdated : DataRefreshEvent()
     object VaccinationsUpdated : DataRefreshEvent()
+    object LabResultsUpdated : DataRefreshEvent()
+    object ExamsUpdated : DataRefreshEvent()
     object UserLoggedIn : DataRefreshEvent()
     object UserLoggedOut : DataRefreshEvent()
     object AllDataUpdated : DataRefreshEvent()
     data class PetUpdated(val petId: String) : DataRefreshEvent()
     data class ConsultaUpdated(val consultaId: String) : DataRefreshEvent()
     data class VaccinationUpdated(val vaccinationId: String) : DataRefreshEvent()
+    data class LabResultUpdated(val labResultId: String) : DataRefreshEvent()
+    data class ExamUpdated(val examId: String) : DataRefreshEvent()
 }
 
 object DataRefreshManager {
@@ -86,6 +90,34 @@ object DataRefreshManager {
         val emitted = _refreshEvents.tryEmit(DataRefreshEvent.VaccinationUpdated(vaccinationId))
         if (!emitted) {
             println("DataRefreshManager: Falha ao emitir evento VaccinationUpdated para '$vaccinationId'")
+        }
+    }
+
+    fun notifyLabResultsUpdated() {
+        val emitted = _refreshEvents.tryEmit(DataRefreshEvent.LabResultsUpdated)
+        if (!emitted) {
+            println("DataRefreshManager: Falha ao emitir evento LabResultsUpdated")
+        }
+    }
+
+    fun notifyLabResultUpdated(labResultId: String) {
+        val emitted = _refreshEvents.tryEmit(DataRefreshEvent.LabResultUpdated(labResultId))
+        if (!emitted) {
+            println("DataRefreshManager: Falha ao emitir evento LabResultUpdated para '$labResultId'")
+        }
+    }
+
+    fun notifyExamsUpdated() {
+        val emitted = _refreshEvents.tryEmit(DataRefreshEvent.ExamsUpdated)
+        if (!emitted) {
+            println("DataRefreshManager: Falha ao emitir evento ExamsUpdated")
+        }
+    }
+
+    fun notifyExamUpdated(examId: String) {
+        val emitted = _refreshEvents.tryEmit(DataRefreshEvent.ExamUpdated(examId))
+        if (!emitted) {
+            println("DataRefreshManager: Falha ao emitir evento ExamUpdated para '$examId'")
         }
     }
 }

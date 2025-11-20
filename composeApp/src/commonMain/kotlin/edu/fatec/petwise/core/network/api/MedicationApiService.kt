@@ -10,6 +10,7 @@ import kotlinx.serialization.json.Json
 interface MedicationApiService {
     suspend fun getAllMedications(page: Int = 1, pageSize: Int = 20): NetworkResult<List<MedicationDto>>
     suspend fun getMedicationById(id: String): NetworkResult<MedicationDto>
+    suspend fun getMedicationsByPetId(petId: String): NetworkResult<List<MedicationDto>>
     suspend fun searchMedications(filter: MedicationFilterRequest, page: Int = 1, pageSize: Int = 20): NetworkResult<List<MedicationDto>>
     suspend fun createMedication(request: CreateMedicationRequest): NetworkResult<MedicationDto>
     suspend fun updateMedication(id: String, request: UpdateMedicationRequest): NetworkResult<MedicationDto>
@@ -46,6 +47,10 @@ class MedicationApiServiceImpl(
 
     override suspend fun getMedicationById(id: String): NetworkResult<MedicationDto> {
         return networkHandler.get<MedicationDto>(ApiEndpoints.getMedication(id))
+    }
+
+    override suspend fun getMedicationsByPetId(petId: String): NetworkResult<List<MedicationDto>> {
+        return networkHandler.get<List<MedicationDto>>(ApiEndpoints.getMedicationsByPet(petId))
     }
 
     override suspend fun searchMedications(filter: MedicationFilterRequest, page: Int, pageSize: Int): NetworkResult<List<MedicationDto>> {

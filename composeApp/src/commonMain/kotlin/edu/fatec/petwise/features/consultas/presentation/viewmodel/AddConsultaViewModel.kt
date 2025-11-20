@@ -2,6 +2,8 @@ package edu.fatec.petwise.features.consultas.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import edu.fatec.petwise.core.data.DataRefreshEvent
+import edu.fatec.petwise.core.data.DataRefreshManager
 import edu.fatec.petwise.features.auth.domain.usecases.GetUserProfileUseCase
 import edu.fatec.petwise.features.consultas.domain.models.Consulta
 import edu.fatec.petwise.features.consultas.domain.models.ConsultaStatus
@@ -40,6 +42,21 @@ class AddConsultaViewModel(
     private val _uiState = MutableStateFlow(AddConsultaUiState())
     val uiState: StateFlow<AddConsultaUiState> = _uiState.asStateFlow()
 
+    init {
+        observeLogout()
+    }
+
+    private fun observeLogout() {
+        viewModelScope.launch {
+            DataRefreshManager.refreshEvents.collect { event ->
+                if (event is DataRefreshEvent.UserLoggedOut) {
+                    println("AddConsultaViewModel: Usuário deslogou — limpando estado")
+                    clearState()
+                }
+            }
+        }
+    }
+
     fun onEvent(event: AddConsultaUiEvent) {
         when (event) {
             is AddConsultaUiEvent.AddConsulta -> addConsulta(event)
@@ -62,7 +79,6 @@ class AddConsultaViewModel(
                     return@launch
                 }
 
-                // Fetch user profile to get full name
                 val userProfile = getUserProfileUseCase.execute().getOrNull()
                 val veterinarianName = userProfile?.fullName ?: ""
 

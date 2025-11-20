@@ -24,7 +24,6 @@ data class VaccinationDto(
 
 @Serializable
 data class CreateVaccinationRequest(
-    val petId: String,
     val veterinarianId: String,
     val vaccineType: String,
     val vaccinationDate: String,

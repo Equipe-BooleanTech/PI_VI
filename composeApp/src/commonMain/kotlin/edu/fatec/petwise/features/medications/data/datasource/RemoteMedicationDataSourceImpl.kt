@@ -44,6 +44,21 @@ class RemoteMedicationDataSourceImpl(
         }
     }
 
+    override suspend fun getMedicationsByPetId(petId: String): List<Medication> {
+        println("API: Buscando medicamentos por Pet ID: $petId")
+        return when (val result = medicationApiService.getMedicationsByPetId(petId)) {
+            is NetworkResult.Success -> {
+                println("API: ${result.data.size} medicamentos encontrados para o pet $petId")
+                result.data.map { it.toDomain() }
+            }
+            is NetworkResult.Error -> {
+                println("API: Erro ao buscar medicamentos do pet - ${result.exception.message}")
+                throw result.exception
+            }
+            is NetworkResult.Loading -> emptyList()
+        }
+    }
+
     override suspend fun getMedicationsByPrescriptionId(prescriptionId: String): List<Medication> {
         println("API: Buscando medicamentos por Prescription ID: $prescriptionId")
         return when (val result = medicationApiService.getAllMedications(1, 1000)) {

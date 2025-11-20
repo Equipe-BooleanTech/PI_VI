@@ -62,7 +62,7 @@ fun QuickActionsSection(
             ),
             QuickActionData(
                 id = "apply_vaccine",
-                title = "Aplicar Vacina",
+                title = "Cadastrar Vacina",
                 icon = Icons.Default.Vaccines,
                 route = "vaccines",
                 background = "#FF9800"
@@ -83,7 +83,7 @@ fun QuickActionsSection(
             ),
             QuickActionData(
                 id = "new_lab",
-                title = "Novo Laboratório",
+                title = "Cadastrar Laboratório",
                 icon = Icons.Default.FlashOn,
                 route = "labs",
                 background = "#FF5722"
@@ -96,13 +96,6 @@ fun QuickActionsSection(
                 icon = Icons.Default.Medication,
                 route = "medications",
                 background = "#9C27B0"
-            ),
-            QuickActionData(
-                id = "view_prescriptions",
-                title = "Ver Prescrições",
-                icon = Icons.Default.CalendarMonth,
-                route = "prescriptions",
-                background = "#2196F3"
             )
         )
         UserType.PETSHOP -> listOf(

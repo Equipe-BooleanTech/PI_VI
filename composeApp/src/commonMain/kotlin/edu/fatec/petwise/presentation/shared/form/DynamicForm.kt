@@ -10,6 +10,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Visibility
@@ -663,13 +664,15 @@ private fun RenderSelectField(
             expanded = newExpanded
             if (newExpanded) {
                 onFocus()
+            } else {
+                onBlur()
             }
         }
     ) {
         OutlinedTextField(
             value = fieldState.displayValue,
-            onValueChange = {},
-            readOnly = true,
+            onValueChange = onValueChange,
+            readOnly = false,
             label = labelText?.let { { Text(it) } },
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
@@ -908,8 +911,8 @@ private fun RenderDateField(
 
     OutlinedTextField(
         value = fieldState.displayValue,
-        onValueChange = {},
-        readOnly = true,
+        onValueChange = onValueChange,
+        readOnly = false,
         label = labelText?.let { { Text(it) } },
         placeholder = fieldDefinition.placeholder?.let { { Text(it) } },
         modifier = Modifier
@@ -976,8 +979,8 @@ private fun RenderTimeField(
 
     OutlinedTextField(
         value = fieldState.displayValue,
-        onValueChange = {},
-        readOnly = true,
+        onValueChange = onValueChange,
+        readOnly = false,
         label = labelText?.let { { Text(it) } },
         placeholder = fieldDefinition.placeholder?.let { { Text(it) } },
         modifier = Modifier
@@ -1002,7 +1005,7 @@ private fun RenderTimeField(
         trailingIcon = {
             IconButton(onClick = { showTimePicker = true; onFocus() }) {
                 Icon(
-                    imageVector = Icons.Default.Schedule,
+                    imageVector = Icons.Filled.Schedule,
                     contentDescription = "Select Time",
                     tint = colorScheme.onSurfaceVariant
                 )
@@ -1059,8 +1062,11 @@ private fun RenderDateTimeField(
     ) {
         OutlinedTextField(
             value = dateValue,
-            onValueChange = {},
-            readOnly = true,
+            onValueChange = { newValue ->
+                dateValue = newValue
+                onValueChange("$newValue $timeValue")
+            },
+            readOnly = false,
             label = { Text("${labelText ?: "Date/Time"} - Date") },
             placeholder = { Text("Select Date") },
             modifier = Modifier
@@ -1079,7 +1085,7 @@ private fun RenderDateTimeField(
             trailingIcon = {
                 IconButton(onClick = { showDatePicker = true; onFocus() }) {
                     Icon(
-                        imageVector = Icons.Default.CalendarToday,
+                        imageVector = Icons.Filled.CalendarToday,
                         contentDescription = "Select Date",
                         tint = colorScheme.onSurfaceVariant
                     )
@@ -1089,8 +1095,12 @@ private fun RenderDateTimeField(
 
         OutlinedTextField(
             value = timeValue,
-            onValueChange = {},
-            readOnly = true,
+            onValueChange = { newValue ->
+                timeValue = newValue
+                onValueChange("$dateValue $newValue")
+                onBlur()
+            },
+            readOnly = false,
             label = { Text("${labelText ?: "Date/Time"} - Time") },
             placeholder = { Text("Select Time") },
             modifier = Modifier
@@ -1109,7 +1119,7 @@ private fun RenderDateTimeField(
             trailingIcon = {
                 IconButton(onClick = { showTimePicker = true; onFocus() }) {
                     Icon(
-                        imageVector = Icons.Default.Schedule,
+                        imageVector = Icons.Filled.Schedule,
                         contentDescription = "Select Time",
                         tint = colorScheme.onSurfaceVariant
                     )

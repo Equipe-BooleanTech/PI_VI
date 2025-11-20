@@ -6,6 +6,7 @@ import edu.fatec.petwise.features.toys.data.datasource.RemoteToyDataSourceImpl
 import edu.fatec.petwise.features.toys.data.repository.ToyRepositoryImpl
 import edu.fatec.petwise.features.toys.domain.repository.ToyRepository
 import edu.fatec.petwise.features.toys.domain.usecases.*
+import edu.fatec.petwise.features.toys.presentation.ToysViewModel
 
 object ToyDependencyContainer {
     
@@ -36,4 +37,10 @@ object ToyDependencyContainer {
     val deleteToyUseCase: DeleteToyUseCase by lazy {
         DeleteToyUseCase(repository)
     }
+
+    val toysViewModel: ToysViewModel by lazy {
+        ToysViewModel()
+    }
+
+    fun provideRepository(): ToyRepository = repository
 }

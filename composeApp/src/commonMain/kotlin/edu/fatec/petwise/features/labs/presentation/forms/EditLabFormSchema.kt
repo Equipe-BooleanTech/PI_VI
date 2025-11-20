@@ -1,13 +1,13 @@
 package edu.fatec.petwise.features.labs.presentation.forms
 
-import edu.fatec.petwise.features.labs.domain.models.Lab
+import edu.fatec.petwise.features.labs.domain.models.LabResult
 import edu.fatec.petwise.presentation.shared.form.*
 import kotlinx.serialization.json.JsonPrimitive
 
-fun createEditLabFormConfiguration(lab: Lab): FormConfiguration = FormConfiguration(
-    id = "edit_lab_form",
-    title = "Editar Laboratório - ${lab.name}",
-    description = "Atualize as informações do laboratório.",
+fun createEditLabResultFormConfiguration(labResult: LabResult): FormConfiguration = FormConfiguration(
+    id = "edit_lab_result_form",
+    title = "Editar Resultado de Exame - ${labResult.labType}",
+    description = "Atualize as informações do resultado de exame laboratorial.",
     layout = FormLayout(
         columns = 1,
         maxWidth = 600,
@@ -16,30 +16,65 @@ fun createEditLabFormConfiguration(lab: Lab): FormConfiguration = FormConfigurat
     ),
     fields = listOf(
         FormFieldDefinition(
-            id = "name",
-            label = "Nome do Laboratório",
+            id = "labType",
+            label = "Tipo de Exame",
             type = FormFieldType.TEXT,
-            placeholder = "Ex: LabVet, VetLab, BioVet...",
-            default = JsonPrimitive(lab.name),
+            placeholder = "Ex: Hemograma, Bioquímica, Urinálise...",
+            default = JsonPrimitive(labResult.labType),
             validators = listOf(
                 ValidationRule(
                     type = ValidationType.REQUIRED,
-                    message = "Nome é obrigatório"
+                    message = "Tipo de exame é obrigatório"
                 ),
                 ValidationRule(
                     type = ValidationType.MIN_LENGTH,
                     value = JsonPrimitive(2),
-                    message = "Nome deve ter pelo menos 2 caracteres"
+                    message = "Tipo deve ter pelo menos 2 caracteres"
                 )
             ),
             formatting = FieldFormatting(capitalize = true)
         ),
         FormFieldDefinition(
-            id = "contactInfo",
-            label = "Informações de Contato",
-            type = FormFieldType.TEXT,
-            placeholder = "Ex: (11) 99999-9999, email@lab.com...",
-            default = JsonPrimitive(lab.contactInfo ?: ""),
+            id = "labDate",
+            label = "Data do Exame",
+            type = FormFieldType.DATE,
+            placeholder = "Selecione a data do exame",
+            default = JsonPrimitive(labResult.labDate),
+            validators = listOf(
+                ValidationRule(
+                    type = ValidationType.REQUIRED,
+                    message = "Data do exame é obrigatória"
+                )
+            )
+        ),
+        FormFieldDefinition(
+            id = "results",
+            label = "Resultados",
+            type = FormFieldType.TEXTAREA,
+            placeholder = "Descreva os resultados do exame...",
+            default = JsonPrimitive(labResult.results ?: ""),
+            validators = emptyList()
+        ),
+        FormFieldDefinition(
+            id = "status",
+            label = "Status",
+            type = FormFieldType.SELECT,
+            placeholder = "Selecione o status",
+            default = JsonPrimitive(labResult.status),
+            options = listOf("PENDING", "IN_PROGRESS", "COMPLETED", "CANCELLED"),
+            validators = listOf(
+                ValidationRule(
+                    type = ValidationType.REQUIRED,
+                    message = "Status é obrigatório"
+                )
+            )
+        ),
+        FormFieldDefinition(
+            id = "notes",
+            label = "Observações",
+            type = FormFieldType.TEXTAREA,
+            placeholder = "Observações adicionais...",
+            default = JsonPrimitive(labResult.notes ?: ""),
             validators = emptyList()
         ),
         FormFieldDefinition(

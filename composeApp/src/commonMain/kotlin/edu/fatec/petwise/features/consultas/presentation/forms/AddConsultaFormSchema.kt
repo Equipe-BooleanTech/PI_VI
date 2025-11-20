@@ -142,6 +142,37 @@ fun createEditConsultaFormConfiguration(consulta: Consulta, petOptions: List<Sel
     ),
     fields = listOf(
         FormFieldDefinition(
+            id = "consultaType",
+            label = "Tipo de Consulta",
+            type = FormFieldType.SELECT,
+            options = listOf(
+                "Consulta de Rotina",
+                "Emergência",
+                "Retorno",
+                "Vacinação",
+                "Cirurgia",
+                "Exame",
+                "Outro"
+            ),
+            default = JsonPrimitive(
+                when (consulta.consultaType) {
+                    edu.fatec.petwise.features.consultas.domain.models.ConsultaType.ROUTINE -> "Consulta de Rotina"
+                    edu.fatec.petwise.features.consultas.domain.models.ConsultaType.EMERGENCY -> "Emergência"
+                    edu.fatec.petwise.features.consultas.domain.models.ConsultaType.FOLLOW_UP -> "Retorno"
+                    edu.fatec.petwise.features.consultas.domain.models.ConsultaType.VACCINATION -> "Vacinação"
+                    edu.fatec.petwise.features.consultas.domain.models.ConsultaType.SURGERY -> "Cirurgia"
+                    edu.fatec.petwise.features.consultas.domain.models.ConsultaType.EXAM -> "Exame"
+                    else -> "Outro"
+                }
+            ),
+            validators = listOf(
+                ValidationRule(
+                    type = ValidationType.REQUIRED,
+                    message = "Selecione o tipo de consulta"
+                )
+            )
+        ),
+        FormFieldDefinition(
             id = "consultaDate",
             label = "Data da Consulta",
             type = FormFieldType.DATE,
@@ -200,14 +231,6 @@ fun createEditConsultaFormConfiguration(consulta: Consulta, petOptions: List<Sel
                     message = "Digite um valor válido (ex: 150 ou 150.50)"
                 )
             )
-        ),
-        FormFieldDefinition(
-            id = "notes",
-            label = "Observações",
-            type = FormFieldType.TEXTAREA,
-            placeholder = "Observações adicionais...",
-            default = JsonPrimitive(consulta.notes),
-            validators = emptyList()
         ),
         FormFieldDefinition(
             id = "submit",

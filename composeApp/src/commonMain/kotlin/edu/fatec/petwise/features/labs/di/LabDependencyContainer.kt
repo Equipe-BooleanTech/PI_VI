@@ -6,9 +6,10 @@ import edu.fatec.petwise.features.labs.data.datasource.RemoteLabDataSourceImpl
 import edu.fatec.petwise.features.labs.data.repository.LabRepositoryImpl
 import edu.fatec.petwise.features.labs.domain.repository.LabRepository
 import edu.fatec.petwise.features.labs.domain.usecases.*
+import edu.fatec.petwise.features.labs.presentation.viewmodel.*
 
 object LabDependencyContainer {
-    
+
     private val remoteDataSource: RemoteLabDataSource by lazy {
         RemoteLabDataSourceImpl(NetworkModule.labApiService)
     }
@@ -17,23 +18,36 @@ object LabDependencyContainer {
         LabRepositoryImpl(remoteDataSource)
     }
 
-    val getLabsUseCase: GetLabsUseCase by lazy {
-        GetLabsUseCase(repository)
+    val getLabResultsUseCase: GetLabResultsUseCase by lazy {
+        GetLabResultsUseCase(repository)
     }
 
-    val getLabByIdUseCase: GetLabByIdUseCase by lazy {
-        GetLabByIdUseCase(repository)
+    val getLabResultByIdUseCase: GetLabResultByIdUseCase by lazy {
+        GetLabResultByIdUseCase(repository)
     }
 
-    val addLabUseCase: AddLabUseCase by lazy {
-        AddLabUseCase(repository)
+    val addLabResultUseCase: AddLabResultUseCase by lazy {
+        AddLabResultUseCase(repository)
     }
 
-    val updateLabUseCase: UpdateLabUseCase by lazy {
-        UpdateLabUseCase(repository)
+    val updateLabResultUseCase: UpdateLabResultUseCase by lazy {
+        UpdateLabResultUseCase(repository)
     }
 
-    val deleteLabUseCase: DeleteLabUseCase by lazy {
-        DeleteLabUseCase(repository)
+    val deleteLabResultUseCase: DeleteLabResultUseCase by lazy {
+        DeleteLabResultUseCase(repository)
+    }
+
+    // ViewModels
+    val labsViewModel: LabsViewModel by lazy {
+        LabsViewModel(getLabResultsUseCase, deleteLabResultUseCase)
+    }
+
+    val addLabResultViewModel: AddLabResultViewModel by lazy {
+        AddLabResultViewModel(addLabResultUseCase)
+    }
+
+    val updateLabResultViewModel: UpdateLabResultViewModel by lazy {
+        UpdateLabResultViewModel(updateLabResultUseCase)
     }
 }

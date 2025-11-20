@@ -43,7 +43,6 @@ class RemoteVaccinationDataSourceImpl(
 
     override suspend fun createVaccination(vaccination: Vaccination): Vaccination {
         val request = CreateVaccinationRequest(
-            petId = vaccination.petId,
             veterinarianId = vaccination.veterinarianId,
             vaccineType = vaccination.vaccineType.name,
             vaccinationDate = parseDateToIso(vaccination.vaccinationDate),
@@ -54,7 +53,7 @@ class RemoteVaccinationDataSourceImpl(
             status = vaccination.status.name
         )
 
-        return when (val result = vaccinationApiService.createVaccination(request)) {
+        return when (val result = vaccinationApiService.createVaccination(vaccination.petId, request)) {
             is NetworkResult.Success -> result.data.toDomain()
             is NetworkResult.Error -> throw result.exception
             is NetworkResult.Loading -> throw IllegalStateException("Requisição em andamento")

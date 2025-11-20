@@ -53,7 +53,7 @@ val addVaccinationFormConfiguration: FormConfiguration = FormConfiguration(
         FormFieldDefinition(
             id = "vaccinationDate",
             label = "Data de Vacinação",
-            type = FormFieldType.TEXT,
+            type = FormFieldType.DATE,
             placeholder = "DD/MM/AAAA",
             validators = listOf(
                 ValidationRule(
@@ -69,7 +69,7 @@ val addVaccinationFormConfiguration: FormConfiguration = FormConfiguration(
         FormFieldDefinition(
             id = "nextDoseDate",
             label = "Próxima Dose (opcional)",
-            type = FormFieldType.TEXT,
+            type = FormFieldType.DATE,
             placeholder = "DD/MM/AAAA",
             validators = listOf(
                 ValidationRule(

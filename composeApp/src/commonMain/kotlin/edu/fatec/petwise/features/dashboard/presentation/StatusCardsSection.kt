@@ -40,7 +40,6 @@ fun StatusCardsSection(
 ) {
     val theme = PetWiseTheme.Light
 
-    // Create status cards with real data
     val statusCards = when (userType.uppercase()) {
         "OWNER" -> listOf(
             StatusCardData(
@@ -50,38 +49,10 @@ fun StatusCardsSection(
                 route = "pets",
                 color = "#00b942"
             ),
-            StatusCardData(
-                title = "Consultas",
-                value = consultasCount.toString(),
-                icon = "event",
-                route = "appointments",
-                color = "#2196F3"
-            ),
-            StatusCardData(
-                title = "Vacinas",
-                value = vacinasCount.toString(),
-                icon = "vaccines",
-                route = "vaccines",
-                color = "#FF9800"
-            ),
-            StatusCardData(
-                title = "Prescrições",
-                value = prescriptionsCount.toString(),
-                icon = "medication",
-                route = "prescriptions",
-                color = "#9C27B0"
-            ),
-            StatusCardData(
-                title = "Exames",
-                value = examsCount.toString(),
-                icon = "lab",
-                route = "exams",
-                color = "#607D8B"
-            )
         )
         "VETERINARY" -> listOf(
             StatusCardData(
-                title = "Consultas Hoje",
+                title = "Consultas Agendadas",
                 value = consultasCount.toString(),
                 icon = "event",
                 route = "appointments",
@@ -93,13 +64,6 @@ fun StatusCardsSection(
                 icon = "vaccines",
                 route = "vaccines",
                 color = "#FF9800"
-            ),
-            StatusCardData(
-                title = "Medicações",
-                value = medicamentosCount.toString(),
-                icon = "medication",
-                route = "medications",
-                color = "#9C27B0"
             ),
             StatusCardData(
                 title = "Prescrições",
@@ -114,6 +78,13 @@ fun StatusCardsSection(
                 icon = "lab",
                 route = "exams",
                 color = "#4CAF50"
+            ),
+            StatusCardData(
+                title = "Laboratórios",
+                value = labsCount.toString(),
+                icon = "lab",
+                route = "labs",
+                color = "#FF5722"
             )
         )
         "PETSHOP" -> listOf(
@@ -125,7 +96,7 @@ fun StatusCardsSection(
                 color = "#00b942"
             ),
             StatusCardData(
-                title = "Produtos Higiene",
+                title = "Produtos de Higiene",
                 value = hygieneCount.toString(),
                 icon = "hygiene",
                 route = "hygiene",
@@ -146,13 +117,6 @@ fun StatusCardsSection(
                 icon = "medication",
                 route = "medications",
                 color = "#9C27B0"
-            ),
-            StatusCardData(
-                title = "Prescrições",
-                value = prescriptionsCount.toString(),
-                icon = "prescription",
-                route = "prescriptions",
-                color = "#2196F3"
             )
         )
         else -> listOf(
@@ -190,7 +154,6 @@ fun StatusCardsSection(
             )
         }
 
-        // Display cards in rows of 2
         val rows = statusCards.chunked(2)
         rows.forEachIndexed { index, rowCards ->
             if (index > 0) {
@@ -208,7 +171,6 @@ fun StatusCardsSection(
                         isClickable = userType.uppercase() != "OWNER" || cardData.route == "pets"
                     )
                 }
-                // Fill remaining space if odd number
                 if (rowCards.size == 1) {
                     Spacer(modifier = Modifier.weight(1f))
                 }

@@ -5,8 +5,8 @@ import edu.fatec.petwise.features.dashboard.presentation.viewmodel.DashboardUiEv
 import edu.fatec.petwise.features.dashboard.presentation.viewmodel.DashboardUiState
 import edu.fatec.petwise.features.dashboard.presentation.viewmodel.DashboardViewModel
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -43,6 +43,7 @@ import edu.fatec.petwise.features.consultas.presentation.view.ConsultasScreen
 import edu.fatec.petwise.features.dashboard.domain.models.DashboardDataProvider
 import edu.fatec.petwise.features.dashboard.domain.models.DefaultDashboardDataProvider
 import edu.fatec.petwise.features.dashboard.domain.models.UserType
+import edu.fatec.petwise.features.exams.di.ExamDependencyContainer
 import edu.fatec.petwise.features.medications.presentation.view.MedicationsScreen
 import edu.fatec.petwise.features.pets.presentation.view.PetsScreen
 import edu.fatec.petwise.features.suprimentos.presentation.view.SuprimentosPetSelectionScreen
@@ -55,6 +56,18 @@ import edu.fatec.petwise.presentation.components.MoreMenu.MoreMenu
 import edu.fatec.petwise.presentation.components.NavBar.NavBar
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.fromHex
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import edu.fatec.petwise.features.dashboard.presentation.StatusCardsSection
+import edu.fatec.petwise.features.dashboard.presentation.QuickActionsSection
+import edu.fatec.petwise.features.dashboard.presentation.RecentActivitiesSection
+import edu.fatec.petwise.features.dashboard.presentation.UnauthorizedScreen
+
 
 @Composable
 fun DashboardScreen(
@@ -262,7 +275,9 @@ fun DashboardScreen(
                                 .fillMaxSize()
                                 .padding(paddingValues)
                         ) {
-                            edu.fatec.petwise.features.labs.presentation.LabsScreen()
+                            edu.fatec.petwise.features.labs.presentation.LabsScreen(
+                                viewModel = edu.fatec.petwise.features.labs.di.LabDependencyContainer.labsViewModel
+                            )
                         }
                     } else {
                         UnauthorizedScreen(paddingValues, "Você não tem permissão para acessar Laboratório")
@@ -288,7 +303,9 @@ fun DashboardScreen(
                                 .fillMaxSize()
                                 .padding(paddingValues)
                         ) {
-                            edu.fatec.petwise.features.exams.presentation.ExamsScreen()
+                            edu.fatec.petwise.features.exams.presentation.ExamsScreen(
+                                viewModel = ExamDependencyContainer.examsViewModel
+                            )
                         }
                     } else {
                         UnauthorizedScreen(paddingValues, "Você não tem permissão para acessar Exames")

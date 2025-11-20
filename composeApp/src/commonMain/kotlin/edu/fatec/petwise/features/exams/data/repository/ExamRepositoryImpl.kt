@@ -18,7 +18,7 @@ class ExamRepositoryImpl(
             emit(exams)
         } catch (e: Exception) {
             println("Repositório: Erro ao buscar exames da API - ${e.message}")
-            emit(emptyList())
+            throw e
         }
     }
 
@@ -34,7 +34,7 @@ class ExamRepositoryImpl(
             emit(exam)
         } catch (e: Exception) {
             println("Repositório: Erro ao buscar exame por ID '$id' - ${e.message}")
-            emit(null)
+            throw e
         }
     }
 
@@ -46,7 +46,7 @@ class ExamRepositoryImpl(
             emit(exams)
         } catch (e: Exception) {
             println("Repositório: Erro ao buscar exames na API - ${e.message}")
-            emit(emptyList())
+            throw e
         }
     }
 
@@ -58,7 +58,7 @@ class ExamRepositoryImpl(
             emit(exams)
         } catch (e: Exception) {
             println("Repositório: Erro ao buscar exames do pet - ${e.message}")
-            emit(emptyList())
+            throw e
         }
     }
 
@@ -70,7 +70,7 @@ class ExamRepositoryImpl(
             emit(exams)
         } catch (e: Exception) {
             println("Repositório: Erro ao buscar exames do veterinário - ${e.message}")
-            emit(emptyList())
+            throw e
         }
     }
 

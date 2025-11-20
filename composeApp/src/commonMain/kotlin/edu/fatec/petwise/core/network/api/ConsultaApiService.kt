@@ -120,7 +120,7 @@ class ConsultaApiServiceImpl(
     }
 
     override suspend fun getConsultasByPet(petId: String, page: Int, pageSize: Int): NetworkResult<List<ConsultaDto>> {
-        return networkHandler.getWithCustomDeserializer(ApiEndpoints.CONSULTAS, deserializer = { jsonString ->
+        return networkHandler.getWithCustomDeserializer(ApiEndpoints.getConsultasByPet(petId), deserializer = { jsonString ->
             val json = Json { ignoreUnknownKeys = true }
             try {
                 // Try to parse as direct array first
@@ -131,7 +131,6 @@ class ConsultaApiServiceImpl(
                 wrapped.consultas ?: emptyList()
             }
         }) {
-            parameter("petId", petId)
             parameter("page", page)
             parameter("pageSize", pageSize)
         }

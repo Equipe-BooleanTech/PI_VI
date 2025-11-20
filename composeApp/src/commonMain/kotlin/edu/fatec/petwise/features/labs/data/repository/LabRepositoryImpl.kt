@@ -1,7 +1,7 @@
 package edu.fatec.petwise.features.labs.data.repository
 
 import edu.fatec.petwise.features.labs.data.datasource.RemoteLabDataSource
-import edu.fatec.petwise.features.labs.domain.models.Lab
+import edu.fatec.petwise.features.labs.domain.models.LabResult
 import edu.fatec.petwise.features.labs.domain.repository.LabRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -10,78 +10,78 @@ class LabRepositoryImpl(
     private val remoteDataSource: RemoteLabDataSource
 ) : LabRepository {
 
-    override fun getAllLabs(): Flow<List<Lab>> = flow {
+    override fun getAllLabResults(): Flow<List<LabResult>> = flow {
         try {
-            println("Repositório: Buscando todos os laboratórios via API")
-            val labs = remoteDataSource.getAllLabs()
-            println("Repositório: ${labs.size} laboratórios carregados com sucesso da API")
-            emit(labs)
+            println("Repositório: Buscando todos os resultados de laboratório via API")
+            val labResults = remoteDataSource.getAllLabResults()
+            println("Repositório: ${labResults.size} resultados de laboratório carregados com sucesso da API")
+            emit(labResults)
         } catch (e: Exception) {
-                println("Repositório: Erro ao buscar laboratórios da API - ${e.message}")
+                println("Repositório: Erro ao buscar resultados de laboratório da API - ${e.message}")
                 throw e
             }
     }
 
-    override fun getLabById(id: String): Flow<Lab?> = flow {
+    override fun getLabResultById(id: String): Flow<LabResult?> = flow {
         try {
-            println("Repositório: Buscando laboratório por ID '$id' via API")
-            val lab = remoteDataSource.getLabById(id)
-            if (lab != null) {
-                println("Repositório: Laboratório '${lab.name}' encontrado com sucesso")
+            println("Repositório: Buscando resultado de laboratório por ID '$id' via API")
+            val labResult = remoteDataSource.getLabResultById(id)
+            if (labResult != null) {
+                println("Repositório: Resultado de laboratório '${labResult.labType}' encontrado com sucesso")
             } else {
-                println("Repositório: Laboratório com ID '$id' não encontrado")
+                println("Repositório: Resultado de laboratório com ID '$id' não encontrado")
             }
-            emit(lab)
+            emit(labResult)
         } catch (e: Exception) {
-                println("Repositório: Erro ao buscar laboratório por ID '$id' - ${e.message}")
+                println("Repositório: Erro ao buscar resultado de laboratório por ID '$id' - ${e.message}")
                 throw e
         }
     }
 
-    override fun searchLabs(query: String): Flow<List<Lab>> = flow {
+    override fun searchLabResults(query: String): Flow<List<LabResult>> = flow {
         try {
-            println("Repositório: Iniciando busca de laboratórios com consulta '$query'")
-            val labs = remoteDataSource.searchLabs(query)
-            println("Repositório: Busca concluída - ${labs.size} laboratórios encontrados")
-            emit(labs)
+            println("Repositório: Iniciando busca de resultados de laboratório com consulta '$query'")
+            val labResults = remoteDataSource.searchLabResults(query)
+            println("Repositório: Busca concluída - ${labResults.size} resultados de laboratório encontrados")
+            emit(labResults)
         } catch (e: Exception) {
-                println("Repositório: Erro ao buscar laboratórios na API - ${e.message}")
+                println("Repositório: Erro ao buscar resultados de laboratório na API - ${e.message}")
                 throw e
             }
         }
 
-    override suspend fun addLab(lab: Lab): Result<Lab> {
+    override suspend fun addLabResult(labResult: LabResult): Result<LabResult> {
         return try {
-            println("Repositório: Adicionando novo laboratório '${lab.name}' via API")
-            val createdLab = remoteDataSource.createLab(lab)
-            println("Repositório: Laboratório '${createdLab.name}' criado com sucesso - ID: ${createdLab.id}")
-            Result.success(createdLab)
+            println("Repositório: Adicionando novo resultado de laboratório '${labResult.labType}' via API")
+            val createdLabResult = remoteDataSource.createLabResult(labResult)
+            println("Repositório: Resultado de laboratório '${createdLabResult.labType}' criado com sucesso - ID: ${createdLabResult.id}")
+            Result.success(createdLabResult)
         } catch (e: Exception) {
-            println("Repositório: Erro ao criar laboratório '${lab.name}' - ${e.message}")
+            println("Repositório: Erro ao criar resultado de laboratório '${labResult.labType}' - ${e.message}")
             Result.failure(e)
         }
     }
 
-    override suspend fun updateLab(lab: Lab): Result<Lab> {
+    override suspend fun updateLabResult(labResult: LabResult): Result<LabResult> {
         return try {
-            println("Repositório: Atualizando laboratório '${lab.name}' (ID: ${lab.id}) via API")
-            val updatedLab = remoteDataSource.updateLab(lab)
-            println("Repositório: Laboratório '${updatedLab.name}' atualizado com sucesso")
-            Result.success(updatedLab)
+            println("Repositório: Atualizando resultado de laboratório '${labResult.labType}' (ID: ${labResult.id}) via API")
+            val updatedLabResult = remoteDataSource.updateLabResult(labResult)
+            println("Repositório: Resultado de laboratório '${updatedLabResult.labType}' atualizado com sucesso")
+            Result.success(updatedLabResult)
         } catch (e: Exception) {
-            println("Repositório: Erro ao atualizar laboratório '${lab.name}' - ${e.message}")
+            println("Repositório: Erro ao atualizar resultado de laboratório '${labResult.labType}' - ${e.message}")
             Result.failure(e)
         }
     }
 
-    override suspend fun deleteLab(id: String): Result<Unit> {
+    override suspend fun deleteLabResult(id: String): Result<Unit> {
         return try {
-            println("Repositório: Excluindo laboratório com ID '$id' via API")
-            remoteDataSource.deleteLab(id)
-            println("Repositório: Laboratório excluído com sucesso")
+            println("Repositório: Excluindo resultado de laboratório com ID '$id' via API")
+            remoteDataSource.deleteLabResult(id)
+            println("Repositório: Resultado de laboratório excluído com sucesso")
             Result.success(Unit)
         } catch (e: Exception) {
-            println("Repositório: Erro ao excluir laboratório com ID '$id' - ${e.message}")
+            println("Repositório: Erro ao excluir resultado de laboratório com ID '$id' - ${e.message}")
             Result.failure(e)
         }
     }

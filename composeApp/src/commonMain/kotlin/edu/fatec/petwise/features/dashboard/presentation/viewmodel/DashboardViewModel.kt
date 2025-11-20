@@ -122,11 +122,13 @@ class DashboardViewModel(
 
                 // Get additional counts based on user type
                 val prescriptionsCount = when (userType) {
-                    "VETERINARY" -> getPrescriptionsCountUseCase()
+                    "OWNER" -> getPrescriptionsCountUseCase(userType)
+                    "VETERINARY" -> getPrescriptionsCountUseCase(userType)
                     else -> 0
                 }
                 val examsCount = when (userType) {
-                    "VETERINARY" -> getExamsCountUseCase()
+                    "OWNER" -> getExamsCountUseCase(userType)
+                    "VETERINARY" -> getExamsCountUseCase(userType)
                     else -> 0
                 }
                 val labsCount = when (userType) {

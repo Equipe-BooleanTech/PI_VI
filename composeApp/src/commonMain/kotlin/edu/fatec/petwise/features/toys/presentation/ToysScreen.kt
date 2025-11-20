@@ -21,6 +21,8 @@ import androidx.compose.ui.unit.dp
 import edu.fatec.petwise.features.toys.domain.models.Toy
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.fromHex
+import edu.fatec.petwise.features.toys.di.ToyDependencyContainer
+import edu.fatec.petwise.features.toys.presentation.ToysUiEvent
 import edu.fatec.petwise.presentation.shared.NumberFormatter
 import edu.fatec.petwise.features.toys.presentation.components.AddToyDialog
 import edu.fatec.petwise.features.toys.presentation.components.EditToyDialog
@@ -29,31 +31,29 @@ import edu.fatec.petwise.features.toys.presentation.components.DeleteToyConfirma
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ToysScreen() {
-    var toys by remember { mutableStateOf<List<Toy>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(false) }
+    val viewModel: ToysViewModel = remember { ToyDependencyContainer.toysViewModel }
+    val uiState: ToysUiState by viewModel.uiState.collectAsState()
+
     var showSearchBar by remember { mutableStateOf(false) }
-    var searchQuery by remember { mutableStateOf("") }
     var selectionMode by remember { mutableStateOf(false) }
     var selectedToyIds by remember { mutableStateOf(setOf<String>()) }
 
     // Dialog states
     var showAddToyDialog by remember { mutableStateOf(false) }
     var showEditToyDialog by remember { mutableStateOf(false) }
-    var toyToEdit by remember { mutableStateOf<Toy?>(null) }
+    var toyToEdit by remember { mutableStateOf<edu.fatec.petwise.features.toys.domain.models.Toy?>(null) }
     var showDeleteConfirmation by remember { mutableStateOf(false) }
-    var toyToDelete by remember { mutableStateOf<Toy?>(null) }
-    var isSubmitting by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var toyToDelete by remember { mutableStateOf<edu.fatec.petwise.features.toys.domain.models.Toy?>(null) }
 
     val theme = PetWiseTheme.Light
 
-    val filteredToys = remember(toys, searchQuery) {
-        if (searchQuery.isEmpty()) {
-            toys
+    val filteredToys = remember(uiState.toys, uiState.searchQuery) {
+        if (uiState.searchQuery.isEmpty()) {
+            uiState.toys
         } else {
-            toys.filter {
-                it.name.contains(searchQuery, ignoreCase = true) ||
-                it.brand.contains(searchQuery, ignoreCase = true)
+            uiState.toys.filter {
+                it.name.contains(uiState.searchQuery, ignoreCase = true) ||
+                it.brand.contains(uiState.searchQuery, ignoreCase = true)
             }
         }
     }
@@ -79,8 +79,8 @@ fun ToysScreen() {
 
         if (showSearchBar) {
             SearchBar(
-                query = searchQuery,
-                onQueryChange = { searchQuery = it },
+                query = uiState.searchQuery,
+                onQueryChange = { viewModel.onEvent(ToysUiEvent.SearchToys(it)) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp)
@@ -89,16 +89,16 @@ fun ToysScreen() {
 
         Box(modifier = Modifier.fillMaxSize()) {
             when {
-                isLoading -> {
+                uiState.isLoading -> {
                     LoadingContent()
                 }
-                filteredToys.isEmpty() && searchQuery.isEmpty() -> {
+                filteredToys.isEmpty() && uiState.searchQuery.isEmpty() -> {
                     EmptyContent(
                         onAddToyClick = { showAddToyDialog = true }
                     )
                 }
-                filteredToys.isEmpty() && searchQuery.isNotEmpty() -> {
-                    NoResultsContent(onClearSearch = { searchQuery = "" })
+                filteredToys.isEmpty() && uiState.searchQuery.isNotEmpty() -> {
+                    NoResultsContent(onClearSearch = { viewModel.onEvent(ToysUiEvent.SearchToys("")) })
                 }
                 else -> {
                     ToysGrid(
@@ -127,15 +127,30 @@ fun ToysScreen() {
     // Dialogs
     if (showAddToyDialog) {
         AddToyDialog(
-            isLoading = isSubmitting,
-            errorMessage = errorMessage,
+            isLoading = uiState.isLoading,
+            errorMessage = uiState.errorMessage,
             onDismiss = {
                 showAddToyDialog = false
-                errorMessage = null
             },
-            onSuccess = { formData ->
-                // TODO: Handle add toy
-                println("Add toy form data: $formData")
+            onSuccess = { formData: Map<String, Any> ->
+                // Convert form data to Toy model
+                val toy = edu.fatec.petwise.features.toys.domain.models.Toy(
+                    id = "",
+                    name = formData["name"] as String,
+                    brand = formData["brand"] as String,
+                    category = formData["category"] as String,
+                    description = formData["description"] as? String,
+                    price = (formData["price"] as? Double) ?: 0.0,
+                    stock = (formData["stock"] as? Int) ?: 0,
+                    unit = formData["unit"] as String,
+                    material = formData["material"] as? String,
+                    ageRecommendation = formData["ageRecommendation"] as? String,
+                    imageUrl = formData["imageUrl"] as? String,
+                    active = true,
+                    createdAt = "",
+                    updatedAt = ""
+                )
+                viewModel.onEvent(ToysUiEvent.AddToy(toy))
                 showAddToyDialog = false
             }
         )
@@ -144,16 +159,27 @@ fun ToysScreen() {
     if (showEditToyDialog && toyToEdit != null) {
         EditToyDialog(
             toy = toyToEdit!!,
-            isLoading = isSubmitting,
-            errorMessage = errorMessage,
+            isLoading = uiState.isLoading,
+            errorMessage = uiState.errorMessage,
             onDismiss = {
                 showEditToyDialog = false
                 toyToEdit = null
-                errorMessage = null
             },
-            onSuccess = { formData ->
-                // TODO: Handle edit toy
-                println("Edit toy form data: $formData")
+            onSuccess = { formData: Map<String, Any> ->
+                // Convert form data to updated Toy model
+                val updatedToy = toyToEdit!!.copy(
+                    name = formData["name"] as String,
+                    brand = formData["brand"] as String,
+                    category = formData["category"] as String,
+                    description = formData["description"] as? String,
+                    price = (formData["price"] as? Double) ?: 0.0,
+                    stock = (formData["stock"] as? Int) ?: 0,
+                    unit = formData["unit"] as String,
+                    material = formData["material"] as? String,
+                    ageRecommendation = formData["ageRecommendation"] as? String,
+                    imageUrl = formData["imageUrl"] as? String
+                )
+                viewModel.onEvent(ToysUiEvent.UpdateToy(updatedToy))
                 showEditToyDialog = false
                 toyToEdit = null
             }
@@ -165,11 +191,9 @@ fun ToysScreen() {
             toyId = toyToDelete!!.id,
             toyName = toyToDelete!!.name,
             onSuccess = {
-                // Handle successful delete
-                println("Toy deleted successfully")
+                viewModel.onEvent(ToysUiEvent.DeleteToy(toyToDelete!!.id))
                 showDeleteConfirmation = false
                 toyToDelete = null
-                // TODO: Refresh the toys list
             },
             onCancel = {
                 showDeleteConfirmation = false

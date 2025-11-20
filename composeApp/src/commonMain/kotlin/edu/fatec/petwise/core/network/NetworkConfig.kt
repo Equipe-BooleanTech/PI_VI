@@ -31,6 +31,7 @@ object ApiEndpoints {
 
     const val CONSULTAS = "/api/appointments"
     fun getConsulta(id: String) = "$CONSULTAS/$id"
+    fun getConsultasByPet(petId: String) = "$CONSULTAS/pet/$petId"
     const val CONSULTAS_SEARCH = "$CONSULTAS/search"
     const val CONSULTAS_UPCOMING = "$CONSULTAS/upcoming"
     fun updateStatus(id: String) = "$CONSULTAS/$id/status"
@@ -38,7 +39,7 @@ object ApiEndpoints {
 
     const val VACCINATIONS = "/api/vaccines"
     fun getVaccination(id: String) = "$VACCINATIONS/$id"
-    fun getVaccinationsByPet(petId: String) = "/api/pets/$petId/vaccines"
+    fun getVaccinationsByPet(petId: String) = "$VACCINATIONS/pet/$petId"
     const val VACCINATIONS_UPCOMING = "$VACCINATIONS/upcoming"
     const val VACCINATIONS_OVERDUE = "$VACCINATIONS/overdue"
     fun markVaccinationAsApplied(id: String) = "$VACCINATIONS/$id/apply"
@@ -46,6 +47,7 @@ object ApiEndpoints {
 
     const val MEDICATIONS = "/api/medications"
     fun getMedication(id: String) = "$MEDICATIONS/$id"
+    fun getMedicationsByPet(petId: String) = "$MEDICATIONS/pet/$petId"
     const val MEDICATIONS_SEARCH = "$MEDICATIONS/search"
     const val MEDICATIONS_UPCOMING = "$MEDICATIONS/upcoming"
     const val MEDICATIONS_EXPIRED = "$MEDICATIONS/expired"
@@ -57,16 +59,21 @@ object ApiEndpoints {
     
     const val EXAMS = "/api/exams"
     fun getExam(id: String) = "$EXAMS/$id"
-    fun getExamsByPet(petId: String) = "/api/pets/$petId/exams"
+    fun getExamsByPet(petId: String) = "$EXAMS/pet/$petId"
     fun getExamsByVeterinary(veterinaryId: String) = "/api/veterinaries/$veterinaryId/exams"
 
-    const val PRESCRIPTIONS = "/api/vet"
+    const val PRESCRIPTIONS = "/api/vet/prescriptions"
     fun getPrescription(id: String) = "$PRESCRIPTIONS/$id"
-    fun getPrescriptionsByPet(petId: String) = "/api/pets/$petId/prescriptions"
+    fun getPrescriptionsByPet(petId: String) = "$PRESCRIPTIONS/pet/$petId"
     fun getPrescriptionsByVeterinary(veterinaryId: String) = "/api/veterinaries/$veterinaryId/prescriptions"
 
     const val LABS = "/api/labs"
     fun getLab(id: String) = "$LABS/$id"
+
+    const val LAB_RESULTS = "/api/labs"
+    fun getLabResult(id: String) = "$LAB_RESULTS/$id"
+    fun getLabResultsByPet(petId: String) = "/api/pets/$petId/lab-results"
+    fun getLabResultsByVeterinary(veterinaryId: String) = "/api/veterinaries/$veterinaryId/lab-results"
 
     const val FOOD = "/api/foods"
     fun getFood(id: String) = "$FOOD/$id"
