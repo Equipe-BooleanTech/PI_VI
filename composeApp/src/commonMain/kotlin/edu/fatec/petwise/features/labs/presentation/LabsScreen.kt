@@ -18,16 +18,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import edu.fatec.petwise.features.labs.domain.models.LabResult
-import edu.fatec.petwise.features.labs.presentation.components.AddLabResultDialog
-import edu.fatec.petwise.features.labs.presentation.components.EditLabResultDialog
-import edu.fatec.petwise.features.labs.presentation.components.DeleteLabResultConfirmationDialog
+import edu.fatec.petwise.features.labs.domain.models.Lab
+import edu.fatec.petwise.features.labs.presentation.components.AddLabDialog
+import edu.fatec.petwise.features.labs.presentation.components.EditLabDialog
+import edu.fatec.petwise.features.labs.presentation.components.DeleteLabConfirmationDialog
+import edu.fatec.petwise.features.labs.presentation.viewmodel.AddLabViewModel
+import edu.fatec.petwise.features.labs.presentation.viewmodel.AddLabUiEvent
+import edu.fatec.petwise.features.labs.presentation.viewmodel.UpdateLabViewModel
+import edu.fatec.petwise.features.labs.presentation.viewmodel.UpdateLabUiEvent
 import edu.fatec.petwise.features.labs.presentation.viewmodel.LabsViewModel
 import edu.fatec.petwise.features.labs.presentation.viewmodel.LabsUiEvent
-import edu.fatec.petwise.features.labs.presentation.viewmodel.UpdateLabResultViewModel
-import edu.fatec.petwise.features.labs.presentation.viewmodel.UpdateLabResultUiEvent
-import edu.fatec.petwise.features.labs.presentation.viewmodel.AddLabResultViewModel
-import edu.fatec.petwise.features.labs.presentation.viewmodel.AddLabResultUiEvent
 import edu.fatec.petwise.features.labs.di.LabDependencyContainer
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -36,42 +36,40 @@ fun LabsScreen(
     viewModel: LabsViewModel,
     navigationKey: Any? = null
 ) {
-    val addLabResultViewModel = remember { LabDependencyContainer.addLabResultViewModel }
-    val updateLabResultViewModel = remember { LabDependencyContainer.updateLabResultViewModel }
+    val addLabViewModel = remember { LabDependencyContainer.addLabViewModel }
+    val updateLabViewModel = remember { LabDependencyContainer.updateLabViewModel }
     val uiState by viewModel.uiState.collectAsState()
-    val addUiState by addLabResultViewModel.uiState.collectAsState()
-    val updateUiState by updateLabResultViewModel.uiState.collectAsState()
-    val labResults = uiState.labResults
-    val pendingLabResults = remember(labResults) {
-        labResults.filter {
-            it.status == "PENDING" || it.status == "IN_PROGRESS"
-        }
+    val addUiState by addLabViewModel.uiState.collectAsState()
+    val updateUiState by updateLabViewModel.uiState.collectAsState()
+    val labs = uiState.labs
+    val pendingLabs = remember(labs) {
+        emptyList<Lab>() // No pending concept for labs
     }
 
     var showAddDialog by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
-    var labResultToEdit by remember { mutableStateOf<LabResult?>(null) }
-    var labResultToDelete by remember { mutableStateOf<LabResult?>(null) }
+    var labToEdit by remember { mutableStateOf<Lab?>(null) }
+    var labToDelete by remember { mutableStateOf<Lab?>(null) }
 
     LaunchedEffect(navigationKey) {
-        viewModel.onEvent(LabsUiEvent.LoadLabResults)
+        viewModel.onEvent(LabsUiEvent.LoadLabs)
     }
 
     LaunchedEffect(addUiState.isSuccess) {
         if (addUiState.isSuccess) {
             showAddDialog = false
-            viewModel.onEvent(LabsUiEvent.LoadLabResults)
-            addLabResultViewModel.onEvent(AddLabResultUiEvent.ClearState)
+            viewModel.onEvent(LabsUiEvent.LoadLabs)
+            addLabViewModel.onEvent(AddLabUiEvent.ClearState)
         }
     }
 
     LaunchedEffect(updateUiState.isSuccess) {
         if (updateUiState.isSuccess) {
             showEditDialog = false
-            labResultToEdit = null
-            viewModel.onEvent(LabsUiEvent.LoadLabResults)
-            updateLabResultViewModel.onEvent(UpdateLabResultUiEvent.ClearState)
+            labToEdit = null
+            viewModel.onEvent(LabsUiEvent.LoadLabs)
+            updateLabViewModel.onEvent(UpdateLabUiEvent.ClearState)
         }
     }
 
@@ -81,9 +79,9 @@ fun LabsScreen(
             .background(Color(0xFFF7F7F7))
     ) {
         LabsHeader(
-            labResultCount = labResults.size,
-            pendingCount = pendingLabResults.size,
-            onAddLabResultClick = { showAddDialog = true }
+            labCount = labs.size,
+            pendingCount = pendingLabs.size,
+            onAddLabClick = { showAddDialog = true }
         )
 
         Box(modifier = Modifier.fillMaxSize()) {
@@ -91,21 +89,21 @@ fun LabsScreen(
                 uiState.isLoading -> {
                     LoadingContent()
                 }
-                labResults.isEmpty() -> {
+                labs.isEmpty() -> {
                     EmptyContent(
-                        onAddLabResultClick = { showAddDialog = true }
+                        onAddLabClick = { showAddDialog = true }
                     )
                 }
                 else -> {
-                    LabResultsListContent(
-                        labResults = labResults,
-                        pendingLabResults = pendingLabResults,
-                        onEditLabResult = { labResult ->
-                            labResultToEdit = labResult
+                    LabsListContent(
+                        labs = labs,
+                        pendingLabs = pendingLabs,
+                        onEditLab = { lab ->
+                            labToEdit = lab
                             showEditDialog = true
                         },
-                        onDeleteLabResult = { labResult ->
-                            labResultToDelete = labResult
+                        onDeleteLab = { lab ->
+                            labToDelete = lab
                             showDeleteDialog = true
                         }
                     )
@@ -123,7 +121,7 @@ fun LabsScreen(
                         isError = true,
                         onDismiss = { /* Clear error event */ },
                         actionLabel = "Tentar Novamente",
-                        onAction = { viewModel.onEvent(LabsUiEvent.LoadLabResults) }
+                        onAction = { viewModel.onEvent(LabsUiEvent.LoadLabs) }
                     )
                 }
             }
@@ -132,54 +130,54 @@ fun LabsScreen(
 
     // Add Dialog
     if (showAddDialog) {
-        AddLabResultDialog(
-            addLabResultViewModel = addLabResultViewModel,
+        AddLabDialog(
+            addLabViewModel = addLabViewModel,
             isLoading = addUiState.isLoading,
             errorMessage = addUiState.errorMessage,
             onDismiss = {
                 showAddDialog = false
-                addLabResultViewModel.onEvent(AddLabResultUiEvent.ClearState)
+                addLabViewModel.onEvent(AddLabUiEvent.ClearState)
             },
             onSuccess = {
-                viewModel.onEvent(LabsUiEvent.LoadLabResults)
+                viewModel.onEvent(LabsUiEvent.LoadLabs)
             }
         )
     }
 
     // Delete Dialog
-    labResultToDelete?.let { labResult ->
+    labToDelete?.let { lab ->
         if (showDeleteDialog) {
-            DeleteLabResultConfirmationDialog(
-                labResultId = labResult.id,
-                labResultName = labResult.labType,
+            DeleteLabConfirmationDialog(
+                labId = lab.id,
+                labName = lab.name,
                 onSuccess = {
                     showDeleteDialog = false
-                    labResultToDelete = null
-                    viewModel.onEvent(LabsUiEvent.LoadLabResults)
+                    labToDelete = null
+                    viewModel.onEvent(LabsUiEvent.LoadLabs)
                 },
                 onCancel = {
                     showDeleteDialog = false
-                    labResultToDelete = null
+                    labToDelete = null
                 }
             )
         }
     }
 
     // Edit Dialog
-    labResultToEdit?.let { labResult ->
+    labToEdit?.let { lab ->
         if (showEditDialog) {
-            EditLabResultDialog(
-                updateLabResultViewModel = updateLabResultViewModel,
-                labResult = labResult,
+            EditLabDialog(
+                updateLabViewModel = updateLabViewModel,
+                lab = lab,
                 isLoading = updateUiState.isLoading,
                 errorMessage = updateUiState.errorMessage,
                 onDismiss = {
                     showEditDialog = false
-                    labResultToEdit = null
-                    updateLabResultViewModel.onEvent(UpdateLabResultUiEvent.ClearState)
+                    labToEdit = null
+                    updateLabViewModel.onEvent(UpdateLabUiEvent.ClearState)
                 },
                 onSuccess = {
-                    viewModel.onEvent(LabsUiEvent.LoadLabResults)
+                    viewModel.onEvent(LabsUiEvent.LoadLabs)
                 }
             )
         }
@@ -188,9 +186,9 @@ fun LabsScreen(
 
 @Composable
 private fun LabsHeader(
-    labResultCount: Int,
+    labCount: Int,
     pendingCount: Int,
-    onAddLabResultClick: () -> Unit
+    onAddLabClick: () -> Unit
 ) {
 
     Card(
@@ -214,17 +212,17 @@ private fun LabsHeader(
             ) {
                 Column {
                     Text(
-                        text = "Exames Laboratoriais",
+                        text = "Laboratórios",
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold,
                             color = Color.White
                         )
                     )
                     Text(
-                        text = if (labResultCount > 0) {
-                            "$labResultCount exame(s) registrado(s)"
+                        text = if (labCount > 0) {
+                            "$labCount laboratório(s) registrado(s)"
                         } else {
-                            "Nenhum exame registrado"
+                            "Nenhum laboratório registrado"
                         },
                         style = MaterialTheme.typography.bodyMedium.copy(
                             color = Color.White.copy(alpha = 0.9f)
@@ -262,7 +260,7 @@ private fun LabsHeader(
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = onAddLabResultClick,
+                onClick = onAddLabClick,
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.White,
@@ -277,7 +275,7 @@ private fun LabsHeader(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Adicionar Exame",
+                    text = "Adicionar Laboratório",
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontWeight = FontWeight.SemiBold
                     )
@@ -359,7 +357,7 @@ private fun LoadingContent() {
 
 @Composable
 private fun EmptyContent(
-    onAddLabResultClick: () -> Unit
+    onAddLabClick: () -> Unit
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -379,7 +377,7 @@ private fun EmptyContent(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Nenhum exame laboratorial registrado",
+                text = "Nenhum laboratório registrado",
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
                     color = Color.Gray
@@ -389,7 +387,7 @@ private fun EmptyContent(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Registre o primeiro exame para começar!",
+                text = "Registre o primeiro laboratório para começar!",
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = Color.Gray
                 )
@@ -398,7 +396,7 @@ private fun EmptyContent(
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                    onClick = onAddLabResultClick,
+                    onClick = onAddLabClick,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF4CAF50)
                     )
@@ -408,7 +406,7 @@ private fun EmptyContent(
                         contentDescription = "Adicionar"
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Adicionar Exame")
+                    Text("Adicionar Laboratório")
                 }
             }
         }
@@ -462,38 +460,37 @@ private fun NoResultsContent(
 }
 
 @Composable
-private fun LabResultsListContent(
-    labResults: List<LabResult>,
-    pendingLabResults: List<LabResult>,
-    onEditLabResult: (LabResult) -> Unit,
-    onDeleteLabResult: (LabResult) -> Unit
+private fun LabsListContent(
+    labs: List<Lab>,
+    pendingLabs: List<Lab>,
+    onEditLab: (Lab) -> Unit,
+    onDeleteLab: (Lab) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        if (pendingLabResults.isNotEmpty()) {
+        if (pendingLabs.isNotEmpty()) {
             item {
-                PendingLabResultsCard(pendingLabResults = pendingLabResults)
+                PendingLabsCard(pendingLabs = pendingLabs)
             }
         }
 
         item {
-            LabResultStatsRow(
-                total = labResults.size,
-                pending = pendingLabResults.size
+            LabStatsRow(
+                total = labs.size
             )
         }
 
         items(
-            items = labResults,
-            key = { labResult: LabResult -> labResult.id }
-        ) { labResult: LabResult ->
-            LabResultCard(
-                labResult = labResult,
-                onEdit = { onEditLabResult(labResult) },
-                onDelete = { onDeleteLabResult(labResult) }
+            items = labs,
+            key = { lab: Lab -> lab.id }
+        ) { lab: Lab ->
+            LabCard(
+                lab = lab,
+                onEdit = { onEditLab(lab) },
+                onDelete = { onDeleteLab(lab) }
             )
         }
     }
@@ -544,7 +541,7 @@ private fun LabResultErrorSnackbar(
 }
 
 @Composable
-private fun PendingLabResultsCard(pendingLabResults: List<LabResult>) {
+private fun PendingLabsCard(pendingLabs: List<Lab>) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -573,7 +570,7 @@ private fun PendingLabResultsCard(pendingLabResults: List<LabResult>) {
                 )
             }
 
-            pendingLabResults.forEach { labResult: LabResult ->
+            pendingLabs.forEach { lab: Lab ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -581,12 +578,12 @@ private fun PendingLabResultsCard(pendingLabResults: List<LabResult>) {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "${labResult.petId} - ${labResult.labType}",
+                        text = lab.name,
                         fontSize = 14.sp,
                         color = Color(0xFF856404)
                     )
                     Text(
-                        text = labResult.labDate,
+                        text = lab.createdAt,
                         fontSize = 14.sp,
                         color = Color(0xFF856404)
                     )
@@ -597,7 +594,7 @@ private fun PendingLabResultsCard(pendingLabResults: List<LabResult>) {
 }
 
 @Composable
-private fun LabResultStatsRow(total: Int, pending: Int) {
+private fun LabStatsRow(total: Int) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -612,21 +609,6 @@ private fun LabResultStatsRow(total: Int, pending: Int) {
                     imageVector = Icons.Default.Biotech,
                     contentDescription = null,
                     tint = Color(0xFF2196F3),
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-        )
-
-        StatCard(
-            modifier = Modifier.weight(1f),
-            label = "Pendentes",
-            value = pending.toString(),
-            iconTint = Color(0xFFFF9800),
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.Notifications,
-                    contentDescription = null,
-                    tint = Color(0xFFFF9800),
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -686,7 +668,7 @@ private fun StatCard(
 }
 
 @Composable
-private fun LabResultInfoRow(
+private fun LabInfoRow(
     label: String,
     value: String,
     valueColor: Color = Color(0xFF757575)
@@ -712,8 +694,8 @@ private fun LabResultInfoRow(
 }
 
 @Composable
-private fun LabResultCard(
-    labResult: LabResult,
+private fun LabCard(
+    lab: Lab,
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
@@ -736,36 +718,10 @@ private fun LabResultCard(
                     color = Color(0xFF2196F3).copy(alpha = 0.1f)
                 ) {
                     Text(
-                        text = labResult.petId,
+                        text = lab.name,
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
                         fontSize = 13.sp,
                         color = Color(0xFF2196F3),
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-
-                val statusColor = when (labResult.status) {
-                    "COMPLETED" -> Color(0xFF4CAF50)
-                    "IN_PROGRESS" -> Color(0xFFFF9800)
-                    "CANCELLED" -> Color(0xFFDC3545)
-                    else -> Color(0xFF757575)
-                }
-
-                Surface(
-                    shape = RoundedCornerShape(6.dp),
-                    color = statusColor.copy(alpha = 0.1f)
-                ) {
-                    Text(
-                        text = when (labResult.status) {
-                            "PENDING" -> "Pendente"
-                            "IN_PROGRESS" -> "Em Andamento"
-                            "COMPLETED" -> "Concluído"
-                            "CANCELLED" -> "Cancelado"
-                            else -> labResult.status
-                        },
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-                        fontSize = 13.sp,
-                        color = statusColor,
                         fontWeight = FontWeight.Medium
                     )
                 }
@@ -774,7 +730,7 @@ private fun LabResultCard(
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = labResult.labType,
+                text = lab.name,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color(0xFF1F1F1F)
@@ -782,42 +738,19 @@ private fun LabResultCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            LabResultInfoRow(
-                label = "Data do Exame:",
-                value = labResult.labDate
+            if (lab.contactInfo != null) {
+                LabInfoRow(
+                    label = "Contato:",
+                    value = lab.contactInfo
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            LabInfoRow(
+                label = "Criado em:",
+                value = lab.createdAt
             )
-
-            if (labResult.results != null) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Resultados:",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color(0xFF1F1F1F)
-                )
-                Text(
-                    text = labResult.results,
-                    fontSize = 14.sp,
-                    color = Color(0xFF757575),
-                    lineHeight = 20.sp
-                )
-            }
-
-            if (labResult.notes != null && labResult.notes.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Observações:",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color(0xFF1F1F1F)
-                )
-                Text(
-                    text = labResult.notes,
-                    fontSize = 14.sp,
-                    color = Color(0xFF757575),
-                    lineHeight = 20.sp
-                )
-            }
 
             Spacer(modifier = Modifier.height(16.dp))
 

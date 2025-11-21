@@ -1,7 +1,7 @@
 package edu.fatec.petwise.core.network.dto
 
 import kotlinx.serialization.Serializable
-import edu.fatec.petwise.features.labs.domain.models.LabResult
+import edu.fatec.petwise.features.labs.domain.models.Lab
 
 @Serializable
 data class LabDto(
@@ -75,17 +75,11 @@ data class UpdateLabResultRequest(
     val attachmentUrl: String? = null
 )
 
-fun LabResultDto.toLabResult(): LabResult {
-    return LabResult(
+fun LabDto.toLab(): Lab {
+    return Lab(
         id = id,
-        petId = petId,
-        veterinaryId = veterinaryId,
-        labType = labType,
-        labDate = labDate,
-        results = results,
-        status = status,
-        notes = notes,
-        attachmentUrl = attachmentUrl,
+        name = name,
+        contactInfo = contactInfo,
         createdAt = createdAt,
         updatedAt = updatedAt
     )

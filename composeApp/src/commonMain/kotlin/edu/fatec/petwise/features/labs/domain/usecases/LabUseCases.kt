@@ -1,49 +1,47 @@
 package edu.fatec.petwise.features.labs.domain.usecases
 
-import edu.fatec.petwise.features.labs.domain.models.LabResult
+import edu.fatec.petwise.features.labs.domain.models.Lab
 import edu.fatec.petwise.features.labs.domain.repository.LabRepository
 import kotlinx.coroutines.flow.Flow
 
-class GetLabResultsUseCase(
+class GetLabsUseCase(
     private val repository: LabRepository
 ) {
-    operator fun invoke(): Flow<List<LabResult>> = repository.getAllLabResults()
+    operator fun invoke(): Flow<List<Lab>> = repository.getAllLabs()
 
-    fun searchLabResults(query: String): Flow<List<LabResult>> = repository.searchLabResults(query)
+    fun searchLabs(query: String): Flow<List<Lab>> = repository.searchLabs(query)
 }
 
-class GetLabResultByIdUseCase(
+class GetLabByIdUseCase(
     private val repository: LabRepository
 ) {
-    operator fun invoke(id: String): Flow<LabResult?> = repository.getLabResultById(id)
+    operator fun invoke(id: String): Flow<Lab?> = repository.getLabById(id)
 }
 
-class AddLabResultUseCase(
+class AddLabUseCase(
     private val repository: LabRepository
 ) {
-    suspend operator fun invoke(labResult: LabResult): Result<LabResult> {
-        return if (validateLabResult(labResult)) {
-            repository.addLabResult(labResult)
+    suspend operator fun invoke(lab: Lab): Result<Lab> {
+        return if (validateLab(lab)) {
+            repository.addLab(lab)
         } else {
-            Result.failure(IllegalArgumentException("Lab result data is invalid"))
+            Result.failure(IllegalArgumentException("Lab data is invalid"))
         }
     }
 
-    private fun validateLabResult(labResult: LabResult): Boolean {
-        return labResult.labType.isNotBlank() &&
-               labResult.labDate.isNotBlank() &&
-               labResult.status.isNotBlank()
+    private fun validateLab(lab: Lab): Boolean {
+        return lab.name.isNotBlank()
     }
 }
 
-class UpdateLabResultUseCase(
+class UpdateLabUseCase(
     private val repository: LabRepository
 ) {
-    suspend operator fun invoke(labResult: LabResult): Result<LabResult> = repository.updateLabResult(labResult)
+    suspend operator fun invoke(lab: Lab): Result<Lab> = repository.updateLab(lab)
 }
 
-class DeleteLabResultUseCase(
+class DeleteLabUseCase(
     private val repository: LabRepository
 ) {
-    suspend operator fun invoke(id: String): Result<Unit> = repository.deleteLabResult(id)
+    suspend operator fun invoke(id: String): Result<Unit> = repository.deleteLab(id)
 }

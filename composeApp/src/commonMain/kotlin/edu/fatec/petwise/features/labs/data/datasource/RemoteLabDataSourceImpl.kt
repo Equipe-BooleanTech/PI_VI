@@ -3,15 +3,15 @@ package edu.fatec.petwise.features.labs.data.datasource
 import edu.fatec.petwise.core.network.NetworkResult
 import edu.fatec.petwise.core.network.api.LabApiService
 import edu.fatec.petwise.core.network.dto.*
-import edu.fatec.petwise.features.labs.domain.models.LabResult
+import edu.fatec.petwise.features.labs.domain.models.Lab
 
 class RemoteLabDataSourceImpl(
     private val labApiService: LabApiService
 ) : RemoteLabDataSource {
 
-    override suspend fun getAllLabResults(): List<LabResult> {
-        return when (val result = labApiService.getAllLabResults(1, 1000)) {
-            is NetworkResult.Success -> result.data.map { it.toLabResult() }
+    override suspend fun getAllLabs(): List<Lab> {
+        return when (val result = labApiService.getAllLabs(1, 1000)) {
+            is NetworkResult.Success -> result.data.map { it.toLab() }
             is NetworkResult.Error -> {
                 println("API Error: ${result.exception.message}")
                 emptyList()
@@ -20,9 +20,9 @@ class RemoteLabDataSourceImpl(
         }
     }
 
-    override suspend fun getLabResultById(id: String): LabResult? {
-        return when (val result = labApiService.getLabResultById(id)) {
-            is NetworkResult.Success -> result.data.toLabResult()
+    override suspend fun getLabById(id: String): Lab? {
+        return when (val result = labApiService.getLabById(id)) {
+            is NetworkResult.Success -> result.data.toLab()
             is NetworkResult.Error -> {
                 println("API Error: ${result.exception.message}")
                 null
@@ -31,51 +31,42 @@ class RemoteLabDataSourceImpl(
         }
     }
 
-    override suspend fun createLabResult(labResult: LabResult): LabResult {
-        val request = CreateLabResultRequest(
-            labType = labResult.labType,
-            labDate = labResult.labDate,
-            results = labResult.results,
-            status = labResult.status,
-            notes = labResult.notes,
-            attachmentUrl = labResult.attachmentUrl
+    override suspend fun createLab(lab: Lab): Lab {
+        val request = CreateLabRequest(
+            name = lab.name,
+            contactInfo = lab.contactInfo
         )
-        return when (val result = labApiService.createLabResult(labResult.petId, request)) {
-            is NetworkResult.Success -> result.data.toLabResult()
+        return when (val result = labApiService.createLab(request)) {
+            is NetworkResult.Success -> result.data.toLab()
             is NetworkResult.Error -> throw Exception(result.exception.message)
             is NetworkResult.Loading -> throw Exception("Request in progress")
         }
     }
 
-    override suspend fun updateLabResult(labResult: LabResult): LabResult {
-        val request = UpdateLabResultRequest(
-            labType = labResult.labType,
-            labDate = labResult.labDate,
-            results = labResult.results,
-            status = labResult.status,
-            notes = labResult.notes,
-            attachmentUrl = labResult.attachmentUrl
+    override suspend fun updateLab(lab: Lab): Lab {
+        val request = UpdateLabRequest(
+            name = lab.name,
+            contactInfo = lab.contactInfo
         )
-        return when (val result = labApiService.updateLabResult(labResult.id, request)) {
-            is NetworkResult.Success -> result.data.toLabResult()
+        return when (val result = labApiService.updateLab(lab.id, request)) {
+            is NetworkResult.Success -> result.data.toLab()
             is NetworkResult.Error -> throw Exception(result.exception.message)
             is NetworkResult.Loading -> throw Exception("Request in progress")
         }
     }
 
-    override suspend fun deleteLabResult(id: String) {
-        when (val result = labApiService.deleteLabResult(id)) {
+    override suspend fun deleteLab(id: String) {
+        when (val result = labApiService.deleteLab(id)) {
             is NetworkResult.Success -> Unit
             is NetworkResult.Error -> throw Exception(result.exception.message)
             is NetworkResult.Loading -> throw Exception("Request in progress")
         }
     }
 
-    override suspend fun searchLabResults(query: String): List<LabResult> {
-        return getAllLabResults().filter {
-            it.labType.contains(query, ignoreCase = true) ||
-            it.results?.contains(query, ignoreCase = true) == true ||
-            it.notes?.contains(query, ignoreCase = true) == true
+    override suspend fun searchLabs(query: String): List<Lab> {
+        return getAllLabs().filter {
+            it.name.contains(query, ignoreCase = true) ||
+            it.contactInfo?.contains(query, ignoreCase = true) == true
         }
     }
 }

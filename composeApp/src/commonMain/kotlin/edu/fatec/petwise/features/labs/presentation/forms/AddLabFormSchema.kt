@@ -3,10 +3,10 @@ package edu.fatec.petwise.features.labs.presentation.forms
 import edu.fatec.petwise.presentation.shared.form.*
 import kotlinx.serialization.json.JsonPrimitive
 
-val addLabResultFormConfiguration: FormConfiguration = FormConfiguration(
-    id = "add_lab_result_form",
-    title = "Adicionar Resultado de Exame Laboratorial",
-    description = "Registre um novo resultado de exame laboratorial.",
+val addLabFormConfiguration: FormConfiguration = FormConfiguration(
+    id = "add_lab_form",
+    title = "Adicionar Laboratório",
+    description = "Registre um novo laboratório.",
     layout = FormLayout(
         columns = 1,
         maxWidth = 600,
@@ -15,65 +15,33 @@ val addLabResultFormConfiguration: FormConfiguration = FormConfiguration(
     ),
     fields = listOf(
         FormFieldDefinition(
-            id = "labType",
-            label = "Tipo de Exame",
+            id = "name",
+            label = "Nome do Laboratório",
             type = FormFieldType.TEXT,
-            placeholder = "Ex: Hemograma, Bioquímica, Urinálise...",
+            placeholder = "Ex: LabVet, BioLab, VetCare...",
             validators = listOf(
                 ValidationRule(
                     type = ValidationType.REQUIRED,
-                    message = "Tipo de exame é obrigatório"
+                    message = "Nome é obrigatório"
                 ),
                 ValidationRule(
                     type = ValidationType.MIN_LENGTH,
                     value = JsonPrimitive(2),
-                    message = "Tipo deve ter pelo menos 2 caracteres"
+                    message = "Nome deve ter pelo menos 2 caracteres"
                 )
             ),
             formatting = FieldFormatting(capitalize = true)
         ),
         FormFieldDefinition(
-            id = "labDate",
-            label = "Data do Exame",
-            type = FormFieldType.DATE,
-            placeholder = "Selecione a data do exame",
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Data do exame é obrigatória"
-                )
-            )
-        ),
-        FormFieldDefinition(
-            id = "results",
-            label = "Resultados",
-            type = FormFieldType.TEXTAREA,
-            placeholder = "Descreva os resultados do exame...",
-            validators = emptyList()
-        ),
-        FormFieldDefinition(
-            id = "status",
-            label = "Status",
-            type = FormFieldType.SELECT,
-            placeholder = "Selecione o status",
-            options = listOf("PENDING", "IN_PROGRESS", "COMPLETED", "CANCELLED"),
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Status é obrigatório"
-                )
-            )
-        ),
-        FormFieldDefinition(
-            id = "notes",
-            label = "Observações",
-            type = FormFieldType.TEXTAREA,
-            placeholder = "Observações adicionais...",
+            id = "contactInfo",
+            label = "Informações de Contato",
+            type = FormFieldType.TEXT,
+            placeholder = "Telefone, email ou endereço...",
             validators = emptyList()
         ),
         FormFieldDefinition(
             id = "submit",
-            label = "Adicionar Resultado",
+            label = "Adicionar Laboratório",
             type = FormFieldType.SUBMIT
         )
     ),
