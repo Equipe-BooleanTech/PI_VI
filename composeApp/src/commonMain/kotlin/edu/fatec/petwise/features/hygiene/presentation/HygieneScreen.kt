@@ -22,17 +22,17 @@ import edu.fatec.petwise.features.hygiene.domain.models.HygieneProduct
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.fromHex
 import edu.fatec.petwise.presentation.shared.NumberFormatter
+import edu.fatec.petwise.features.hygiene.di.HygieneDependencyContainer
+import edu.fatec.petwise.features.hygiene.presentation.HygieneUiEvent
 import edu.fatec.petwise.features.hygiene.presentation.components.AddHygieneDialog
 import edu.fatec.petwise.features.hygiene.presentation.components.EditHygieneDialog
 import edu.fatec.petwise.features.hygiene.presentation.components.DeleteHygieneConfirmationDialog
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HygieneScreen() {
-    var hygieneProducts by remember { mutableStateOf<List<HygieneProduct>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(false) }
+    val viewModel: HygieneViewModel = remember { HygieneDependencyContainer.hygieneViewModel }
+    val uiState: HygieneUiState by viewModel.uiState.collectAsState()
+
     var showSearchBar by remember { mutableStateOf(false) }
-    var searchQuery by remember { mutableStateOf("") }
     var selectionMode by remember { mutableStateOf(false) }
     var selectedProductIds by remember { mutableStateOf(setOf<String>()) }
 
@@ -42,18 +42,16 @@ fun HygieneScreen() {
     var productToEdit by remember { mutableStateOf<HygieneProduct?>(null) }
     var showDeleteConfirmation by remember { mutableStateOf(false) }
     var productToDelete by remember { mutableStateOf<HygieneProduct?>(null) }
-    var isSubmitting by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val theme = PetWiseTheme.Light
 
-    val filteredProducts = remember(hygieneProducts, searchQuery) {
-        if (searchQuery.isEmpty()) {
-            hygieneProducts
+    val filteredProducts = remember(uiState.products, uiState.searchQuery) {
+        if (uiState.searchQuery.isEmpty()) {
+            uiState.products
         } else {
-            hygieneProducts.filter {
-                it.name.contains(searchQuery, ignoreCase = true) ||
-                it.brand.contains(searchQuery, ignoreCase = true)
+            uiState.products.filter {
+                it.name.contains(uiState.searchQuery, ignoreCase = true) ||
+                it.brand.contains(uiState.searchQuery, ignoreCase = true)
             }
         }
     }
@@ -79,8 +77,8 @@ fun HygieneScreen() {
 
         if (showSearchBar) {
             SearchBar(
-                query = searchQuery,
-                onQueryChange = { searchQuery = it },
+                query = uiState.searchQuery,
+                onQueryChange = { viewModel.onEvent(HygieneUiEvent.SearchProducts(it)) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp)
@@ -89,16 +87,16 @@ fun HygieneScreen() {
 
         Box(modifier = Modifier.fillMaxSize()) {
             when {
-                isLoading -> {
+                uiState.isLoading -> {
                     LoadingContent()
                 }
-                filteredProducts.isEmpty() && searchQuery.isEmpty() -> {
+                filteredProducts.isEmpty() && uiState.searchQuery.isEmpty() -> {
                     EmptyContent(
                         onAddProductClick = { showAddHygieneDialog = true }
                     )
                 }
-                filteredProducts.isEmpty() && searchQuery.isNotEmpty() -> {
-                    NoResultsContent(onClearSearch = { searchQuery = "" })
+                filteredProducts.isEmpty() && uiState.searchQuery.isNotEmpty() -> {
+                    NoResultsContent(onClearSearch = { viewModel.onEvent(HygieneUiEvent.SearchProducts("")) })
                 }
                 else -> {
                     ProductsGrid(
@@ -117,6 +115,10 @@ fun HygieneScreen() {
                         onEditClick = { product ->
                             productToEdit = product
                             showEditHygieneDialog = true
+                        },
+                        onDeleteClick = { product ->
+                            productToDelete = product
+                            showDeleteConfirmation = true
                         }
                     )
                 }
@@ -127,15 +129,29 @@ fun HygieneScreen() {
     // Dialogs
     if (showAddHygieneDialog) {
         AddHygieneDialog(
-            isLoading = isSubmitting,
-            errorMessage = errorMessage,
+            isLoading = uiState.isLoading,
+            errorMessage = uiState.errorMessage,
             onDismiss = {
                 showAddHygieneDialog = false
-                errorMessage = null
             },
-            onSuccess = { formData ->
-                // TODO: Handle add hygiene product
-                println("Add hygiene product form data: $formData")
+            onSuccess = { formData: Map<String, Any> ->
+                // Convert form data to HygieneProduct model
+                val product = HygieneProduct(
+                    id = "",
+                    name = formData["name"] as String,
+                    brand = formData["brand"] as String,
+                    category = formData["category"] as String,
+                    description = formData["description"] as? String,
+                    price = (formData["price"] as? Double) ?: 0.0,
+                    stock = (formData["stock"] as? Int) ?: 0,
+                    unit = formData["unit"] as String,
+                    expiryDate = formData["expiryDate"] as? String,
+                    imageUrl = formData["imageUrl"] as? String,
+                    active = true,
+                    createdAt = "",
+                    updatedAt = ""
+                )
+                viewModel.onEvent(HygieneUiEvent.AddProduct(product))
                 showAddHygieneDialog = false
             }
         )
@@ -144,16 +160,26 @@ fun HygieneScreen() {
     if (showEditHygieneDialog && productToEdit != null) {
         EditHygieneDialog(
             product = productToEdit!!,
-            isLoading = isSubmitting,
-            errorMessage = errorMessage,
+            isLoading = uiState.isLoading,
+            errorMessage = uiState.errorMessage,
             onDismiss = {
                 showEditHygieneDialog = false
                 productToEdit = null
-                errorMessage = null
             },
-            onSuccess = { formData ->
-                // TODO: Handle edit hygiene product
-                println("Edit hygiene product form data: $formData")
+            onSuccess = { formData: Map<String, Any> ->
+                // Convert form data to updated HygieneProduct model
+                val updatedProduct = productToEdit!!.copy(
+                    name = formData["name"] as String,
+                    brand = formData["brand"] as String,
+                    category = formData["category"] as String,
+                    description = formData["description"] as? String,
+                    price = (formData["price"] as? Double) ?: 0.0,
+                    stock = (formData["stock"] as? Int) ?: 0,
+                    unit = formData["unit"] as String,
+                    expiryDate = formData["expiryDate"] as? String,
+                    imageUrl = formData["imageUrl"] as? String
+                )
+                viewModel.onEvent(HygieneUiEvent.UpdateProduct(updatedProduct))
                 showEditHygieneDialog = false
                 productToEdit = null
             }
@@ -165,11 +191,9 @@ fun HygieneScreen() {
             productId = productToDelete!!.id,
             productName = productToDelete!!.name,
             onSuccess = {
-                // Handle successful delete
-                println("Hygiene product deleted successfully")
+                viewModel.onEvent(HygieneUiEvent.DeleteProduct(productToDelete!!.id))
                 showDeleteConfirmation = false
                 productToDelete = null
-                // TODO: Refresh the products list
             },
             onCancel = {
                 showDeleteConfirmation = false
@@ -508,7 +532,8 @@ private fun ProductsGrid(
     selectionMode: Boolean,
     selectedIds: Set<String>,
     onProductClick: (HygieneProduct) -> Unit,
-    onEditClick: (HygieneProduct) -> Unit
+    onEditClick: (HygieneProduct) -> Unit,
+    onDeleteClick: (HygieneProduct) -> Unit
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
@@ -523,7 +548,8 @@ private fun ProductsGrid(
                 selectionMode = selectionMode,
                 isSelected = selectedIds.contains(product.id),
                 onClick = onProductClick,
-                onEditClick = onEditClick
+                onEditClick = onEditClick,
+                onDeleteClick = onDeleteClick
             )
         }
     }
@@ -535,7 +561,8 @@ fun HygieneCard(
     selectionMode: Boolean = false,
     isSelected: Boolean = false,
     onClick: (HygieneProduct) -> Unit = {},
-    onEditClick: (HygieneProduct) -> Unit = {}
+    onEditClick: (HygieneProduct) -> Unit = {},
+    onDeleteClick: (HygieneProduct) -> Unit = {}
 ) {
     val theme = PetWiseTheme.Light
     val interactionSource = remember { MutableInteractionSource() }
@@ -586,6 +613,17 @@ fun HygieneCard(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
                 ) {
+                    IconButton(
+                        onClick = { onDeleteClick(product) },
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Excluir",
+                            tint = Color.Red,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
                     IconButton(
                         onClick = { onEditClick(product) },
                         modifier = Modifier.size(32.dp)

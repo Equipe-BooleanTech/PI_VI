@@ -6,6 +6,7 @@ import edu.fatec.petwise.features.hygiene.data.datasource.RemoteHygieneDataSourc
 import edu.fatec.petwise.features.hygiene.data.repository.HygieneRepositoryImpl
 import edu.fatec.petwise.features.hygiene.domain.repository.HygieneRepository
 import edu.fatec.petwise.features.hygiene.domain.usecases.*
+import edu.fatec.petwise.features.hygiene.presentation.HygieneViewModel
 
 object HygieneDependencyContainer {
     
@@ -35,5 +36,9 @@ object HygieneDependencyContainer {
 
     val deleteHygieneProductUseCase: DeleteHygieneProductUseCase by lazy {
         DeleteHygieneProductUseCase(repository)
+    }
+
+    val hygieneViewModel: HygieneViewModel by lazy {
+        HygieneViewModel()
     }
 }
