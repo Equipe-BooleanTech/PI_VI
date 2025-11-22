@@ -6,6 +6,7 @@ import edu.fatec.petwise.features.food.data.datasource.RemoteFoodDataSourceImpl
 import edu.fatec.petwise.features.food.data.repository.FoodRepositoryImpl
 import edu.fatec.petwise.features.food.domain.repository.FoodRepository
 import edu.fatec.petwise.features.food.domain.usecases.*
+import edu.fatec.petwise.features.food.presentation.FoodViewModel
 
 object FoodDependencyContainer {
     
@@ -36,4 +37,10 @@ object FoodDependencyContainer {
     val deleteFoodUseCase: DeleteFoodUseCase by lazy {
         DeleteFoodUseCase(repository)
     }
+
+    val foodViewModel: FoodViewModel by lazy {
+        FoodViewModel()
+    }
+
+    fun provideRepository(): FoodRepository = repository
 }

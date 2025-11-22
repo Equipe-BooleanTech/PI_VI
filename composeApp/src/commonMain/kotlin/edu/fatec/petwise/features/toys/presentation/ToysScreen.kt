@@ -117,6 +117,10 @@ fun ToysScreen() {
                         onEditClick = { toy ->
                             toyToEdit = toy
                             showEditToyDialog = true
+                        },
+                        onDeleteClick = { toy ->
+                            toyToDelete = toy
+                            showDeleteConfirmation = true
                         }
                     )
                 }
@@ -532,7 +536,8 @@ private fun ToysGrid(
     selectionMode: Boolean,
     selectedIds: Set<String>,
     onToyClick: (Toy) -> Unit,
-    onEditClick: (Toy) -> Unit
+    onEditClick: (Toy) -> Unit,
+    onDeleteClick: (Toy) -> Unit
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
@@ -547,7 +552,8 @@ private fun ToysGrid(
                 selectionMode = selectionMode,
                 isSelected = selectedIds.contains(toy.id),
                 onClick = onToyClick,
-                onEditClick = onEditClick
+                onEditClick = onEditClick,
+                onDeleteClick = onDeleteClick
             )
         }
     }
@@ -559,7 +565,8 @@ fun ToyCard(
     selectionMode: Boolean = false,
     isSelected: Boolean = false,
     onClick: (Toy) -> Unit = {},
-    onEditClick: (Toy) -> Unit = {}
+    onEditClick: (Toy) -> Unit = {},
+    onDeleteClick: (Toy) -> Unit = {}
 ) {
     val theme = PetWiseTheme.Light
     val interactionSource = remember { MutableInteractionSource() }
@@ -610,6 +617,17 @@ fun ToyCard(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
                 ) {
+                    IconButton(
+                        onClick = { onDeleteClick(toy) },
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Excluir",
+                            tint = Color.Red,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
                     IconButton(
                         onClick = { onEditClick(toy) },
                         modifier = Modifier.size(32.dp)
