@@ -125,7 +125,7 @@ class PlatformFormConfigurationBuilder {
 expect fun PlatformDatePicker(
     fieldDefinition: FormFieldDefinition,
     fieldState: FieldState,
-    onValueChange: (String) -> Unit,
+    onValueChange: (kotlinx.datetime.LocalDate) -> Unit,
     modifier: androidx.compose.ui.Modifier = androidx.compose.ui.Modifier
 )
 

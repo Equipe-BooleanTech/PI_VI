@@ -46,7 +46,6 @@ class UpdatePrescriptionViewModel(
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null, isSuccess = false)
 
             try {
-                // Get original prescription
                 val originalPrescription = getPrescriptionByIdUseCase(prescriptionId).firstOrNull() ?: run {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
@@ -90,7 +89,7 @@ class UpdatePrescriptionViewModel(
                     instructions = instructions,
                     diagnosis = diagnosis,
                     validUntil = validUntil,
-                    status = status,
+                    status = status.ifBlank { "ATIVA" },
                     medications = medications,
                     observations = observations,
                     active = active,
@@ -98,7 +97,6 @@ class UpdatePrescriptionViewModel(
                     updatedAt = currentTime
                 )
 
-                // Call use case
                 updatePrescriptionUseCase(updatedPrescription).fold(
                     onSuccess = {
                         _uiState.value = _uiState.value.copy(

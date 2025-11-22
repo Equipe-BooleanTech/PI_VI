@@ -894,7 +894,7 @@ private fun RenderTextAreaField(
 private fun RenderDateField(
     fieldDefinition: FormFieldDefinition,
     fieldState: FieldState,
-    onValueChange: (String) -> Unit,
+    onValueChange: (Any?) -> Unit,
     onFocus: () -> Unit,
     onBlur: () -> Unit,
     fieldHeight: Dp,
@@ -911,8 +911,8 @@ private fun RenderDateField(
 
     OutlinedTextField(
         value = fieldState.displayValue,
-        onValueChange = onValueChange,
-        readOnly = false,
+        onValueChange = { onValueChange(it) },
+        readOnly = true,
         label = labelText?.let { { Text(it) } },
         placeholder = fieldDefinition.placeholder?.let { { Text(it) } },
         modifier = Modifier
@@ -1030,7 +1030,7 @@ private fun RenderTimeField(
 private fun RenderDateTimeField(
     fieldDefinition: FormFieldDefinition,
     fieldState: FieldState,
-    onValueChange: (String) -> Unit,
+    onValueChange: (Any?) -> Unit,
     onFocus: () -> Unit,
     onBlur: () -> Unit,
     fieldHeight: Dp,
@@ -1133,7 +1133,7 @@ private fun RenderDateTimeField(
             fieldDefinition = fieldDefinition,
             fieldState = fieldState.copy(displayValue = dateValue),
             onValueChange = { newDate ->
-                dateValue = newDate
+                dateValue = newDate.toString()
                 onValueChange("$newDate $timeValue")
                 showDatePicker = false
             }

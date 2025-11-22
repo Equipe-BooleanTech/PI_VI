@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import platform.Foundation.*
 import platform.UIKit.*
+import kotlinx.datetime.LocalDate
 
 actual class PlatformFormBehavior {
     actual fun shouldShowKeyboardSpacer(): Boolean = true
@@ -166,7 +167,7 @@ actual class PlatformFileHandling {
 actual fun PlatformDatePicker(
     fieldDefinition: FormFieldDefinition,
     fieldState: FieldState,
-    onValueChange: (String) -> Unit,
+    onValueChange: (kotlinx.datetime.LocalDate) -> Unit,
     modifier: Modifier
 ) {
 var showDialog by remember { mutableStateOf(true) }
@@ -180,22 +181,22 @@ var showDialog by remember { mutableStateOf(true) }
         androidx.compose.material3.AlertDialog(
             onDismissRequest = {
                 showDialog = false
-                onValueChange(fieldState.displayValue)
+                // Dismiss without changing value
             },
             confirmButton = {
                 androidx.compose.material3.TextButton(onClick = {
                     val y = year
                     val m = month.coerceIn(1, 12)
                     val d = day.coerceIn(1, 31)
-                    val formatted = "%04d-%02d-%02d".format(y, m, d)
+                    val localDate = kotlinx.datetime.LocalDate(y, m, d)
                     showDialog = false
-                    onValueChange(formatted)
+                    onValueChange(localDate)
                 }) { androidx.compose.material3.Text("OK") }
             },
             dismissButton = {
                 androidx.compose.material3.TextButton(onClick = {
                     showDialog = false
-                    onValueChange(fieldState.displayValue)
+                    // Dismiss without changing value
                 }) { androidx.compose.material3.Text("Cancelar") }
             },
             title = { androidx.compose.material3.Text(text = fieldDefinition.label ?: "Selecione a Data") },

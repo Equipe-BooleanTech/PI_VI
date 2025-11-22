@@ -66,26 +66,6 @@ fun createEditPrescriptionFormConfiguration(prescription: Prescription): FormCon
             validators = emptyList()
         ),
         FormFieldDefinition(
-            id = "status",
-            label = "Status",
-            type = FormFieldType.SELECT,
-            options = listOf("ATIVA", "EXPIRADA", "CANCELADA"),
-            default = JsonPrimitive(prescription.status),
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Selecione o status"
-                )
-            )
-        ),
-        FormFieldDefinition(
-            id = "active",
-            label = "Ativa",
-            type = FormFieldType.CHECKBOX,
-            default = JsonPrimitive(prescription.active),
-            validators = emptyList()
-        ),
-        FormFieldDefinition(
             id = "submit",
             label = "Salvar Alterações",
             type = FormFieldType.SUBMIT

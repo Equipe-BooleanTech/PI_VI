@@ -235,7 +235,10 @@ class DynamicFormViewModel(
                 FormFieldType.SELECT, FormFieldType.RADIO, FormFieldType.SEGMENTED_CONTROL -> {
                     newValue
                 }
-                FormFieldType.DATE, FormFieldType.TIME, FormFieldType.DATETIME -> {
+                FormFieldType.DATE -> {
+                    newValue.toString() // Keep as ISO string
+                }
+                FormFieldType.TIME, FormFieldType.DATETIME -> {
                     newValue?.toString() ?: ""
                 }
                 else -> {
@@ -251,6 +254,13 @@ class DynamicFormViewModel(
                 }
                 FormFieldType.CHECKBOX, FormFieldType.SWITCH -> {
                     processedValue?.toString() ?: "false"
+                }
+                FormFieldType.DATE -> {
+                    if (newValue is kotlinx.datetime.LocalDate) {
+                        formatLocalDate(newValue)
+                    } else {
+                        processedValue?.toString() ?: ""
+                    }
                 }
                 else -> {
                     processedValue?.toString() ?: ""
@@ -871,5 +881,9 @@ class DynamicFormViewModel(
         formScope.launch {
             lifecycleCallbacks?.onFormDestroyed(_state.value.id)
         }
+    }
+
+    private fun formatLocalDate(localDate: kotlinx.datetime.LocalDate): String {
+        return "${localDate.dayOfMonth.toString().padStart(2, '0')}/${localDate.monthNumber.toString().padStart(2, '0')}/${localDate.year}"
     }
 }
