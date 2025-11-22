@@ -5,18 +5,19 @@ import edu.fatec.petwise.features.prescriptions.domain.models.Prescription
 
 @Serializable
 data class PrescriptionDto(
-    val id: String,
+    val id: String? = null,
     val petId: String,
+    val userId: String,
     val veterinaryId: String,
-    val medicationName: String,
-    val dosage: String,
-    val frequency: String,
-    val duration: String,
-    val startDate: String,
-    val endDate: String? = null,
-    val instructions: String? = null,
-    val notes: String? = null,
+    val medicalRecordId: String? = null,
+    val prescriptionDate: String,
+    val instructions: String,
+    val diagnosis: String? = null,
+    val validUntil: String? = null,
     val status: String,
+    val medications: String,
+    val observations: String,
+    val active: Boolean,
     val createdAt: String,
     val updatedAt: String
 )
@@ -33,6 +34,7 @@ data class PrescriptionListResponse(
 data class CreatePrescriptionRequest(
     val petId: String,
     val veterinarian: String,
+    val medicalRecordId: String? = null,
     val prescriptionDate: String,
     val instructions: String,
     val diagnosis: String? = null,
@@ -43,31 +45,30 @@ data class CreatePrescriptionRequest(
 
 @Serializable
 data class UpdatePrescriptionRequest(
-    val medicationName: String? = null,
-    val dosage: String? = null,
-    val frequency: String? = null,
-    val duration: String? = null,
-    val startDate: String? = null,
-    val endDate: String? = null,
     val instructions: String? = null,
-    val notes: String? = null,
-    val status: String? = null
+    val diagnosis: String? = null,
+    val validUntil: String? = null,
+    val status: String? = null,
+    val medications: String? = null,
+    val observations: String? = null,
+    val active: Boolean? = null
 )
 
 fun PrescriptionDto.toPrescription(): Prescription {
     return Prescription(
         id = id,
         petId = petId,
+        userId = userId,
         veterinaryId = veterinaryId,
-        medicationName = medicationName,
-        dosage = dosage,
-        frequency = frequency,
-        duration = duration,
-        startDate = startDate,
-        endDate = endDate,
+        medicalRecordId = medicalRecordId,
+        prescriptionDate = prescriptionDate,
         instructions = instructions,
-        notes = notes,
+        diagnosis = diagnosis,
+        validUntil = validUntil,
         status = status,
+        medications = medications,
+        observations = observations,
+        active = active,
         createdAt = createdAt,
         updatedAt = updatedAt
     )

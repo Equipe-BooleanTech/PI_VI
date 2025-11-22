@@ -36,8 +36,7 @@ class AddExamUseCase(
     private fun validateExam(exam: Exam): Boolean {
         return exam.examType.isNotBlank() &&
                exam.petId.isNotBlank() &&
-               exam.veterinaryId.isNotBlank() &&
-               exam.examDate.isNotBlank()
+               exam.veterinaryId.isNotBlank()
     }
 }
 

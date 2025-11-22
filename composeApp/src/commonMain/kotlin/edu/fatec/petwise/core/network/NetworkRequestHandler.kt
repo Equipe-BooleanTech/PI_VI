@@ -20,6 +20,10 @@ class NetworkRequestHandler(
     ): NetworkResult<T> {
         return try {
             val response = httpClient.get(urlString) {
+                headers {
+                    append(HttpHeaders.CacheControl, "no-cache")
+                    append("Pragma", "no-cache")
+                }
                 block()
             }
             when (response.status.value) {
@@ -53,6 +57,10 @@ class NetworkRequestHandler(
         crossinline block: HttpRequestBuilder.() -> Unit = {}
     ): NetworkResult<T> = safeRequest {
         get(urlString) {
+            headers {
+                append(HttpHeaders.CacheControl, "no-cache")
+                append("Pragma", "no-cache")
+            }
             block()
         }
     }

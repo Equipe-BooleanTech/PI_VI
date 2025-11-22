@@ -177,7 +177,7 @@ fun createEditConsultaFormConfiguration(consulta: Consulta, petOptions: List<Sel
             label = "Data da Consulta",
             type = FormFieldType.DATE,
             placeholder = "DD/MM/YYYY",
-            default = JsonPrimitive(consulta.consultaDate.toString()),
+            default = JsonPrimitive("${consulta.consultaDate.dayOfMonth.toString().padStart(2, '0')}/${consulta.consultaDate.monthNumber.toString().padStart(2, '0')}/${consulta.consultaDate.year}"),
             validators = listOf(
                 ValidationRule(
                     type = ValidationType.REQUIRED,

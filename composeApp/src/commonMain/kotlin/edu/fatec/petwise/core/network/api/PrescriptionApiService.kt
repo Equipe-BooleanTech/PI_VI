@@ -38,19 +38,26 @@ class PrescriptionApiServiceImpl(
         ) {
             parameter("page", page)
             parameter("pageSize", pageSize)
+            parameter("_t", System.currentTimeMillis()) // Cache buster
         }
     }
 
     override suspend fun getPrescriptionById(id: String): NetworkResult<PrescriptionDto> {
-        return networkHandler.get<PrescriptionDto>(ApiEndpoints.getPrescription(id))
+        return networkHandler.get<PrescriptionDto>(ApiEndpoints.getPrescription(id)) {
+            parameter("_t", System.currentTimeMillis()) // Cache buster
+        }
     }
 
     override suspend fun getPrescriptionsByPetId(petId: String): NetworkResult<List<PrescriptionDto>> {
-        return networkHandler.get<List<PrescriptionDto>>(ApiEndpoints.getPrescriptionsByPet(petId))
+        return networkHandler.get<List<PrescriptionDto>>(ApiEndpoints.getPrescriptionsByPet(petId)) {
+            parameter("_t", System.currentTimeMillis()) // Cache buster
+        }
     }
 
     override suspend fun getPrescriptionsByVeterinaryId(veterinaryId: String): NetworkResult<List<PrescriptionDto>> {
-        return networkHandler.get<List<PrescriptionDto>>(ApiEndpoints.getPrescriptionsByVeterinary(veterinaryId))
+        return networkHandler.get<List<PrescriptionDto>>(ApiEndpoints.getPrescriptionsByVeterinary(veterinaryId)) {
+            parameter("_t", System.currentTimeMillis()) // Cache buster
+        }
     }
 
     override suspend fun createPrescription(request: CreatePrescriptionRequest): NetworkResult<PrescriptionDto> {

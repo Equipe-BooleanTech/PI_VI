@@ -204,7 +204,7 @@ fun PetDetailsScreen(
                                 HealthRecordCard(
                                     title = exam.examType,
                                     description = exam.results ?: "Exame realizado",
-                                    date = exam.examDate,
+                                    date = exam.examDate.toString().substringBefore('T'),
                                     status = exam.status,
                                     type = "exame"
                                 )
@@ -221,9 +221,9 @@ fun PetDetailsScreen(
                             }
                             items(uiState.prescriptions.take(3)) { prescription ->
                                 HealthRecordCard(
-                                    title = prescription.medicationName,
-                                    description = prescription.dosage,
-                                    date = prescription.startDate,
+                                    title = prescription.medications,
+                                    description = prescription.medications,
+                                    date = prescription.prescriptionDate,
                                     status = prescription.status,
                                     type = "prescricao"
                                 )

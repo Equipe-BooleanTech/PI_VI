@@ -1,7 +1,10 @@
 package edu.fatec.petwise.features.vaccinations.presentation.forms
 
 import edu.fatec.petwise.presentation.shared.form.*
+import edu.fatec.petwise.features.vaccinations.domain.models.VaccineType
 import kotlinx.serialization.json.JsonPrimitive
+
+val vaccineTypeOptions = VaccineType.values().map { SelectOption(key = it.name, value = it.getDisplayName()) }
 
 val addVaccinationFormConfiguration: FormConfiguration = FormConfiguration(
     id = "add_vaccination_form",
@@ -30,19 +33,7 @@ val addVaccinationFormConfiguration: FormConfiguration = FormConfiguration(
             id = "vaccineType",
             label = "Tipo de Vacina",
             type = FormFieldType.SELECT,
-            options = listOf(
-                "Vacina V8",
-                "Vacina V10",
-                "Antirrábica",
-                "Gripe Canina",
-                "Giárdia",
-                "Leptospirose",
-                "Tríplice Felina",
-                "Quádrupla Felina",
-                "Leucemia Felina",
-                "Raiva Felina",
-                "Outras"
-            ),
+            selectOptions = vaccineTypeOptions,
             validators = listOf(
                 ValidationRule(
                     type = ValidationType.REQUIRED,

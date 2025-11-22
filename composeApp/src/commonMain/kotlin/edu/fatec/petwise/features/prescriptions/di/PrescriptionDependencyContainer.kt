@@ -6,7 +6,14 @@ import edu.fatec.petwise.features.prescriptions.data.datasource.RemotePrescripti
 import edu.fatec.petwise.features.prescriptions.data.datasource.RemotePrescriptionDataSourceImpl
 import edu.fatec.petwise.features.prescriptions.data.repository.PrescriptionRepositoryImpl
 import edu.fatec.petwise.features.prescriptions.domain.repository.PrescriptionRepository
-import edu.fatec.petwise.features.prescriptions.domain.usecases.*
+import edu.fatec.petwise.features.prescriptions.domain.usecases.AddPrescriptionUseCase
+import edu.fatec.petwise.features.prescriptions.domain.usecases.DeletePrescriptionUseCase
+import edu.fatec.petwise.features.prescriptions.domain.usecases.GetPrescriptionByIdUseCase
+import edu.fatec.petwise.features.prescriptions.domain.usecases.GetPrescriptionsUseCase
+import edu.fatec.petwise.features.prescriptions.domain.usecases.UpdatePrescriptionUseCase
+import edu.fatec.petwise.features.prescriptions.presentation.viewmodel.AddPrescriptionViewModel
+import edu.fatec.petwise.features.prescriptions.presentation.viewmodel.PrescriptionsViewModel
+import edu.fatec.petwise.features.prescriptions.presentation.viewmodel.UpdatePrescriptionViewModel
 
 object PrescriptionDependencyContainer {
     
@@ -39,6 +46,18 @@ object PrescriptionDependencyContainer {
 
     val deletePrescriptionUseCase: DeletePrescriptionUseCase by lazy {
         DeletePrescriptionUseCase(repository)
+    }
+
+    val addPrescriptionViewModel: AddPrescriptionViewModel by lazy {
+        AddPrescriptionViewModel(addPrescriptionUseCase)
+    }
+
+    val prescriptionsViewModel: PrescriptionsViewModel by lazy {
+        PrescriptionsViewModel(getPrescriptionsUseCase, deletePrescriptionUseCase)
+    }
+
+    val updatePrescriptionViewModel: UpdatePrescriptionViewModel by lazy {
+        UpdatePrescriptionViewModel(updatePrescriptionUseCase, getPrescriptionByIdUseCase, AuthDependencyContainer.provideGetUserProfileUseCase())
     }
 
     fun providePrescriptionRepository(): PrescriptionRepository {

@@ -1,6 +1,5 @@
 package edu.fatec.petwise.features.exams.presentation.components
 
-import edu.fatec.petwise.features.exams.di.ExamDependencyContainer
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -12,12 +11,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import edu.fatec.petwise.presentation.theme.fromHex
 import kotlinx.coroutines.launch
+import edu.fatec.petwise.features.exams.presentation.viewmodel.ExamsUiEvent
 
 @Composable
 fun DeleteExamConfirmationDialog(
     examId: String,
     examName: String,
-    onSuccess: () -> Unit,
+    onDelete: (String) -> Unit,
     onCancel: () -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -59,16 +59,12 @@ fun DeleteExamConfirmationDialog(
                     coroutineScope.launch {
                         isLoading = true
                         errorMessage = null
-                        val result = ExamDependencyContainer.deleteExamUseCase(examId)
-                        result.fold(
-                            onSuccess = {
-                                onSuccess()
-                            },
-                            onFailure = { error ->
-                                errorMessage = error.message ?: "Erro ao excluir exame"
-                            }
-                        )
-                        isLoading = false
+                        try {
+                            onDelete(examId)
+                        } catch (e: Exception) {
+                            errorMessage = e.message ?: "Erro ao excluir exame"
+                            isLoading = false
+                        }
                     }
                 },
                 enabled = !isLoading,

@@ -56,6 +56,30 @@ val addExamFormConfiguration: FormConfiguration = FormConfiguration(
             )
         ),
         FormFieldDefinition(
+            id = "examTime",
+            label = "Horário do Exame",
+            type = FormFieldType.TIME,
+            placeholder = "HH:MM",
+            validators = listOf(
+                ValidationRule(
+                    type = ValidationType.REQUIRED,
+                    message = "Horário do exame é obrigatório"
+                )
+            )
+        ),
+        FormFieldDefinition(
+            id = "status",
+            label = "Status do Exame",
+            type = FormFieldType.TEXT,
+            placeholder = "Status do exame",
+            validators = listOf(
+                ValidationRule(
+                    type = ValidationType.REQUIRED,
+                    message = "Status do exame é obrigatório"
+                )
+            )
+        ),
+        FormFieldDefinition(
             id = "results",
             label = "Resultados (opcional)",
             type = FormFieldType.TEXTAREA,

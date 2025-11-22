@@ -62,7 +62,7 @@ object ApiEndpoints {
     fun getExamsByPet(petId: String) = "$EXAMS/pet/$petId"
     fun getExamsByVeterinary(veterinaryId: String) = "/api/veterinaries/$veterinaryId/exams"
 
-    const val PRESCRIPTIONS = "/api/vet/prescriptions"
+    const val PRESCRIPTIONS = "/api/prescriptions"
     fun getPrescription(id: String) = "$PRESCRIPTIONS/$id"
     fun getPrescriptionsByPet(petId: String) = "$PRESCRIPTIONS/pet/$petId"
     fun getPrescriptionsByVeterinary(veterinaryId: String) = "/api/veterinaries/$veterinaryId/prescriptions"

@@ -6,7 +6,7 @@ import kotlinx.serialization.json.JsonPrimitive
 
 fun createEditPrescriptionFormConfiguration(prescription: Prescription): FormConfiguration = FormConfiguration(
     id = "edit_prescription_form",
-    title = "Editar Prescrição - ${prescription.medicationName}",
+    title = "Editar Prescrição",
     description = "Atualize as informações da prescrição médica.",
     layout = FormLayout(
         columns = 1,
@@ -16,136 +16,60 @@ fun createEditPrescriptionFormConfiguration(prescription: Prescription): FormCon
     ),
     fields = listOf(
         FormFieldDefinition(
-            id = "petId",
-            label = "Pet",
-            type = FormFieldType.SELECT,
-            placeholder = "Escolha um pet",
-            selectOptions = emptyList(), // This will be populated by the screen
-            default = JsonPrimitive(prescription.petId),
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Selecione um pet"
-                )
-            )
-        ),
-        FormFieldDefinition(
-            id = "veterinaryId",
-            label = "Veterinário",
-            type = FormFieldType.TEXT,
-            placeholder = "ID do veterinário responsável",
-            default = JsonPrimitive(prescription.veterinaryId),
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Veterinário é obrigatório"
-                )
-            )
-        ),
-        FormFieldDefinition(
-            id = "medicationName",
-            label = "Nome do Medicamento",
-            type = FormFieldType.TEXT,
-            placeholder = "Ex: Amoxicilina, Ibuprofeno, Prednisolona...",
-            default = JsonPrimitive(prescription.medicationName),
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Nome do medicamento é obrigatório"
-                ),
-                ValidationRule(
-                    type = ValidationType.MIN_LENGTH,
-                    value = JsonPrimitive(2),
-                    message = "Nome deve ter pelo menos 2 caracteres"
-                )
-            ),
-            formatting = FieldFormatting(capitalize = true)
-        ),
-        FormFieldDefinition(
-            id = "dosage",
-            label = "Dosagem",
-            type = FormFieldType.TEXT,
-            placeholder = "Ex: 10mg, 5ml, 1 comprimido...",
-            default = JsonPrimitive(prescription.dosage),
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Dosagem é obrigatória"
-                )
-            )
-        ),
-        FormFieldDefinition(
-            id = "frequency",
-            label = "Frequência",
-            type = FormFieldType.TEXT,
-            placeholder = "Ex: 2x ao dia, a cada 8 horas, 1x por semana...",
-            default = JsonPrimitive(prescription.frequency),
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Frequência é obrigatória"
-                )
-            )
-        ),
-        FormFieldDefinition(
-            id = "duration",
-            label = "Duração",
-            type = FormFieldType.TEXT,
-            placeholder = "Ex: 7 dias, 2 semanas, 1 mês...",
-            default = JsonPrimitive(prescription.duration),
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Duração é obrigatória"
-                )
-            )
-        ),
-        FormFieldDefinition(
-            id = "startDate",
-            label = "Data de Início",
-            type = FormFieldType.DATE,
-            placeholder = "DD/MM/YYYY",
-            default = JsonPrimitive(prescription.startDate),
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Data de início é obrigatória"
-                ),
-                ValidationRule(
-                    type = ValidationType.DATE,
-                    message = "Data inválida"
-                )
-            )
-        ),
-        FormFieldDefinition(
-            id = "endDate",
-            label = "Data de Fim (Opcional)",
-            type = FormFieldType.DATE,
-            placeholder = "DD/MM/YYYY",
-            default = JsonPrimitive(prescription.endDate ?: ""),
-            validators = emptyList()
-        ),
-        FormFieldDefinition(
             id = "instructions",
             label = "Instruções",
             type = FormFieldType.TEXTAREA,
-            placeholder = "Instruções especiais para administração...",
-            default = JsonPrimitive(prescription.instructions ?: ""),
+            placeholder = "Instruções para administração do medicamento...",
+            default = JsonPrimitive(prescription.instructions),
+            validators = listOf(
+                ValidationRule(
+                    type = ValidationType.REQUIRED,
+                    message = "Instruções são obrigatórias"
+                )
+            )
+        ),
+        FormFieldDefinition(
+            id = "medications",
+            label = "Medicamentos",
+            type = FormFieldType.TEXTAREA,
+            placeholder = "Liste os medicamentos prescritos...",
+            default = JsonPrimitive(prescription.medications),
+            validators = listOf(
+                ValidationRule(
+                    type = ValidationType.REQUIRED,
+                    message = "Medicamentos são obrigatórios"
+                )
+            )
+        ),
+        FormFieldDefinition(
+            id = "diagnosis",
+            label = "Diagnóstico",
+            type = FormFieldType.TEXTAREA,
+            placeholder = "Diagnóstico do pet...",
+            default = JsonPrimitive(prescription.diagnosis ?: ""),
             validators = emptyList()
         ),
         FormFieldDefinition(
-            id = "notes",
+            id = "validUntil",
+            label = "Válido Até (Opcional)",
+            type = FormFieldType.DATE,
+            placeholder = "DD/MM/YYYY",
+            default = JsonPrimitive(prescription.validUntil ?: ""),
+            validators = emptyList()
+        ),
+        FormFieldDefinition(
+            id = "observations",
             label = "Observações",
             type = FormFieldType.TEXTAREA,
             placeholder = "Observações adicionais...",
-            default = JsonPrimitive(prescription.notes ?: ""),
+            default = JsonPrimitive(prescription.observations),
             validators = emptyList()
         ),
         FormFieldDefinition(
             id = "status",
             label = "Status",
             type = FormFieldType.SELECT,
-            options = listOf("Ativa", "Concluída", "Cancelada", "Suspensa"),
+            options = listOf("ATIVA", "EXPIRADA", "CANCELADA"),
             default = JsonPrimitive(prescription.status),
             validators = listOf(
                 ValidationRule(
@@ -153,6 +77,13 @@ fun createEditPrescriptionFormConfiguration(prescription: Prescription): FormCon
                     message = "Selecione o status"
                 )
             )
+        ),
+        FormFieldDefinition(
+            id = "active",
+            label = "Ativa",
+            type = FormFieldType.CHECKBOX,
+            default = JsonPrimitive(prescription.active),
+            validators = emptyList()
         ),
         FormFieldDefinition(
             id = "submit",

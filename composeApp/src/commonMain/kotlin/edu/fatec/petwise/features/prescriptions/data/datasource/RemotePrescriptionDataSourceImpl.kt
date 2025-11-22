@@ -5,6 +5,7 @@ import edu.fatec.petwise.core.network.api.PrescriptionApiService
 import edu.fatec.petwise.core.network.dto.*
 import edu.fatec.petwise.features.prescriptions.domain.models.Prescription
 import edu.fatec.petwise.features.auth.domain.usecases.GetUserProfileUseCase
+import kotlinx.datetime.LocalDateTime
 
 class RemotePrescriptionDataSourceImpl(
     private val prescriptionApiService: PrescriptionApiService,
@@ -64,9 +65,13 @@ class RemotePrescriptionDataSourceImpl(
         val request = CreatePrescriptionRequest(
             petId = prescription.petId,
             veterinarian = prescription.veterinaryId,
-            prescriptionDate = prescription.startDate,
-            instructions = prescription.instructions ?: "",
-            medications = "${prescription.medicationName} ${prescription.dosage} ${prescription.frequency} ${prescription.duration}"
+            medicalRecordId = prescription.medicalRecordId,
+            prescriptionDate = parseDateToIso(prescription.prescriptionDate),
+            instructions = prescription.instructions,
+            diagnosis = prescription.diagnosis,
+            validUntil = prescription.validUntil?.let { parseDateToIso(it) },
+            medications = prescription.medications,
+            observations = prescription.observations
         )
         return when (val result = prescriptionApiService.createPrescription(request)) {
             is NetworkResult.Success -> result.data.toPrescription()
@@ -77,17 +82,15 @@ class RemotePrescriptionDataSourceImpl(
 
     override suspend fun updatePrescription(prescription: Prescription): Prescription {
         val request = UpdatePrescriptionRequest(
-            medicationName = prescription.medicationName,
-            dosage = prescription.dosage,
-            frequency = prescription.frequency,
-            duration = prescription.duration,
             instructions = prescription.instructions,
-            startDate = prescription.startDate,
-            endDate = prescription.endDate,
+            diagnosis = prescription.diagnosis,
+            validUntil = prescription.validUntil?.let { parseDateToIso(it) },
             status = prescription.status,
-            notes = prescription.notes
+            medications = prescription.medications,
+            observations = prescription.observations,
+            active = prescription.active
         )
-        return when (val result = prescriptionApiService.updatePrescription(prescription.id, request)) {
+        return when (val result = prescriptionApiService.updatePrescription(prescription.id!!, request)) {
             is NetworkResult.Success -> result.data.toPrescription()
             is NetworkResult.Error -> throw Exception(result.exception.message)
             is NetworkResult.Loading -> throw Exception("Request in progress")
@@ -104,9 +107,9 @@ class RemotePrescriptionDataSourceImpl(
 
     override suspend fun searchPrescriptions(query: String): List<Prescription> {
         return getAllPrescriptions().filter {
-            it.medicationName.contains(query, ignoreCase = true) ||
-            it.dosage.contains(query, ignoreCase = true) ||
-            it.notes?.contains(query, ignoreCase = true) == true
+            it.medications.contains(query, ignoreCase = true) ||
+            it.diagnosis?.contains(query, ignoreCase = true) == true ||
+            it.observations.contains(query, ignoreCase = true)
         }
     }
 
@@ -131,4 +134,20 @@ class RemotePrescriptionDataSourceImpl(
             is NetworkResult.Loading -> emptyList()
         }
     }
+}
+
+private fun parseDateToIso(date: String): String {
+    val dateParts = if (date.contains("/")) {
+        // DD/MM/YYYY format
+        date.split("/")
+    } else {
+        // YYYY-MM-DD format
+        date.split("-").reversed() // Reverse to DD/MM/YYYY
+    }
+    val day = dateParts[0].toInt()
+    val month = dateParts[1].toInt()
+    val year = dateParts[2].toInt()
+
+    val localDateTime = LocalDateTime(year, month, day, 0, 0, 0)
+    return localDateTime.toString()
 }

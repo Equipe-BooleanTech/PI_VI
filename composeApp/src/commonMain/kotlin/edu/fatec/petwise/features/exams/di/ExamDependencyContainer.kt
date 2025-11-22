@@ -53,7 +53,7 @@ object ExamDependencyContainer {
     }
 
     val updateExamViewModel: UpdateExamViewModel by lazy {
-        UpdateExamViewModel(updateExamUseCase)
+        UpdateExamViewModel(updateExamUseCase, getExamByIdUseCase, AuthDependencyContainer.provideGetUserProfileUseCase())
     }
 
     fun provideExamRepository(): ExamRepository {

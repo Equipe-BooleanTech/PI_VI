@@ -202,8 +202,21 @@ fun AddConsultaDialog(
                                         consultaDate = run {
                                             val dateStr = values["consultaDate"] as String
                                             val timeStr = values["consultaTime"] as String
-                                            val date = kotlinx.datetime.LocalDate.parse(dateStr)
-                                            val time = kotlinx.datetime.LocalTime.parse(timeStr)
+                                            val date = if (dateStr.contains("-")) {
+                                                // YYYY-MM-DD format
+                                                kotlinx.datetime.LocalDate.parse(dateStr)
+                                            } else {
+                                                // DD/MM/YYYY format
+                                                val dateParts = dateStr.split("/")
+                                                val day = dateParts[0].toInt()
+                                                val month = dateParts[1].toInt()
+                                                val year = dateParts[2].toInt()
+                                                kotlinx.datetime.LocalDate(year, month, day)
+                                            }
+                                            val timeParts = timeStr.split(":")
+                                            val hour = timeParts[0].toInt()
+                                            val minute = timeParts[1].toInt()
+                                            val time = kotlinx.datetime.LocalTime(hour, minute)
                                             kotlinx.datetime.LocalDateTime(date, time)
                                         },
                                         consultaTime = values["consultaTime"] as String,
@@ -414,8 +427,21 @@ fun EditConsultaDialog(
                                         consultaDate = run {
                                             val dateStr = values["consultaDate"] as String
                                             val timeStr = values["consultaTime"] as String
-                                            val date = kotlinx.datetime.LocalDate.parse(dateStr)
-                                            val time = kotlinx.datetime.LocalTime.parse(timeStr)
+                                            val date = if (dateStr.contains("-")) {
+                                                // YYYY-MM-DD format
+                                                kotlinx.datetime.LocalDate.parse(dateStr)
+                                            } else {
+                                                // DD/MM/YYYY format
+                                                val dateParts = dateStr.split("/")
+                                                val day = dateParts[0].toInt()
+                                                val month = dateParts[1].toInt()
+                                                val year = dateParts[2].toInt()
+                                                kotlinx.datetime.LocalDate(year, month, day)
+                                            }
+                                            val timeParts = timeStr.split(":")
+                                            val hour = timeParts[0].toInt()
+                                            val minute = timeParts[1].toInt()
+                                            val time = kotlinx.datetime.LocalTime(hour, minute)
                                             kotlinx.datetime.LocalDateTime(date, time)
                                         },
                                         consultaTime = values["consultaTime"]?.toString() ?: consulta.consultaTime,

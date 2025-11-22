@@ -27,7 +27,7 @@ class PrescriptionRepositoryImpl(
             println("Repositório: Buscando prescrição por ID '$id' via API")
             val prescription = remoteDataSource.getPrescriptionById(id)
             if (prescription != null) {
-                println("Repositório: Prescrição '${prescription.medicationName}' encontrada com sucesso")
+                println("Repositório: Prescrição encontrada com sucesso")
             } else {
                 println("Repositório: Prescrição com ID '$id' não encontrada")
             }
@@ -76,24 +76,24 @@ class PrescriptionRepositoryImpl(
 
     override suspend fun addPrescription(prescription: Prescription): Result<Prescription> {
         return try {
-            println("Repositório: Adicionando nova prescrição '${prescription.medicationName}' via API")
+            println("Repositório: Adicionando nova prescrição via API")
             val createdPrescription = remoteDataSource.createPrescription(prescription)
-            println("Repositório: Prescrição '${createdPrescription.medicationName}' criada com sucesso - ID: ${createdPrescription.id}")
+            println("Repositório: Prescrição criada com sucesso - ID: ${createdPrescription.id}")
             Result.success(createdPrescription)
         } catch (e: Exception) {
-            println("Repositório: Erro ao criar prescrição '${prescription.medicationName}' - ${e.message}")
+            println("Repositório: Erro ao criar prescrição - ${e.message}")
             Result.failure(e)
         }
     }
 
     override suspend fun updatePrescription(prescription: Prescription): Result<Prescription> {
         return try {
-            println("Repositório: Atualizando prescrição '${prescription.medicationName}' (ID: ${prescription.id}) via API")
+            println("Repositório: Atualizando prescrição (ID: ${prescription.id}) via API")
             val updatedPrescription = remoteDataSource.updatePrescription(prescription)
-            println("Repositório: Prescrição '${updatedPrescription.medicationName}' atualizada com sucesso")
+            println("Repositório: Prescrição atualizada com sucesso")
             Result.success(updatedPrescription)
         } catch (e: Exception) {
-            println("Repositório: Erro ao atualizar prescrição '${prescription.medicationName}' - ${e.message}")
+            println("Repositório: Erro ao atualizar prescrição - ${e.message}")
             Result.failure(e)
         }
     }
