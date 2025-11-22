@@ -4,30 +4,29 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import edu.fatec.petwise.core.data.DataRefreshEvent
 import edu.fatec.petwise.core.data.DataRefreshManager
-import edu.fatec.petwise.features.labs.domain.models.LabResult
+import edu.fatec.petwise.features.labs.domain.models.Lab
 import edu.fatec.petwise.features.labs.domain.usecases.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 data class LabsUiState(
-    val labResults: List<LabResult> = emptyList(),
-    val filteredLabResults: List<LabResult> = emptyList(),
+    val labs: List<Lab> = emptyList(),
+    val filteredLabs: List<Lab> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
-    val selectedLabResult: LabResult? = null
+    val selectedLab: Lab? = null
 )
 
 sealed class LabsUiEvent {
-    object LoadLabResults : LabsUiEvent()
-    data class LoadLabResultsByPet(val petId: String) : LabsUiEvent()
-    data class DeleteLabResult(val id: String) : LabsUiEvent()
-    data class SelectLabResult(val labResult: LabResult?) : LabsUiEvent()
+    object LoadLabs : LabsUiEvent()
+    data class DeleteLab(val id: String) : LabsUiEvent()
+    data class SelectLab(val lab: Lab?) : LabsUiEvent()
     object ClearError : LabsUiEvent()
 }
 
 class LabsViewModel(
-    private val getLabResultsUseCase: GetLabResultsUseCase,
-    private val deleteLabResultUseCase: DeleteLabResultUseCase
+    private val getLabsUseCase: GetLabsUseCase,
+    private val deleteLabUseCase: DeleteLabUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LabsUiState())
@@ -41,7 +40,7 @@ class LabsViewModel(
         viewModelScope.launch {
             DataRefreshManager.refreshEvents.collect { event ->
                 when (event) {
-                    is DataRefreshEvent.LabResultsUpdated -> loadLabResults()
+                    is DataRefreshEvent.LabResultsUpdated -> loadLabs()
                     is DataRefreshEvent.AllDataUpdated -> {
                         _uiState.value = LabsUiState()
                         println("LabsViewModel: Estado limpo após logout")
@@ -54,10 +53,9 @@ class LabsViewModel(
 
     fun onEvent(event: LabsUiEvent) {
         when (event) {
-            is LabsUiEvent.LoadLabResults -> loadLabResults()
-            is LabsUiEvent.LoadLabResultsByPet -> loadLabResultsByPet(event.petId)
-            is LabsUiEvent.DeleteLabResult -> deleteLabResult(event.id)
-            is LabsUiEvent.SelectLabResult -> selectLabResult(event.labResult)
+            is LabsUiEvent.LoadLabs -> loadLabs()
+            is LabsUiEvent.DeleteLab -> deleteLab(event.id)
+            is LabsUiEvent.SelectLab -> selectLab(event.lab)
             is LabsUiEvent.ClearError -> clearError()
             is DataRefreshEvent.UserLoggedOut -> {
                 println("LabsViewModel: Usuário deslogou — limpando estado")
@@ -66,75 +64,53 @@ class LabsViewModel(
         }
     }
 
-    private fun loadLabResults() {
+    private fun loadLabs() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
             try {
-                getLabResultsUseCase().collect { labResults ->
+                getLabsUseCase().collect { labs ->
                     _uiState.value = _uiState.value.copy(
-                        labResults = labResults,
-                        filteredLabResults = labResults,
+                        labs = labs,
+                        filteredLabs = labs,
                         isLoading = false
                     )
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    error = e.message ?: "Erro ao carregar resultados de laboratório"
+                    error = e.message ?: "Erro ao carregar laboratórios"
                 )
             }
         }
     }
 
-    private fun loadLabResultsByPet(petId: String) {
+    private fun deleteLab(id: String) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
             try {
-                // For now, filter from all results. In a real implementation, you'd have a specific use case
-                getLabResultsUseCase().collect { labResults ->
-                    val filteredResults = labResults.filter { it.petId == petId }
-                    _uiState.value = _uiState.value.copy(
-                        labResults = filteredResults,
-                        filteredLabResults = filteredResults,
-                        isLoading = false
-                    )
-                }
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = e.message ?: "Erro ao carregar resultados de laboratório do pet"
-                )
-            }
-        }
-    }
-
-    private fun deleteLabResult(id: String) {
-        viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
-            try {
-                deleteLabResultUseCase(id).fold(
+                deleteLabUseCase(id).fold(
                     onSuccess = {
                         _uiState.value = _uiState.value.copy(isLoading = false)
-                        loadLabResults()
+                        loadLabs()
                     },
                     onFailure = { error ->
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
-                            error = error.message ?: "Erro ao deletar resultado de laboratório"
+                            error = error.message ?: "Erro ao deletar laboratório"
                         )
                     }
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    error = e.message ?: "Erro ao deletar resultado de laboratório"
+                    error = e.message ?: "Erro ao deletar laboratório"
                 )
             }
         }
     }
 
-    private fun selectLabResult(labResult: LabResult?) {
-        _uiState.value = _uiState.value.copy(selectedLabResult = labResult)
+    private fun selectLab(lab: Lab?) {
+        _uiState.value = _uiState.value.copy(selectedLab = lab)
     }
 
     private fun clearError() {

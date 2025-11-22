@@ -6,6 +6,8 @@ import edu.fatec.petwise.features.vaccinations.domain.models.VaccineType
 import edu.fatec.petwise.features.vaccinations.domain.models.VaccinationStatus
 import kotlinx.serialization.json.JsonPrimitive
 
+val vaccinationStatusOptions = VaccinationStatus.values().map { SelectOption(key = it.name, value = it.getDisplayName()) }
+
 fun createEditVaccinationFormConfiguration(vaccination: Vaccination): FormConfiguration = FormConfiguration(
     id = "edit_vaccination_form",
     title = "Editar Vacina - ${vaccination.vaccineType.getDisplayName()}",
@@ -20,7 +22,7 @@ fun createEditVaccinationFormConfiguration(vaccination: Vaccination): FormConfig
         FormFieldDefinition(
             id = "vaccinationDate",
             label = "Data de Aplicação",
-            type = FormFieldType.TEXT,
+            type = FormFieldType.DATE,
             placeholder = "DD/MM/AAAA",
             default = JsonPrimitive(vaccination.vaccinationDate),
             validators = listOf(
@@ -35,9 +37,22 @@ fun createEditVaccinationFormConfiguration(vaccination: Vaccination): FormConfig
             )
         ),
         FormFieldDefinition(
+            id = "vaccineType",
+            label = "Tipo de Vacina",
+            type = FormFieldType.SELECT,
+            selectOptions = vaccineTypeOptions,
+            validators = listOf(
+                ValidationRule(
+                    type = ValidationType.REQUIRED,
+                    message = "Selecione o tipo de vacina"
+                )
+            ),
+            default = JsonPrimitive(vaccination.vaccineType.name)
+        ),
+        FormFieldDefinition(
             id = "nextDoseDate",
             label = "Data do Próximo Reforço (Opcional)",
-            type = FormFieldType.TEXT,
+            type = FormFieldType.DATE,
             placeholder = "DD/MM/AAAA",
             default = vaccination.nextDoseDate?.let { JsonPrimitive(it) },
             validators = listOf(
@@ -81,8 +96,8 @@ fun createEditVaccinationFormConfiguration(vaccination: Vaccination): FormConfig
         FormFieldDefinition(
             id = "status",
             label = "Status da Vacinação",
-            type = FormFieldType.TEXT,
-            placeholder = "Digite o status atual",
+            type = FormFieldType.SELECT,
+            selectOptions = vaccinationStatusOptions,
             default = JsonPrimitive(vaccination.status.name),
             validators = listOf(
                 ValidationRule(

@@ -19,10 +19,8 @@ import edu.fatec.petwise.presentation.shared.form.*
 import edu.fatec.petwise.features.hygiene.domain.models.HygieneProduct
 import edu.fatec.petwise.features.hygiene.presentation.forms.addHygieneFormConfiguration
 import edu.fatec.petwise.features.hygiene.presentation.forms.createEditHygieneFormConfiguration
-import edu.fatec.petwise.features.hygiene.di.HygieneDependencyContainer
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.fromHex
-import kotlinx.coroutines.launch
 
 @Composable
 fun AddHygieneDialog(
@@ -307,12 +305,9 @@ fun DeleteHygieneConfirmationDialog(
     onCancel: () -> Unit
 ) {
     val theme = PetWiseTheme.Light
-    val coroutineScope = rememberCoroutineScope()
-    var isLoading by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     AlertDialog(
-        onDismissRequest = { if (!isLoading) onCancel() },
+        onDismissRequest = onCancel,
         title = {
             Text(
                 text = "Confirmar Exclusão",
@@ -323,73 +318,26 @@ fun DeleteHygieneConfirmationDialog(
             )
         },
         text = {
-            Column {
-                Text(
-                    text = "Tem certeza que deseja excluir o produto \"$productName\"?\n\nEsta ação não pode ser desfeita.",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color.fromHex(theme.palette.textSecondary)
-                    )
+            Text(
+                text = "Tem certeza que deseja excluir o produto \"$productName\"?\n\nEsta ação não pode ser desfeita.",
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = Color.fromHex(theme.palette.textSecondary)
                 )
-                errorMessage?.let { message ->
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = message,
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            color = Color.Red
-                        )
-                    )
-                }
-            }
+            )
         },
         confirmButton = {
             Button(
-                onClick = {
-                    coroutineScope.launch {
-                        isLoading = true
-                        errorMessage = null
-                        try {
-                            HygieneDependencyContainer.deleteHygieneProductUseCase(productId).fold(
-                                onSuccess = {
-                                    println("Hygiene product deleted successfully")
-                                    onSuccess()
-                                },
-                                onFailure = { error ->
-                                    println("Error deleting hygiene product: ${error.message}")
-                                    errorMessage = error.message ?: "Erro ao excluir produto"
-                                }
-                            )
-                        } catch (e: Exception) {
-                            println("Exception deleting hygiene product: ${e.message}")
-                            errorMessage = e.message ?: "Erro desconhecido"
-                        } finally {
-                            isLoading = false
-                        }
-                    }
-                },
-                enabled = !isLoading,
+                onClick = onSuccess,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.fromHex("#F44336"),
                     contentColor = Color.White
                 )
             ) {
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(16.dp),
-                        color = Color.White,
-                        strokeWidth = 2.dp
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Excluindo...")
-                } else {
-                    Text("Excluir")
-                }
+                Text("Excluir")
             }
         },
         dismissButton = {
-            TextButton(
-                onClick = onCancel,
-                enabled = !isLoading
-            ) {
+            TextButton(onClick = onCancel) {
                 Text(
                     "Cancelar",
                     color = Color.fromHex(theme.palette.textSecondary)

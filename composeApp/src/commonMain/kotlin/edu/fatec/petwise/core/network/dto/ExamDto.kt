@@ -1,6 +1,7 @@
 package edu.fatec.petwise.core.network.dto
 
 import kotlinx.serialization.Serializable
+import kotlinx.datetime.LocalDateTime
 import edu.fatec.petwise.features.exams.domain.models.Exam
 
 @Serializable
@@ -28,6 +29,7 @@ data class ExamListResponse(
 
 @Serializable
 data class CreateExamRequest(
+    val petId: String,
     val examType: String,
     val examDate: String,
     val results: String? = null,
@@ -47,12 +49,14 @@ data class UpdateExamRequest(
 )
 
 fun ExamDto.toExam(): Exam {
+    val examDateTime = LocalDateTime.parse(examDate)
     return Exam(
         id = id,
         petId = petId,
         veterinaryId = veterinaryId,
         examType = examType,
-        examDate = examDate,
+        examDate = examDateTime,
+        examTime = "${examDateTime.hour.toString().padStart(2, '0')}:${examDateTime.minute.toString().padStart(2, '0')}",
         results = results,
         status = status,
         notes = notes,

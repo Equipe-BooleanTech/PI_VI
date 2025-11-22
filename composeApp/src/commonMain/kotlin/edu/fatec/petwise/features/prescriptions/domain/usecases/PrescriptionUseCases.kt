@@ -34,9 +34,8 @@ class AddPrescriptionUseCase(
     }
 
     private fun validatePrescription(prescription: Prescription): Boolean {
-        return prescription.medicationName.isNotBlank() &&
-               prescription.dosage.isNotBlank() &&
-               prescription.frequency.isNotBlank() &&
+        return prescription.instructions.isNotBlank() &&
+               prescription.medications.isNotBlank() &&
                prescription.petId.isNotBlank() &&
                prescription.veterinaryId.isNotBlank()
     }

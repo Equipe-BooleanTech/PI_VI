@@ -38,9 +38,8 @@ object ToyDependencyContainer {
         DeleteToyUseCase(repository)
     }
 
-    val toysViewModel: ToysViewModel by lazy {
-        ToysViewModel()
-    }
+    val toysViewModel: ToysViewModel
+        get() = ToysViewModel()
 
     fun provideRepository(): ToyRepository = repository
 }

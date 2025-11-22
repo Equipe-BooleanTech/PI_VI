@@ -76,14 +76,18 @@ class UpdateVaccinationViewModel(
                     )
                     return@launch
                 }
-
-                // Parse enum values
-                val vaccineType = try {
-                    VaccineType.valueOf(vaccineTypeStr)
-                } catch (e: IllegalArgumentException) {
+                if (vaccineTypeStr.isBlank()) {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        errorMessage = "Tipo de vacina inválido"
+                        errorMessage = "Tipo de vacina é obrigatório"
+                    )
+                    return@launch
+                }
+                
+                if (totalDoses < 1) {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        errorMessage = "Número de doses deve ser pelo menos 1"
                     )
                     return@launch
                 }
@@ -98,13 +102,12 @@ class UpdateVaccinationViewModel(
                     return@launch
                 }
 
-                // Create updated vaccination object
                 val currentTime = Clock.System.now().toEpochMilliseconds().toString()
                 val updatedVaccination = Vaccination(
                     id = vaccinationId,
                     petId = "", // This should be filled from original vaccination
                     veterinarianId = "", // This should be filled from original vaccination
-                    vaccineType = vaccineType,
+                    vaccineType = vaccineTypeStr.let { VaccineType.valueOf(it) },
                     vaccinationDate = vaccinationDate,
                     nextDoseDate = nextDoseDate,
                     totalDoses = totalDoses,

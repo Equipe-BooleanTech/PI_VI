@@ -12,7 +12,7 @@ interface ExamApiService {
     suspend fun getExamById(id: String): NetworkResult<ExamDto>
     suspend fun getExamsByPetId(petId: String): NetworkResult<List<ExamDto>>
     suspend fun getExamsByVeterinaryId(veterinaryId: String): NetworkResult<List<ExamDto>>
-    suspend fun createExam(petId: String, request: CreateExamRequest): NetworkResult<ExamDto>
+    suspend fun createExam(request: CreateExamRequest): NetworkResult<ExamDto>
     suspend fun updateExam(id: String, request: UpdateExamRequest): NetworkResult<ExamDto>
     suspend fun deleteExam(id: String): NetworkResult<Unit>
 }
@@ -53,13 +53,11 @@ class ExamApiServiceImpl(
         return networkHandler.get<List<ExamDto>>(ApiEndpoints.getExamsByVeterinary(veterinaryId))
     }
 
-    override suspend fun createExam(petId: String, request: CreateExamRequest): NetworkResult<ExamDto> {
+    override suspend fun createExam(request: CreateExamRequest): NetworkResult<ExamDto> {
         return networkHandler.post<ExamDto, CreateExamRequest>(
             urlString = ApiEndpoints.EXAMS,
             body = request
-        ) {
-            parameter("petId", petId)
-        }
+        )
     }
 
     override suspend fun updateExam(id: String, request: UpdateExamRequest): NetworkResult<ExamDto> {

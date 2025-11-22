@@ -14,13 +14,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import edu.fatec.petwise.features.labs.domain.models.LabResult
-import edu.fatec.petwise.features.labs.presentation.viewmodel.AddLabResultViewModel
-import edu.fatec.petwise.features.labs.presentation.viewmodel.AddLabResultUiEvent
-import edu.fatec.petwise.features.labs.presentation.viewmodel.UpdateLabResultViewModel
-import edu.fatec.petwise.features.labs.presentation.viewmodel.UpdateLabResultUiEvent
-import edu.fatec.petwise.features.labs.presentation.forms.addLabResultFormConfiguration
-import edu.fatec.petwise.features.labs.presentation.forms.createEditLabResultFormConfiguration
+import edu.fatec.petwise.features.labs.domain.models.Lab
+import edu.fatec.petwise.features.labs.presentation.viewmodel.AddLabViewModel
+import edu.fatec.petwise.features.labs.presentation.viewmodel.AddLabUiEvent
+import edu.fatec.petwise.features.labs.presentation.viewmodel.UpdateLabViewModel
+import edu.fatec.petwise.features.labs.presentation.viewmodel.UpdateLabUiEvent
+import edu.fatec.petwise.features.labs.presentation.forms.addLabFormConfiguration
+import edu.fatec.petwise.features.labs.presentation.forms.createEditLabFormConfiguration
 import edu.fatec.petwise.presentation.shared.form.DynamicForm
 import edu.fatec.petwise.presentation.shared.form.DynamicFormViewModel
 import kotlinx.coroutines.launch
@@ -28,15 +28,15 @@ import kotlinx.serialization.json.JsonPrimitive
 import edu.fatec.petwise.features.labs.di.LabDependencyContainer
 
 @Composable
-fun AddLabResultDialog(
-    addLabResultViewModel: AddLabResultViewModel,
+fun AddLabDialog(
+    addLabViewModel: AddLabViewModel,
     isLoading: Boolean,
     errorMessage: String?,
     onDismiss: () -> Unit,
     onSuccess: () -> Unit
 ) {
 
-    val formConfiguration = remember { addLabResultFormConfiguration }
+    val formConfiguration = remember { addLabFormConfiguration }
     val formViewModel = remember(formConfiguration) {
         DynamicFormViewModel(formConfiguration)
     }
@@ -91,7 +91,7 @@ fun AddLabResultDialog(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Adicionar Exame Laboratorial",
+                                text = "Adicionar Laboratório",
                                 style = MaterialTheme.typography.titleLarge.copy(
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White
@@ -131,7 +131,7 @@ fun AddLabResultDialog(
                                     )
                                     Spacer(modifier = Modifier.height(16.dp))
                                     Text(
-                                        text = "Adicionando exame...",
+                                        text = "Adicionando laboratório...",
                                         style = MaterialTheme.typography.bodyMedium.copy(
                                             color = Color.Gray
                                         )
@@ -151,8 +151,8 @@ fun AddLabResultDialog(
                                             else -> JsonPrimitive(value.toString())
                                         }
                                     }
-                                    addLabResultViewModel.onEvent(
-                                        AddLabResultUiEvent.Submit(jsonFormData)
+                                    addLabViewModel.onEvent(
+                                        AddLabUiEvent.Submit(jsonFormData)
                                     )
                                 },
                                 onSubmitError = { error ->
@@ -174,16 +174,16 @@ fun AddLabResultDialog(
 }
 
 @Composable
-fun EditLabResultDialog(
-    updateLabResultViewModel: UpdateLabResultViewModel,
-    labResult: LabResult,
+fun EditLabDialog(
+    updateLabViewModel: UpdateLabViewModel,
+    lab: Lab,
     isLoading: Boolean,
     errorMessage: String?,
     onDismiss: () -> Unit,
     onSuccess: () -> Unit
 ) {
 
-    val formConfiguration = remember(labResult) { createEditLabResultFormConfiguration(labResult) }
+    val formConfiguration = remember(lab) { createEditLabFormConfiguration(lab) }
     val formViewModel = remember(formConfiguration) {
         DynamicFormViewModel(formConfiguration)
     }
@@ -238,7 +238,7 @@ fun EditLabResultDialog(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Editar Exame Laboratorial",
+                                text = "Editar Laboratório",
                                 style = MaterialTheme.typography.titleLarge.copy(
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White
@@ -278,7 +278,7 @@ fun EditLabResultDialog(
                                     )
                                     Spacer(modifier = Modifier.height(16.dp))
                                     Text(
-                                        text = "Atualizando exame...",
+                                        text = "Atualizando laboratório...",
                                         style = MaterialTheme.typography.bodyMedium.copy(
                                             color = Color.Gray
                                         )
@@ -298,8 +298,8 @@ fun EditLabResultDialog(
                                             else -> JsonPrimitive(value.toString())
                                         }
                                     }
-                                    updateLabResultViewModel.onEvent(
-                                        UpdateLabResultUiEvent.UpdateLabResult(labResult.id, jsonFormData)
+                                    updateLabViewModel.onEvent(
+                                        UpdateLabUiEvent.UpdateLab(lab.id, jsonFormData)
                                     )
                                 },
                                 onSubmitError = { error ->
@@ -321,9 +321,9 @@ fun EditLabResultDialog(
 }
 
 @Composable
-fun DeleteLabResultConfirmationDialog(
-    labResultId: String,
-    labResultName: String,
+fun DeleteLabConfirmationDialog(
+    labId: String,
+    labName: String,
     onSuccess: () -> Unit,
     onCancel: () -> Unit
 ) {
@@ -346,7 +346,7 @@ fun DeleteLabResultConfirmationDialog(
         text = {
             Column {
                 Text(
-                    text = "Tem certeza que deseja excluir o exame \"$labResultName\"?\n\nEsta ação não pode ser desfeita.",
+                    text = "Tem certeza que deseja excluir o laboratório \"$labName\"?\n\nEsta ação não pode ser desfeita.",
                     style = MaterialTheme.typography.bodyMedium.copy(
                         color = Color.Gray
                     )
@@ -367,13 +367,13 @@ fun DeleteLabResultConfirmationDialog(
                     coroutineScope.launch {
                         isLoading = true
                         errorMessage = null
-                        val result = LabDependencyContainer.deleteLabResultUseCase(labResultId)
+                        val result = LabDependencyContainer.deleteLabUseCase(labId)
                         result.fold(
                             onSuccess = {
                                 onSuccess()
                             },
                             onFailure = { error ->
-                                errorMessage = error.message ?: "Erro ao excluir exame"
+                                errorMessage = error.message ?: "Erro ao excluir laboratório"
                             }
                         )
                         isLoading = false

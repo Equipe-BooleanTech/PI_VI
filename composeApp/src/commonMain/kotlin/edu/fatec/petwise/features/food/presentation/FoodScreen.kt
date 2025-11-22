@@ -25,14 +25,16 @@ import edu.fatec.petwise.presentation.shared.NumberFormatter
 import edu.fatec.petwise.features.food.presentation.components.AddFoodDialog
 import edu.fatec.petwise.features.food.presentation.components.EditFoodDialog
 import edu.fatec.petwise.features.food.presentation.components.DeleteFoodConfirmationDialog
+import kotlinx.coroutines.launch
+import edu.fatec.petwise.features.food.di.FoodDependencyContainer
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FoodScreen() {
-    var foodItems by remember { mutableStateOf<List<Food>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(false) }
+    val viewModel: FoodViewModel = remember { FoodDependencyContainer.foodViewModel }
+    val uiState: FoodUiState by viewModel.uiState.collectAsState()
+
     var showSearchBar by remember { mutableStateOf(false) }
-    var searchQuery by remember { mutableStateOf("") }
     var selectionMode by remember { mutableStateOf(false) }
     var selectedFoodIds by remember { mutableStateOf(setOf<String>()) }
 
@@ -42,18 +44,16 @@ fun FoodScreen() {
     var foodToEdit by remember { mutableStateOf<Food?>(null) }
     var showDeleteConfirmation by remember { mutableStateOf(false) }
     var foodToDelete by remember { mutableStateOf<Food?>(null) }
-    var isSubmitting by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val theme = PetWiseTheme.Light
 
-    val filteredFoods = remember(foodItems, searchQuery) {
-        if (searchQuery.isEmpty()) {
-            foodItems
+    val filteredFoods = remember(uiState.foods, uiState.searchQuery) {
+        if (uiState.searchQuery.isEmpty()) {
+            uiState.foods
         } else {
-            foodItems.filter {
-                it.name.contains(searchQuery, ignoreCase = true) ||
-                it.brand.contains(searchQuery, ignoreCase = true)
+            uiState.foods.filter {
+                it.name.contains(uiState.searchQuery, ignoreCase = true) ||
+                it.brand.contains(uiState.searchQuery, ignoreCase = true)
             }
         }
     }
@@ -79,8 +79,8 @@ fun FoodScreen() {
 
         if (showSearchBar) {
             SearchBar(
-                query = searchQuery,
-                onQueryChange = { searchQuery = it },
+                query = uiState.searchQuery,
+                onQueryChange = { viewModel.onEvent(FoodUiEvent.SearchFoods(it)) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp)
@@ -89,16 +89,16 @@ fun FoodScreen() {
 
         Box(modifier = Modifier.fillMaxSize()) {
             when {
-                isLoading -> {
+                uiState.isLoading -> {
                     LoadingContent()
                 }
-                filteredFoods.isEmpty() && searchQuery.isEmpty() -> {
+                filteredFoods.isEmpty() && uiState.searchQuery.isEmpty() -> {
                     EmptyContent(
                         onAddFoodClick = { showAddFoodDialog = true }
                     )
                 }
-                filteredFoods.isEmpty() && searchQuery.isNotEmpty() -> {
-                    NoResultsContent(onClearSearch = { searchQuery = "" })
+                filteredFoods.isEmpty() && uiState.searchQuery.isNotEmpty() -> {
+                    NoResultsContent(onClearSearch = { viewModel.onEvent(FoodUiEvent.SearchFoods("")) })
                 }
                 else -> {
                     FoodsGrid(
@@ -117,6 +117,10 @@ fun FoodScreen() {
                         onEditClick = { food ->
                             foodToEdit = food
                             showEditFoodDialog = true
+                        },
+                        onDeleteClick = { food ->
+                            foodToDelete = food
+                            showDeleteConfirmation = true
                         }
                     )
                 }
@@ -127,15 +131,29 @@ fun FoodScreen() {
     // Dialogs
     if (showAddFoodDialog) {
         AddFoodDialog(
-            isLoading = isSubmitting,
-            errorMessage = errorMessage,
+            isLoading = uiState.isLoading,
+            errorMessage = uiState.errorMessage,
             onDismiss = {
                 showAddFoodDialog = false
-                errorMessage = null
             },
-            onSuccess = { formData ->
-                // TODO: Handle add food
-                println("Add food form data: $formData")
+            onSuccess = { formData: Map<String, Any> ->
+                // Convert form data to Food model
+                val food = Food(
+                    id = "",
+                    name = formData["name"] as String,
+                    brand = formData["brand"] as String,
+                    category = formData["category"] as String,
+                    description = formData["description"] as? String,
+                    price = (formData["price"] as? Double) ?: 0.0,
+                    stock = (formData["stock"] as? Int) ?: 0,
+                    unit = formData["unit"] as String,
+                    expiryDate = formData["expiryDate"] as? String,
+                    imageUrl = formData["imageUrl"] as? String,
+                    active = true,
+                    createdAt = "",
+                    updatedAt = ""
+                )
+                viewModel.onEvent(FoodUiEvent.AddFood(food))
                 showAddFoodDialog = false
             }
         )
@@ -144,16 +162,26 @@ fun FoodScreen() {
     if (showEditFoodDialog && foodToEdit != null) {
         EditFoodDialog(
             food = foodToEdit!!,
-            isLoading = isSubmitting,
-            errorMessage = errorMessage,
+            isLoading = uiState.isLoading,
+            errorMessage = uiState.errorMessage,
             onDismiss = {
                 showEditFoodDialog = false
                 foodToEdit = null
-                errorMessage = null
             },
-            onSuccess = { formData ->
-                // TODO: Handle edit food
-                println("Edit food form data: $formData")
+            onSuccess = { formData: Map<String, Any> ->
+                // Convert form data to updated Food model
+                val updatedFood = foodToEdit!!.copy(
+                    name = formData["name"] as String,
+                    brand = formData["brand"] as String,
+                    category = formData["category"] as String,
+                    description = formData["description"] as? String,
+                    price = (formData["price"] as? Double) ?: 0.0,
+                    stock = (formData["stock"] as? Int) ?: 0,
+                    unit = formData["unit"] as String,
+                    expiryDate = formData["expiryDate"] as? String,
+                    imageUrl = formData["imageUrl"] as? String
+                )
+                viewModel.onEvent(FoodUiEvent.UpdateFood(updatedFood))
                 showEditFoodDialog = false
                 foodToEdit = null
             }
@@ -165,11 +193,9 @@ fun FoodScreen() {
             foodId = foodToDelete!!.id,
             foodName = foodToDelete!!.name,
             onSuccess = {
-                // Handle successful delete
-                println("Food deleted successfully")
+                viewModel.onEvent(FoodUiEvent.DeleteFood(foodToDelete!!.id))
                 showDeleteConfirmation = false
                 foodToDelete = null
-                // TODO: Refresh the foods list
             },
             onCancel = {
                 showDeleteConfirmation = false
@@ -508,7 +534,8 @@ private fun FoodsGrid(
     selectionMode: Boolean,
     selectedIds: Set<String>,
     onFoodClick: (Food) -> Unit,
-    onEditClick: (Food) -> Unit
+    onEditClick: (Food) -> Unit,
+    onDeleteClick: (Food) -> Unit
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
@@ -523,7 +550,8 @@ private fun FoodsGrid(
                 selectionMode = selectionMode,
                 isSelected = selectedIds.contains(food.id),
                 onClick = onFoodClick,
-                onEditClick = onEditClick
+                onEditClick = onEditClick,
+                onDeleteClick = onDeleteClick
             )
         }
     }
@@ -535,7 +563,8 @@ fun FoodCard(
     selectionMode: Boolean = false,
     isSelected: Boolean = false,
     onClick: (Food) -> Unit = {},
-    onEditClick: (Food) -> Unit = {}
+    onEditClick: (Food) -> Unit = {},
+    onDeleteClick: (Food) -> Unit = {}
 ) {
     val theme = PetWiseTheme.Light
     val interactionSource = remember { MutableInteractionSource() }
@@ -586,6 +615,17 @@ fun FoodCard(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
                 ) {
+                    IconButton(
+                        onClick = { onDeleteClick(food) },
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Excluir",
+                            tint = Color.Red,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
                     IconButton(
                         onClick = { onEditClick(food) },
                         modifier = Modifier.size(32.dp)

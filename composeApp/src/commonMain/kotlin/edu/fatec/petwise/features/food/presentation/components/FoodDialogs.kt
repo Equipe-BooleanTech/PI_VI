@@ -307,12 +307,9 @@ fun DeleteFoodConfirmationDialog(
     onCancel: () -> Unit
 ) {
     val theme = PetWiseTheme.Light
-    val coroutineScope = rememberCoroutineScope()
-    var isLoading by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     AlertDialog(
-        onDismissRequest = { if (!isLoading) onCancel() },
+        onDismissRequest = onCancel,
         title = {
             Text(
                 text = "Confirmar Exclusão",
@@ -323,76 +320,29 @@ fun DeleteFoodConfirmationDialog(
             )
         },
         text = {
-            Column {
-                Text(
-                    text = "Tem certeza que deseja excluir o alimento \"$foodName\"?\n\nEsta ação não pode ser desfeita.",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color.fromHex(theme.palette.textSecondary)
-                    )
+            Text(
+                text = "Tem certeza que deseja excluir o alimento \"$foodName\"?\n\nEsta ação não pode ser desfeita.",
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = fromHex(theme.palette.textSecondary)
                 )
-                errorMessage?.let { message ->
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = message,
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            color = Color.Red
-                        )
-                    )
-                }
-            }
+            )
         },
         confirmButton = {
             Button(
-                onClick = {
-                    coroutineScope.launch {
-                        isLoading = true
-                        errorMessage = null
-                        try {
-                            FoodDependencyContainer.deleteFoodUseCase(foodId).fold(
-                                onSuccess = {
-                                    println("Food deleted successfully")
-                                    onSuccess()
-                                },
-                                onFailure = { error ->
-                                    println("Error deleting food: ${error.message}")
-                                    errorMessage = error.message ?: "Erro ao excluir alimento"
-                                }
-                            )
-                        } catch (e: Exception) {
-                            println("Exception deleting food: ${e.message}")
-                            errorMessage = e.message ?: "Erro desconhecido"
-                        } finally {
-                            isLoading = false
-                        }
-                    }
-                },
-                enabled = !isLoading,
+                onClick = onSuccess,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.fromHex("#F44336"),
                     contentColor = Color.White
                 )
             ) {
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(16.dp),
-                        color = Color.White,
-                        strokeWidth = 2.dp
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Excluindo...")
-                } else {
-                    Text("Excluir")
-                }
+                Text("Excluir")
             }
         },
         dismissButton = {
-            TextButton(
-                onClick = onCancel,
-                enabled = !isLoading
-            ) {
+            TextButton(onClick = onCancel) {
                 Text(
                     "Cancelar",
-                    color = Color.fromHex(theme.palette.textSecondary)
+                    color = fromHex(theme.palette.textSecondary)
                 )
             }
         },

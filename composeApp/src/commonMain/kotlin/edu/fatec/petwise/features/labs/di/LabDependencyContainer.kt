@@ -18,36 +18,36 @@ object LabDependencyContainer {
         LabRepositoryImpl(remoteDataSource)
     }
 
-    val getLabResultsUseCase: GetLabResultsUseCase by lazy {
-        GetLabResultsUseCase(repository)
+    val getLabsUseCase: GetLabsUseCase by lazy {
+        GetLabsUseCase(repository)
     }
 
-    val getLabResultByIdUseCase: GetLabResultByIdUseCase by lazy {
-        GetLabResultByIdUseCase(repository)
+    val getLabByIdUseCase: GetLabByIdUseCase by lazy {
+        GetLabByIdUseCase(repository)
     }
 
-    val addLabResultUseCase: AddLabResultUseCase by lazy {
-        AddLabResultUseCase(repository)
+    val addLabUseCase: AddLabUseCase by lazy {
+        AddLabUseCase(repository)
     }
 
-    val updateLabResultUseCase: UpdateLabResultUseCase by lazy {
-        UpdateLabResultUseCase(repository)
+    val updateLabUseCase: UpdateLabUseCase by lazy {
+        UpdateLabUseCase(repository)
     }
 
-    val deleteLabResultUseCase: DeleteLabResultUseCase by lazy {
-        DeleteLabResultUseCase(repository)
+    val deleteLabUseCase: DeleteLabUseCase by lazy {
+        DeleteLabUseCase(repository)
     }
 
     // ViewModels
     val labsViewModel: LabsViewModel by lazy {
-        LabsViewModel(getLabResultsUseCase, deleteLabResultUseCase)
+        LabsViewModel(getLabsUseCase, deleteLabUseCase)
     }
 
-    val addLabResultViewModel: AddLabResultViewModel by lazy {
-        AddLabResultViewModel(addLabResultUseCase)
+    val addLabViewModel: AddLabViewModel by lazy {
+        AddLabViewModel(addLabUseCase)
     }
 
-    val updateLabResultViewModel: UpdateLabResultViewModel by lazy {
-        UpdateLabResultViewModel(updateLabResultUseCase)
+    val updateLabViewModel: UpdateLabViewModel by lazy {
+        UpdateLabViewModel(updateLabUseCase)
     }
 }

@@ -18,21 +18,37 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import edu.fatec.petwise.features.prescriptions.domain.models.Prescription
+import edu.fatec.petwise.features.prescriptions.presentation.viewmodel.PrescriptionsViewModel
+import edu.fatec.petwise.features.prescriptions.presentation.viewmodel.PrescriptionsUiEvent
+import edu.fatec.petwise.features.prescriptions.presentation.viewmodel.AddPrescriptionViewModel
+import edu.fatec.petwise.features.prescriptions.presentation.viewmodel.AddPrescriptionUiEvent
+import edu.fatec.petwise.features.prescriptions.presentation.viewmodel.UpdatePrescriptionViewModel
+import edu.fatec.petwise.features.prescriptions.presentation.viewmodel.UpdatePrescriptionUiEvent
+import edu.fatec.petwise.features.prescriptions.di.PrescriptionDependencyContainer
+import edu.fatec.petwise.features.prescriptions.presentation.components.AddPrescriptionDialog
+import edu.fatec.petwise.features.prescriptions.presentation.components.DeletePrescriptionConfirmationDialog
+import edu.fatec.petwise.features.prescriptions.presentation.components.EditPrescriptionDialog
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.fromHex
-import edu.fatec.petwise.features.prescriptions.presentation.components.AddPrescriptionDialog
-import edu.fatec.petwise.features.prescriptions.presentation.components.EditPrescriptionDialog
-import edu.fatec.petwise.features.prescriptions.presentation.components.DeletePrescriptionConfirmationDialog
+import kotlinx.coroutines.delay
+import kotlinx.serialization.json.JsonPrimitive
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PrescriptionsScreen() {
-    var prescriptions by remember { mutableStateOf<List<Prescription>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(false) }
-    var showSearchBar by remember { mutableStateOf(false) }
+    val viewModel = remember { PrescriptionDependencyContainer.prescriptionsViewModel }
+    val addPrescriptionViewModel = remember { PrescriptionDependencyContainer.addPrescriptionViewModel }
+    val updatePrescriptionViewModel = remember { PrescriptionDependencyContainer.updatePrescriptionViewModel }
+    val uiState by viewModel.uiState.collectAsState()
+    val addUiState by addPrescriptionViewModel.uiState.collectAsState()
+    val updateUiState by updatePrescriptionViewModel.uiState.collectAsState()
+
+    val theme = PetWiseTheme.Light
+
+    val filteredPrescriptions = uiState.filteredPrescriptions
+
+    // Search state
     var searchQuery by remember { mutableStateOf("") }
-    var selectionMode by remember { mutableStateOf(false) }
-    var selectedPrescriptionIds by remember { mutableStateOf(setOf<String>()) }
 
     // Dialog states
     var showAddPrescriptionDialog by remember { mutableStateOf(false) }
@@ -40,19 +56,29 @@ fun PrescriptionsScreen() {
     var prescriptionToEdit by remember { mutableStateOf<Prescription?>(null) }
     var showDeleteConfirmation by remember { mutableStateOf(false) }
     var prescriptionToDelete by remember { mutableStateOf<Prescription?>(null) }
-    var isSubmitting by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    val theme = PetWiseTheme.Light
+    LaunchedEffect(Unit) {
+        viewModel.onEvent(PrescriptionsUiEvent.LoadPrescriptions)
+    }
 
-    val filteredPrescriptions = remember(prescriptions, searchQuery) {
-        if (searchQuery.isEmpty()) {
-            prescriptions
-        } else {
-            prescriptions.filter {
-                it.medicationName.contains(searchQuery, ignoreCase = true)
-            }
+    LaunchedEffect(addUiState.isSuccess) {
+        if (addUiState.isSuccess) {
+            showAddPrescriptionDialog = false
+            addPrescriptionViewModel.onEvent(AddPrescriptionUiEvent.ClearState)
         }
+    }
+
+    LaunchedEffect(updateUiState.isSuccess) {
+        if (updateUiState.isSuccess) {
+            showEditPrescriptionDialog = false
+            prescriptionToEdit = null
+            updatePrescriptionViewModel.onEvent(UpdatePrescriptionUiEvent.ClearState)
+        }
+    }
+
+    // Update search when query changes
+    LaunchedEffect(searchQuery) {
+        viewModel.onEvent(PrescriptionsUiEvent.SearchPrescriptions(searchQuery))
     }
 
     Column(
@@ -62,31 +88,14 @@ fun PrescriptionsScreen() {
     ) {
         PrescriptionsHeader(
             prescriptionCount = filteredPrescriptions.size,
-            selectionMode = selectionMode,
-            selectedCount = selectedPrescriptionIds.size,
-            onSearchClick = { showSearchBar = !showSearchBar },
-            onFilterClick = { /* TODO: Implement filter */ },
-            onAddPrescriptionClick = { showAddPrescriptionDialog = true },
-            onSelectionModeToggle = {
-                selectionMode = !selectionMode
-                if (!selectionMode) selectedPrescriptionIds = setOf()
-            },
-            onDeleteSelected = { /* TODO: Implement delete */ }
+            searchQuery = searchQuery,
+            onSearchQueryChange = { searchQuery = it },
+            onAddPrescriptionClick = { showAddPrescriptionDialog = true }
         )
-
-        if (showSearchBar) {
-            SearchBar(
-                query = searchQuery,
-                onQueryChange = { searchQuery = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            )
-        }
 
         Box(modifier = Modifier.fillMaxSize()) {
             when {
-                isLoading -> {
+                uiState.isLoading -> {
                     LoadingContent()
                 }
                 filteredPrescriptions.isEmpty() && searchQuery.isEmpty() -> {
@@ -95,22 +104,14 @@ fun PrescriptionsScreen() {
                     )
                 }
                 filteredPrescriptions.isEmpty() && searchQuery.isNotEmpty() -> {
-                    NoResultsContent(onClearSearch = { searchQuery = "" })
+                    NoResultsContent(
+                        onClearSearch = { searchQuery = "" }
+                    )
                 }
                 else -> {
                     PrescriptionsList(
                         prescriptions = filteredPrescriptions,
-                        selectionMode = selectionMode,
-                        selectedIds = selectedPrescriptionIds,
-                        onPrescriptionClick = { prescription ->
-                            if (selectionMode) {
-                                selectedPrescriptionIds = if (selectedPrescriptionIds.contains(prescription.id)) {
-                                    selectedPrescriptionIds - prescription.id
-                                } else {
-                                    selectedPrescriptionIds + prescription.id
-                                }
-                            }
-                        },
+                        onPrescriptionClick = { /* No action needed for now */ },
                         onEditClick = { prescription ->
                             prescriptionToEdit = prescription
                             showEditPrescriptionDialog = true
@@ -122,80 +123,98 @@ fun PrescriptionsScreen() {
                     )
                 }
             }
+
+            uiState.error?.let { errorMessage ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter)
+                ) {
+                    PrescriptionErrorSnackbar(
+                        message = errorMessage,
+                        isError = true,
+                        onDismiss = { viewModel.onEvent(PrescriptionsUiEvent.ClearError) },
+                        actionLabel = "Tentar Novamente",
+                        onAction = { viewModel.onEvent(PrescriptionsUiEvent.LoadPrescriptions) }
+                    )
+                }
+            }
         }
     }
 
     // Dialogs
     if (showAddPrescriptionDialog) {
         AddPrescriptionDialog(
-            isLoading = isSubmitting,
-            errorMessage = errorMessage,
+            isLoading = addUiState.isLoading,
+            errorMessage = addUiState.errorMessage,
             onDismiss = {
                 showAddPrescriptionDialog = false
-                errorMessage = null
+                addPrescriptionViewModel.onEvent(AddPrescriptionUiEvent.ClearState)
             },
             onSuccess = { formData ->
-                // TODO: Handle add prescription
-                println("Add prescription form data: $formData")
-                showAddPrescriptionDialog = false
+                addPrescriptionViewModel.onEvent(AddPrescriptionUiEvent.AddPrescription(formData))
             }
         )
     }
 
-    if (showEditPrescriptionDialog && prescriptionToEdit != null) {
-        EditPrescriptionDialog(
-            prescription = prescriptionToEdit!!,
-            isLoading = isSubmitting,
-            errorMessage = errorMessage,
-            onDismiss = {
-                showEditPrescriptionDialog = false
-                prescriptionToEdit = null
-                errorMessage = null
-            },
-            onSuccess = { formData ->
-                // TODO: Handle edit prescription
-                println("Edit prescription form data: $formData")
-                showEditPrescriptionDialog = false
-                prescriptionToEdit = null
-            }
-        )
+    prescriptionToDelete?.let { prescription ->
+        if (showDeleteConfirmation) {
+            DeletePrescriptionConfirmationDialog(
+                prescriptionId = prescription.id ?: "",
+                prescriptionName = prescription.medications,
+                onSuccess = {
+                    showDeleteConfirmation = false
+                    prescriptionToDelete = null
+                },
+                onCancel = {
+                    showDeleteConfirmation = false
+                    prescriptionToDelete = null
+                }
+            )
+        }
     }
 
-    if (showDeleteConfirmation && prescriptionToDelete != null) {
-        DeletePrescriptionConfirmationDialog(
-            prescriptionId = prescriptionToDelete!!.id,
-            prescriptionName = prescriptionToDelete!!.medicationName,
-            onSuccess = {
-                // TODO: Handle delete success - refresh prescriptions list
-                println("Prescription deleted successfully: ${prescriptionToDelete!!.id}")
-                showDeleteConfirmation = false
-                prescriptionToDelete = null
-            },
-            onCancel = {
-                showDeleteConfirmation = false
-                prescriptionToDelete = null
-            }
-        )
+    // Edit Dialog
+    prescriptionToEdit?.let { prescription ->
+        if (showEditPrescriptionDialog) {
+            EditPrescriptionDialog(
+                prescription = prescription,
+                isLoading = updateUiState.isLoading,
+                errorMessage = updateUiState.errorMessage,
+                onDismiss = {
+                    showEditPrescriptionDialog = false
+                    prescriptionToEdit = null
+                    updatePrescriptionViewModel.onEvent(UpdatePrescriptionUiEvent.ClearState)
+                },
+                onSuccess = { formData ->
+                    val jsonFormData = formData.mapValues { (_, value) ->
+                        when (value) {
+                            is String -> JsonPrimitive(value)
+                            is Number -> JsonPrimitive(value.toString())
+                            is Boolean -> JsonPrimitive(value)
+                            else -> JsonPrimitive(value.toString())
+                        }
+                    }
+                    updatePrescriptionViewModel.onEvent(UpdatePrescriptionUiEvent.UpdatePrescription(prescription.id ?: "", jsonFormData))
+                }
+            )
+        }
     }
 }
 
 @Composable
 private fun PrescriptionsHeader(
     prescriptionCount: Int,
-    selectionMode: Boolean,
-    selectedCount: Int,
-    onSearchClick: () -> Unit,
-    onFilterClick: () -> Unit,
-    onAddPrescriptionClick: () -> Unit,
-    onSelectionModeToggle: () -> Unit,
-    onDeleteSelected: () -> Unit
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
+    onAddPrescriptionClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (selectionMode) Color.fromHex("#d32f2f") else Color.fromHex("#673AB7")
+            containerColor = Color.fromHex("#673AB7")
         ),
         shape = RoundedCornerShape(16.dp)
     ) {
@@ -211,117 +230,52 @@ private fun PrescriptionsHeader(
             ) {
                 Column {
                     Text(
-                        text = if (selectionMode) "Selecionados" else "Prescrições",
+                        text = "Prescrições",
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold,
                             color = Color.White
                         )
                     )
                     Text(
-                        text = if (selectionMode) {
-                            "$selectedCount prescrição(ões) selecionada(s)"
-                        } else {
-                            if (prescriptionCount > 0) "$prescriptionCount prescrições registradas" else "Nenhuma prescrição cadastrada"
-                        },
+                        text = if (prescriptionCount > 0) "$prescriptionCount prescrições registradas" else "Nenhuma prescrição cadastrada",
                         style = MaterialTheme.typography.bodyMedium.copy(
                             color = Color.White.copy(alpha = 0.9f)
                         )
                     )
                 }
-
-                Row {
-                    if (selectionMode) {
-                        IconButton(
-                            onClick = onDeleteSelected,
-                            enabled = selectedCount > 0
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Excluir selecionados",
-                                tint = Color.White
-                            )
-                        }
-                        IconButton(onClick = onSelectionModeToggle) {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = "Cancelar seleção",
-                                tint = Color.White
-                            )
-                        }
-                    } else {
-                        IconButton(onClick = onSearchClick) {
-                            Icon(
-                                imageVector = Icons.Default.Search,
-                                contentDescription = "Buscar",
-                                tint = Color.White
-                            )
-                        }
-                        IconButton(onClick = onFilterClick) {
-                            Icon(
-                                imageVector = Icons.Default.FilterList,
-                                contentDescription = "Filtrar",
-                                tint = Color.White
-                            )
-                        }
-                        IconButton(onClick = onSelectionModeToggle) {
-                            Icon(
-                                imageVector = Icons.Default.CheckCircle,
-                                contentDescription = "Selecionar",
-                                tint = Color.White
-                            )
-                        }
-                    }
-                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            if (!selectionMode) {
-                Button(
-                    onClick = onAddPrescriptionClick,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color.fromHex("#673AB7")
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Adicionar",
-                        modifier = Modifier.size(20.dp)
+            SearchBar(
+                query = searchQuery,
+                onQueryChange = onSearchQueryChange,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = onAddPrescriptionClick,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.White,
+                    contentColor = Color.fromHex("#673AB7")
+                ),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Adicionar",
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Adicionar Prescrição",
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontWeight = FontWeight.SemiBold
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Adicionar Prescrição",
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    )
-                }
-            } else if (selectedCount > 0) {
-                Button(
-                    onClick = onDeleteSelected,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color.fromHex("#d32f2f")
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Excluir",
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Excluir Selecionados ($selectedCount)",
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    )
-                }
+                )
             }
         }
     }
@@ -505,8 +459,6 @@ private fun NoResultsContent(
 @Composable
 private fun PrescriptionsList(
     prescriptions: List<Prescription>,
-    selectionMode: Boolean,
-    selectedIds: Set<String>,
     onPrescriptionClick: (Prescription) -> Unit,
     onEditClick: (Prescription) -> Unit,
     onDeleteClick: (Prescription) -> Unit
@@ -516,11 +468,9 @@ private fun PrescriptionsList(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(prescriptions, key = { it.id }) { prescription ->
+        items(prescriptions, key = { it.id ?: "" }) { prescription ->
             PrescriptionCard(
                 prescription = prescription,
-                selectionMode = selectionMode,
-                isSelected = selectedIds.contains(prescription.id),
                 onClick = onPrescriptionClick,
                 onEditClick = onEditClick,
                 onDeleteClick = onDeleteClick
@@ -532,8 +482,6 @@ private fun PrescriptionsList(
 @Composable
 fun PrescriptionCard(
     prescription: Prescription,
-    selectionMode: Boolean = false,
-    isSelected: Boolean = false,
     onClick: (Prescription) -> Unit = {},
     onEditClick: (Prescription) -> Unit = {},
     onDeleteClick: (Prescription) -> Unit = {}
@@ -551,18 +499,11 @@ fun PrescriptionCard(
             ) { onClick(prescription) }
             .padding(vertical = 4.dp),
         colors = CardDefaults.cardColors(
-            containerColor = when {
-                isSelected -> Color.fromHex("#673AB7").copy(alpha = 0.1f)
-                isHovered -> Color.White.copy(alpha = 0.9f)
-                else -> Color.White
-            }
+            containerColor = if (isHovered) Color.White.copy(alpha = 0.9f) else Color.White
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = if (isHovered) 3.dp else 1.dp
         ),
-        border = if (isSelected) {
-            androidx.compose.foundation.BorderStroke(2.dp, Color.fromHex("#673AB7"))
-        } else null,
         shape = RoundedCornerShape(12.dp)
     ) {
         Row(
@@ -571,22 +512,11 @@ fun PrescriptionCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (selectionMode) {
-                Checkbox(
-                    checked = isSelected,
-                    onCheckedChange = { onClick(prescription) },
-                    colors = CheckboxDefaults.colors(
-                        checkedColor = Color.fromHex("#673AB7")
-                    ),
-                    modifier = Modifier.padding(end = 16.dp)
-                )
-            }
-
             Column(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = prescription.medicationName,
+                    text = prescription.medications,
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
                         color = Color.fromHex(theme.palette.textPrimary)
@@ -612,7 +542,7 @@ fun PrescriptionCard(
                     modifier = Modifier.wrapContentWidth()
                 ) {
                     Text(
-                        text = "Dosagem: ${prescription.dosage} - ${prescription.frequency}",
+                        text = prescription.medications,
                         color = Color.fromHex("#673AB7"),
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.Medium
@@ -622,32 +552,100 @@ fun PrescriptionCard(
                 }
             }
 
-            if (!selectionMode) {
-                Row {
-                    IconButton(
-                        onClick = { onEditClick(prescription) },
-                        modifier = Modifier.size(36.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Editar",
-                            tint = Color.fromHex("#673AB7"),
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                    IconButton(
-                        onClick = { onDeleteClick(prescription) },
-                        modifier = Modifier.size(36.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Excluir",
-                            tint = Color.fromHex("#F44336"),
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
+            Row {
+                IconButton(
+                    onClick = { onEditClick(prescription) },
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Editar",
+                        tint = Color.fromHex("#673AB7"),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                IconButton(
+                    onClick = { onDeleteClick(prescription) },
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Excluir",
+                        tint = Color.fromHex("#F44336"),
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun PrescriptionErrorSnackbar(
+    message: String,
+    isError: Boolean,
+    onDismiss: () -> Unit,
+    actionLabel: String? = null,
+    onAction: (() -> Unit)? = null,
+    modifier: Modifier = Modifier
+) {
+    val theme = PetWiseTheme.Light
+
+    LaunchedEffect(message) {
+        delay(5000) // Auto dismiss after 5 seconds
+        onDismiss()
+    }
+
+    Snackbar(
+        modifier = modifier,
+        action = actionLabel?.let { label ->
+            {
+                TextButton(
+                    onClick = { onAction?.invoke() }
+                ) {
+                    Text(
+                        text = label,
+                        color = Color.White,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+        },
+        dismissAction = {
+            IconButton(
+                onClick = onDismiss
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Fechar",
+                    tint = Color.White,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        },
+        containerColor = if (isError) Color.fromHex("#F44336") else Color.fromHex("#4CAF50"),
+        contentColor = Color.White,
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Icon(
+                imageVector = if (isError) Icons.Default.Error else Icons.Default.Check,
+                contentDescription = if (isError) "Erro" else "Sucesso",
+                tint = Color.White,
+                modifier = Modifier.size(20.dp)
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Text(
+                text = message,
+                color = Color.White,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }

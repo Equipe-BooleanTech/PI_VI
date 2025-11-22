@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -150,10 +151,10 @@ fun ExamsScreen(
             DeleteExamConfirmationDialog(
                 examId = exam.id,
                 examName = exam.examType,
-                onSuccess = {
+                onDelete = { examId ->
+                    viewModel.onEvent(ExamsUiEvent.DeleteExam(examId))
                     showDeleteDialog = false
                     examToDelete = null
-                    viewModel.onEvent(ExamsUiEvent.LoadExams)
                 },
                 onCancel = {
                     showDeleteDialog = false
@@ -460,7 +461,8 @@ private fun ExamsListContent(
             ExamCard(
                 exam = exam,
                 onClick = { /* Could be used for details view */ },
-                onEditClick = onEditExam
+                onEditClick = onEditExam,
+                onDeleteClick = onDeleteExam
             )
         }
     }
@@ -514,7 +516,8 @@ private fun ExamErrorSnackbar(
 fun ExamCard(
     exam: Exam,
     onClick: (Exam) -> Unit = {},
-    onEditClick: (Exam) -> Unit = {}
+    onEditClick: (Exam) -> Unit = {},
+    onDeleteClick: (Exam) -> Unit = {}
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
@@ -554,13 +557,7 @@ fun ExamCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Pet ID: ${exam.petId}",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color.Gray
-                    )
-                )
-                Text(
-                    text = "Veterinário ID: ${exam.veterinaryId}",
+                    text = "Data: ${exam.examDate.date} às ${exam.examTime}",
                     style = MaterialTheme.typography.bodyMedium.copy(
                         color = Color.Gray
                     )
@@ -575,7 +572,7 @@ fun ExamCard(
                         modifier = Modifier.wrapContentWidth()
                     ) {
                         Text(
-                            text = exam.examDate,
+                            text = exam.examDate.date.toString(),
                             color = Color.fromHex("#2196F3"),
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Medium
@@ -585,12 +582,30 @@ fun ExamCard(
                     }
                     Surface(
                         shape = RoundedCornerShape(12.dp),
-                        color = Color.fromHex("#4CAF50").copy(alpha = 0.1f),
+                        color = when (exam.status) {
+                            "COMPLETED" -> Color.fromHex("#4CAF50").copy(alpha = 0.1f)
+                            "PENDING" -> Color.fromHex("#FF9800").copy(alpha = 0.1f)
+                            "IN_PROGRESS" -> Color.fromHex("#2196F3").copy(alpha = 0.1f)
+                            "CANCELLED" -> Color.fromHex("#F44336").copy(alpha = 0.1f)
+                            else -> Color.fromHex("#9E9E9E").copy(alpha = 0.1f)
+                        },
                         modifier = Modifier.wrapContentWidth()
                     ) {
                         Text(
-                            text = exam.status,
-                            color = Color.fromHex("#4CAF50"),
+                            text = when (exam.status) {
+                                "COMPLETED" -> "Concluído"
+                                "PENDING" -> "Pendente"
+                                "IN_PROGRESS" -> "Em Andamento"
+                                "CANCELLED" -> "Cancelado"
+                                else -> exam.status
+                            },
+                            color = when (exam.status) {
+                                "COMPLETED" -> Color.fromHex("#4CAF50")
+                                "PENDING" -> Color.fromHex("#FF9800")
+                                "IN_PROGRESS" -> Color.fromHex("#2196F3")
+                                "CANCELLED" -> Color.fromHex("#F44336")
+                                else -> Color.fromHex("#9E9E9E")
+                            },
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Medium
                             ),
@@ -600,16 +615,32 @@ fun ExamCard(
                 }
             }
 
-            IconButton(
-                onClick = { onEditClick(exam) },
-                modifier = Modifier.size(36.dp)
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Editar",
-                    tint = Color.fromHex("#2196F3"),
-                    modifier = Modifier.size(20.dp)
-                )
+                IconButton(
+                    onClick = { onEditClick(exam) },
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Editar",
+                        tint = Color.fromHex("#2196F3"),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
+                IconButton(
+                    onClick = { onDeleteClick(exam) },
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Excluir",
+                        tint = Color.fromHex("#F44336"),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
         }
     }

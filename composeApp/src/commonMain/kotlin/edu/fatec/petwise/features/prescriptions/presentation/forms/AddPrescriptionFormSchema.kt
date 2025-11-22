@@ -3,7 +3,7 @@ package edu.fatec.petwise.features.prescriptions.presentation.forms
 import edu.fatec.petwise.presentation.shared.form.*
 import kotlinx.serialization.json.JsonPrimitive
 
-val addPrescriptionFormConfiguration: FormConfiguration = FormConfiguration(
+fun addPrescriptionFormConfiguration(petOptions: List<SelectOption> = emptyList()): FormConfiguration = FormConfiguration(
     id = "add_prescription_form",
     title = "Adicionar Prescrição",
     description = "Registre uma nova prescrição médica para o pet.",
@@ -19,7 +19,7 @@ val addPrescriptionFormConfiguration: FormConfiguration = FormConfiguration(
             label = "Selecione o Pet",
             type = FormFieldType.SELECT,
             placeholder = "Escolha um pet",
-            selectOptions = emptyList(), // This will be populated by the screen
+            selectOptions = petOptions,
             validators = listOf(
                 ValidationRule(
                     type = ValidationType.REQUIRED,
@@ -28,68 +28,14 @@ val addPrescriptionFormConfiguration: FormConfiguration = FormConfiguration(
             )
         ),
         FormFieldDefinition(
-            id = "medicationName",
-            label = "Nome do Medicamento",
-            type = FormFieldType.TEXT,
-            placeholder = "Ex: Amoxicilina, Ibuprofeno, Prednisolona...",
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Nome do medicamento é obrigatório"
-                ),
-                ValidationRule(
-                    type = ValidationType.MIN_LENGTH,
-                    value = JsonPrimitive(2),
-                    message = "Nome deve ter pelo menos 2 caracteres"
-                )
-            ),
-            formatting = FieldFormatting(capitalize = true)
-        ),
-        FormFieldDefinition(
-            id = "dosage",
-            label = "Dosagem",
-            type = FormFieldType.TEXT,
-            placeholder = "Ex: 10mg, 5ml, 1 comprimido...",
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Dosagem é obrigatória"
-                )
-            )
-        ),
-        FormFieldDefinition(
-            id = "frequency",
-            label = "Frequência",
-            type = FormFieldType.TEXT,
-            placeholder = "Ex: 2x ao dia, a cada 8 horas, 1x por semana...",
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Frequência é obrigatória"
-                )
-            )
-        ),
-        FormFieldDefinition(
-            id = "duration",
-            label = "Duração",
-            type = FormFieldType.TEXT,
-            placeholder = "Ex: 7 dias, 2 semanas, 1 mês...",
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Duração é obrigatória"
-                )
-            )
-        ),
-        FormFieldDefinition(
-            id = "startDate",
-            label = "Data de Início",
+            id = "prescriptionDate",
+            label = "Data da Prescrição",
             type = FormFieldType.DATE,
             placeholder = "DD/MM/YYYY",
             validators = listOf(
                 ValidationRule(
                     type = ValidationType.REQUIRED,
-                    message = "Data de início é obrigatória"
+                    message = "Data da prescrição é obrigatória"
                 ),
                 ValidationRule(
                     type = ValidationType.DATE,
@@ -98,38 +44,56 @@ val addPrescriptionFormConfiguration: FormConfiguration = FormConfiguration(
             )
         ),
         FormFieldDefinition(
-            id = "endDate",
-            label = "Data de Fim (Opcional)",
+            id = "instructions",
+            label = "Instruções",
+            type = FormFieldType.TEXTAREA,
+            placeholder = "Instruções para administração do medicamento...",
+            validators = listOf(
+                ValidationRule(
+                    type = ValidationType.REQUIRED,
+                    message = "Instruções são obrigatórias"
+                )
+            )
+        ),
+        FormFieldDefinition(
+            id = "medications",
+            label = "Medicamentos",
+            type = FormFieldType.TEXTAREA,
+            placeholder = "Liste os medicamentos prescritos...",
+            validators = listOf(
+                ValidationRule(
+                    type = ValidationType.REQUIRED,
+                    message = "Medicamentos são obrigatórios"
+                )
+            )
+        ),
+        FormFieldDefinition(
+            id = "diagnosis",
+            label = "Diagnóstico",
+            type = FormFieldType.TEXTAREA,
+            placeholder = "Diagnóstico do pet...",
+            validators = emptyList()
+        ),
+        FormFieldDefinition(
+            id = "validUntil",
+            label = "Válido Até (Opcional)",
             type = FormFieldType.DATE,
             placeholder = "DD/MM/YYYY",
             validators = emptyList()
         ),
         FormFieldDefinition(
-            id = "instructions",
-            label = "Instruções",
-            type = FormFieldType.TEXTAREA,
-            placeholder = "Instruções especiais para administração...",
+            id = "medicalRecordId",
+            label = "Registro Médico (Opcional)",
+            type = FormFieldType.TEXT,
+            placeholder = "ID do registro médico",
             validators = emptyList()
         ),
         FormFieldDefinition(
-            id = "notes",
+            id = "observations",
             label = "Observações",
             type = FormFieldType.TEXTAREA,
             placeholder = "Observações adicionais...",
             validators = emptyList()
-        ),
-        FormFieldDefinition(
-            id = "status",
-            label = "Status",
-            type = FormFieldType.SELECT,
-            options = listOf("Ativa", "Concluída", "Cancelada", "Suspensa"),
-            default = JsonPrimitive("Ativa"),
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Selecione o status"
-                )
-            )
         ),
         FormFieldDefinition(
             id = "submit",

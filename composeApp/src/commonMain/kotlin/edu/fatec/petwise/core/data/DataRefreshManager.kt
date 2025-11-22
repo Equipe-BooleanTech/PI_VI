@@ -11,6 +11,7 @@ sealed class DataRefreshEvent {
     object PetsUpdated : DataRefreshEvent()
     object ConsultasUpdated : DataRefreshEvent()
     object VaccinationsUpdated : DataRefreshEvent()
+    object PrescriptionsUpdated : DataRefreshEvent()
     object LabResultsUpdated : DataRefreshEvent()
     object ExamsUpdated : DataRefreshEvent()
     object UserLoggedIn : DataRefreshEvent()
@@ -19,6 +20,7 @@ sealed class DataRefreshEvent {
     data class PetUpdated(val petId: String) : DataRefreshEvent()
     data class ConsultaUpdated(val consultaId: String) : DataRefreshEvent()
     data class VaccinationUpdated(val vaccinationId: String) : DataRefreshEvent()
+    data class PrescriptionUpdated(val prescriptionId: String) : DataRefreshEvent()
     data class LabResultUpdated(val labResultId: String) : DataRefreshEvent()
     data class ExamUpdated(val examId: String) : DataRefreshEvent()
 }
@@ -54,6 +56,13 @@ object DataRefreshManager {
         val emitted = _refreshEvents.tryEmit(DataRefreshEvent.VaccinationsUpdated)
         if (!emitted) {
             println("DataRefreshManager: Falha ao emitir evento VaccinationsUpdated")
+        }
+    }
+
+    fun notifyPrescriptionsUpdated() {
+        val emitted = _refreshEvents.tryEmit(DataRefreshEvent.PrescriptionsUpdated)
+        if (!emitted) {
+            println("DataRefreshManager: Falha ao emitir evento PrescriptionsUpdated")
         }
     }
 

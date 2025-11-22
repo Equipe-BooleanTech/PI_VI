@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import edu.fatec.petwise.features.prescriptions.domain.models.Prescription
 import edu.fatec.petwise.features.prescriptions.domain.usecases.AddPrescriptionUseCase
-import edu.fatec.petwise.features.auth.domain.usecases.GetUserProfileUseCase
 import edu.fatec.petwise.core.data.DataRefreshEvent
 import edu.fatec.petwise.core.data.DataRefreshManager
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,24 +18,12 @@ data class AddPrescriptionUiState(
 )
 
 sealed class AddPrescriptionUiEvent {
-    data class AddPrescription(
-        val petId: String,
-        val medicationName: String,
-        val dosage: String,
-        val frequency: String,
-        val duration: String,
-        val startDate: String,
-        val endDate: String?,
-        val instructions: String?,
-        val notes: String?,
-        val status: String
-    ) : AddPrescriptionUiEvent()
+    data class AddPrescription(val formData: Map<String, Any>) : AddPrescriptionUiEvent()
     object ClearState : AddPrescriptionUiEvent()
 }
 
 class AddPrescriptionViewModel(
-    private val addPrescriptionUseCase: AddPrescriptionUseCase,
-    private val getUserProfileUseCase: GetUserProfileUseCase
+    private val addPrescriptionUseCase: AddPrescriptionUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AddPrescriptionUiState())
@@ -69,32 +56,20 @@ class AddPrescriptionViewModel(
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
 
             try {
-                // Get user profile to obtain veterinaryId
-                val userProfileResult = getUserProfileUseCase.execute()
-                val veterinaryId = userProfileResult.fold(
-                    onSuccess = { profile -> profile.id },
-                    onFailure = { error ->
-                        _uiState.value = _uiState.value.copy(
-                            isLoading = false,
-                            errorMessage = "Erro ao obter perfil do usuário: ${error.message}"
-                        )
-                        return@launch
-                    }
-                )
-
                 val prescription = Prescription(
-                    id = "",
-                    petId = event.petId,
-                    veterinaryId = veterinaryId,
-                    medicationName = event.medicationName,
-                    dosage = event.dosage,
-                    frequency = event.frequency,
-                    duration = event.duration,
-                    startDate = event.startDate,
-                    endDate = event.endDate,
-                    instructions = event.instructions,
-                    notes = event.notes,
-                    status = event.status,
+                    id = null,
+                    petId = event.formData["petId"] as? String ?: "",
+                    userId = "", // Will be set by server
+                    veterinaryId = event.formData["veterinarian"] as? String ?: "",
+                    medicalRecordId = event.formData["medicalRecordId"] as? String,
+                    prescriptionDate = event.formData["prescriptionDate"] as? String ?: "",
+                    instructions = event.formData["instructions"] as? String ?: "",
+                    diagnosis = event.formData["diagnosis"] as? String,
+                    validUntil = event.formData["validUntil"] as? String,
+                    status = "ATIVA", // Default status
+                    medications = event.formData["medications"] as? String ?: "",
+                    observations = event.formData["observations"] as? String ?: "",
+                    active = true,
                     createdAt = "",
                     updatedAt = ""
                 )
@@ -106,6 +81,7 @@ class AddPrescriptionViewModel(
                             isSuccess = true,
                             errorMessage = null
                         )
+                        DataRefreshManager.notifyPrescriptionsUpdated()
                     },
                     onFailure = { error ->
                         _uiState.value = _uiState.value.copy(

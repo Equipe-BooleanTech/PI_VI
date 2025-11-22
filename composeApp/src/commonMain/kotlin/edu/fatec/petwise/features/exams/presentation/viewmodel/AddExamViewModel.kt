@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDateTime
+
 
 data class AddExamUiState(
     val isLoading: Boolean = false,
@@ -22,7 +24,7 @@ sealed class AddExamUiEvent {
     data class AddExam(
         val petId: String,
         val examType: String,
-        val examDate: String,
+        val examDateTime: LocalDateTime,
         val results: String?,
         val notes: String?
     ) : AddExamUiEvent()
@@ -66,7 +68,8 @@ class AddExamViewModel(
                     petId = event.petId,
                     veterinaryId = veterinaryId,
                     examType = event.examType,
-                    examDate = event.examDate,
+                    examDate = event.examDateTime,
+                    examTime = "${event.examDateTime.hour.toString().padStart(2, '0')}:${event.examDateTime.minute.toString().padStart(2, '0')}",
                     results = event.results,
                     status = "PENDING",
                     notes = event.notes,

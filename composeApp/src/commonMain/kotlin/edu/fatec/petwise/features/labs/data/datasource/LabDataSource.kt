@@ -1,12 +1,12 @@
 package edu.fatec.petwise.features.labs.data.datasource
 
-import edu.fatec.petwise.features.labs.domain.models.LabResult
+import edu.fatec.petwise.features.labs.domain.models.Lab
 
 interface RemoteLabDataSource {
-    suspend fun getAllLabResults(): List<LabResult>
-    suspend fun getLabResultById(id: String): LabResult?
-    suspend fun createLabResult(labResult: LabResult): LabResult
-    suspend fun updateLabResult(labResult: LabResult): LabResult
-    suspend fun deleteLabResult(id: String)
-    suspend fun searchLabResults(query: String): List<LabResult>
+    suspend fun getAllLabs(): List<Lab>
+    suspend fun getLabById(id: String): Lab?
+    suspend fun createLab(lab: Lab): Lab
+    suspend fun updateLab(lab: Lab): Lab
+    suspend fun deleteLab(id: String)
+    suspend fun searchLabs(query: String): List<Lab>
 }

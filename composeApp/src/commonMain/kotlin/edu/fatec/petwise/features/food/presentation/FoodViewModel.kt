@@ -1,46 +1,46 @@
-package edu.fatec.petwise.features.toys.presentation
+package edu.fatec.petwise.features.food.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import edu.fatec.petwise.features.toys.di.ToyDependencyContainer
-import edu.fatec.petwise.features.toys.domain.models.Toy
+import edu.fatec.petwise.features.food.di.FoodDependencyContainer
+import edu.fatec.petwise.features.food.domain.models.Food
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-data class ToysUiState(
-    val toys: List<Toy> = emptyList(),
+data class FoodUiState(
+    val foods: List<Food> = emptyList(),
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
     val searchQuery: String = "",
     val selectedCategory: String? = null
 )
 
-sealed class ToysUiEvent {
-    object LoadToys : ToysUiEvent()
-    data class SearchToys(val query: String) : ToysUiEvent()
-    data class FilterByCategory(val category: String?) : ToysUiEvent()
-    data class AddToy(val toy: Toy) : ToysUiEvent()
-    data class UpdateToy(val toy: Toy) : ToysUiEvent()
-    data class DeleteToy(val toyId: String) : ToysUiEvent()
+sealed class FoodUiEvent {
+    object LoadFoods : FoodUiEvent()
+    data class SearchFoods(val query: String) : FoodUiEvent()
+    data class FilterByCategory(val category: String?) : FoodUiEvent()
+    data class AddFood(val food: Food) : FoodUiEvent()
+    data class UpdateFood(val food: Food) : FoodUiEvent()
+    data class DeleteFood(val foodId: String) : FoodUiEvent()
 }
 
-class ToysViewModel : ViewModel() {
+class FoodViewModel : ViewModel() {
 
-    private val getToysUseCase = ToyDependencyContainer.getToysUseCase
-    private val addToyUseCase = ToyDependencyContainer.addToyUseCase
-    private val updateToyUseCase = ToyDependencyContainer.updateToyUseCase
-    private val deleteToyUseCase = ToyDependencyContainer.deleteToyUseCase
+    private val getFoodUseCase = FoodDependencyContainer.getFoodUseCase
+    private val addFoodUseCase = FoodDependencyContainer.addFoodUseCase
+    private val updateFoodUseCase = FoodDependencyContainer.updateFoodUseCase
+    private val deleteFoodUseCase = FoodDependencyContainer.deleteFoodUseCase
 
-    private val _uiState = MutableStateFlow(ToysUiState())
-    val uiState: StateFlow<ToysUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(FoodUiState())
+    val uiState: StateFlow<FoodUiState> = _uiState.asStateFlow()
 
     private var currentDataJob: kotlinx.coroutines.Job? = null
 
     init {
-        loadToys()
+        loadFoods()
     }
 
     override fun onCleared() {
@@ -48,18 +48,18 @@ class ToysViewModel : ViewModel() {
         currentDataJob?.cancel()
     }
 
-    fun onEvent(event: ToysUiEvent) {
+    fun onEvent(event: FoodUiEvent) {
         when (event) {
-            is ToysUiEvent.LoadToys -> loadToys()
-            is ToysUiEvent.SearchToys -> searchToys(event.query)
-            is ToysUiEvent.FilterByCategory -> filterByCategory(event.category)
-            is ToysUiEvent.AddToy -> addToy(event.toy)
-            is ToysUiEvent.UpdateToy -> updateToy(event.toy)
-            is ToysUiEvent.DeleteToy -> deleteToy(event.toyId)
+            is FoodUiEvent.LoadFoods -> loadFoods()
+            is FoodUiEvent.SearchFoods -> searchFoods(event.query)
+            is FoodUiEvent.FilterByCategory -> filterByCategory(event.category)
+            is FoodUiEvent.AddFood -> addFood(event.food)
+            is FoodUiEvent.UpdateFood -> updateFood(event.food)
+            is FoodUiEvent.DeleteFood -> deleteFood(event.foodId)
         }
     }
 
-    private fun loadToys() {
+    private fun loadFoods() {
         // Cancel any existing data loading job
         currentDataJob?.cancel()
 
@@ -67,9 +67,9 @@ class ToysViewModel : ViewModel() {
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
 
             try {
-                getToysUseCase().collectLatest { toys ->
+                getFoodUseCase().collectLatest { foods ->
                     _uiState.value = _uiState.value.copy(
-                        toys = toys,
+                        foods = foods,
                         isLoading = false,
                         errorMessage = null
                     )
@@ -78,14 +78,16 @@ class ToysViewModel : ViewModel() {
                 if (e !is kotlinx.coroutines.CancellationException) {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        errorMessage = e.message ?: "Erro ao carregar brinquedos"
+                        errorMessage = e.message ?: "Erro ao carregar alimentos"
                     )
                 }
             }
         }
     }
 
-    private fun searchToys(query: String) {
+
+
+    private fun searchFoods(query: String) {
         // Cancel any existing data loading job
         currentDataJob?.cancel()
 
@@ -94,16 +96,16 @@ class ToysViewModel : ViewModel() {
 
             try {
                 if (query.isEmpty()) {
-                    getToysUseCase().collectLatest { toys ->
+                    getFoodUseCase().collectLatest { foods ->
                         _uiState.value = _uiState.value.copy(
-                            toys = toys,
+                            foods = foods,
                             isLoading = false
                         )
                     }
                 } else {
-                    getToysUseCase.searchToys(query).collectLatest { toys ->
+                    getFoodUseCase.searchFood(query).collectLatest { foods ->
                         _uiState.value = _uiState.value.copy(
-                            toys = toys,
+                            foods = foods,
                             isLoading = false
                         )
                     }
@@ -112,7 +114,7 @@ class ToysViewModel : ViewModel() {
                 if (e !is kotlinx.coroutines.CancellationException) {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        errorMessage = e.message ?: "Erro ao buscar brinquedos"
+                        errorMessage = e.message ?: "Erro ao buscar alimentos"
                     )
                 }
             }
@@ -128,16 +130,16 @@ class ToysViewModel : ViewModel() {
 
             try {
                 if (category == null) {
-                    getToysUseCase().collectLatest { toys ->
+                    getFoodUseCase().collectLatest { foods ->
                         _uiState.value = _uiState.value.copy(
-                            toys = toys,
+                            foods = foods,
                             isLoading = false
                         )
                     }
                 } else {
-                    getToysUseCase.getToysByCategory(category).collectLatest { toys ->
+                    getFoodUseCase.getFoodByCategory(category).collectLatest { foods ->
                         _uiState.value = _uiState.value.copy(
-                            toys = toys,
+                            foods = foods,
                             isLoading = false
                         )
                     }
@@ -146,86 +148,86 @@ class ToysViewModel : ViewModel() {
                 if (e !is kotlinx.coroutines.CancellationException) {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        errorMessage = e.message ?: "Erro ao filtrar brinquedos"
+                        errorMessage = e.message ?: "Erro ao filtrar alimentos"
                     )
                 }
             }
         }
     }
 
-    private fun addToy(toy: Toy) {
+    private fun addFood(food: Food) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
 
             try {
-                addToyUseCase(toy).fold(
-                    onSuccess = { newToy ->
-                        // Reload toys to get updated list
-                        loadToys()
+                addFoodUseCase(food).fold(
+                    onSuccess = { newFood ->
+                        // Reload foods to get updated list
+                        loadFoods()
                     },
                     onFailure = { error ->
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
-                            errorMessage = error.message ?: "Erro ao adicionar brinquedo"
+                            errorMessage = error.message ?: "Erro ao adicionar alimento"
                         )
                     }
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    errorMessage = e.message ?: "Erro ao adicionar brinquedo"
+                    errorMessage = e.message ?: "Erro ao adicionar alimento"
                 )
             }
         }
     }
 
-    private fun updateToy(toy: Toy) {
+    private fun updateFood(food: Food) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
 
             try {
-                updateToyUseCase(toy).fold(
-                    onSuccess = { updatedToy ->
-                        // Reload toys to get updated list
-                        loadToys()
+                updateFoodUseCase(food).fold(
+                    onSuccess = { updatedFood ->
+                        // Reload foods to get updated list
+                        loadFoods()
                     },
                     onFailure = { error ->
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
-                            errorMessage = error.message ?: "Erro ao atualizar brinquedo"
+                            errorMessage = error.message ?: "Erro ao atualizar alimento"
                         )
                     }
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    errorMessage = e.message ?: "Erro ao atualizar brinquedo"
+                    errorMessage = e.message ?: "Erro ao atualizar alimento"
                 )
             }
         }
     }
 
-    private fun deleteToy(toyId: String) {
+    private fun deleteFood(foodId: String) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
 
             try {
-                deleteToyUseCase(toyId).fold(
+                deleteFoodUseCase(foodId).fold(
                     onSuccess = {
-                        // Reload toys to get updated list
-                        loadToys()
+                        // Reload foods to get updated list
+                        loadFoods()
                     },
                     onFailure = { error ->
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
-                            errorMessage = error.message ?: "Erro ao excluir brinquedo"
+                            errorMessage = error.message ?: "Erro ao excluir alimento"
                         )
                     }
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    errorMessage = e.message ?: "Erro ao excluir brinquedo"
+                    errorMessage = e.message ?: "Erro ao excluir alimento"
                 )
             }
         }

@@ -155,7 +155,7 @@ class GetLabsCountUseCase(
     private val labRepository: LabRepository
 ) {
     suspend operator fun invoke(): Int {
-        return labRepository.getAllLabResults().first().size
+        return labRepository.getAllLabs().first().size
     }
 }
 
