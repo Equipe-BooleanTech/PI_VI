@@ -9,6 +9,11 @@ import kotlinx.serialization.Serializable
 
 
 @Serializable
+data class MessageResponse(
+    val message: String
+)
+
+@Serializable
 data class ConsultaDto(
     val id: String,
     val petId: String,

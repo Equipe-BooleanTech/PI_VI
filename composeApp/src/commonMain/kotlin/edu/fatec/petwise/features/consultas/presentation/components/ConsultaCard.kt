@@ -221,24 +221,6 @@ fun ConsultaCard(
                                     )
                                 }
                             }
-                            
-                            // Cancel button for OWNER and VETERINARY users
-                            if (userType == UserType.OWNER || userType == UserType.VETERINARY) {
-                                onCancelClick?.let { cancelClick ->
-                                    IconButton(
-                                        onClick = { cancelClick(consulta) },
-                                        modifier = Modifier.size(36.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Cancel,
-                                            contentDescription = "Cancelar consulta",
-                                            tint = Color.fromHex("#FF9800"),
-                                            modifier = Modifier.size(20.dp)
-                                        )
-                                    }
-                                }
-                            }
-                            
                             // Delete button only for VETERINARY users
                             if (userType == UserType.VETERINARY) {
                                 onDeleteClick?.let { deleteClick ->
