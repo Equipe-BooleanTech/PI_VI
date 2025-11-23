@@ -22,9 +22,15 @@ fun createEditVaccinationFormConfiguration(vaccination: Vaccination): FormConfig
         FormFieldDefinition(
             id = "vaccinationDate",
             label = "Data de Aplicação",
-            type = FormFieldType.DATE,
+            type = FormFieldType.DATETIME,
             placeholder = "DD/MM/AAAA",
-            default = JsonPrimitive(vaccination.vaccinationDate),
+            default = JsonPrimitive(
+                "${vaccination.vaccinationDate.dayOfMonth.toString().padStart(2, '0')}/" +
+                "${vaccination.vaccinationDate.monthNumber.toString().padStart(2, '0')}/" +
+                "${vaccination.vaccinationDate.year} " +
+                "${vaccination.vaccinationDate.hour.toString().padStart(2, '0')}:" +
+                "${vaccination.vaccinationDate.minute.toString().padStart(2, '0')}"
+            ),
             validators = listOf(
                 ValidationRule(
                     type = ValidationType.REQUIRED,
@@ -52,9 +58,17 @@ fun createEditVaccinationFormConfiguration(vaccination: Vaccination): FormConfig
         FormFieldDefinition(
             id = "nextDoseDate",
             label = "Data do Próximo Reforço (Opcional)",
-            type = FormFieldType.DATE,
+            type = FormFieldType.DATETIME,
             placeholder = "DD/MM/AAAA",
-            default = vaccination.nextDoseDate?.let { JsonPrimitive(it) },
+            default = vaccination.nextDoseDate?.let {
+                JsonPrimitive(
+                    "${it.dayOfMonth.toString().padStart(2, '0')}/" +
+                    "${it.monthNumber.toString().padStart(2, '0')}/" +
+                    "${it.year} " +
+                    "${it.hour.toString().padStart(2, '0')}:" +
+                    "${it.minute.toString().padStart(2, '0')}"
+                )
+            },
             validators = listOf(
                 ValidationRule(
                     type = ValidationType.DATE,

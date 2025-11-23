@@ -42,7 +42,7 @@ val addExamFormConfiguration: FormConfiguration = FormConfiguration(
         FormFieldDefinition(
             id = "examDate",
             label = "Data do Exame",
-            type = FormFieldType.DATE,
+            type = FormFieldType.DATETIME,
             placeholder = "DD/MM/AAAA",
             validators = listOf(
                 ValidationRule(
@@ -52,18 +52,6 @@ val addExamFormConfiguration: FormConfiguration = FormConfiguration(
                 ValidationRule(
                     type = ValidationType.DATE,
                     message = "Data inválida"
-                )
-            )
-        ),
-        FormFieldDefinition(
-            id = "examTime",
-            label = "Horário do Exame",
-            type = FormFieldType.TIME,
-            placeholder = "HH:MM",
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Horário do exame é obrigatório"
                 )
             )
         ),

@@ -194,32 +194,16 @@ fun AddConsultaDialog(
                                     else -> ConsultaType.OTHER
                                 }
 
+                                // Extract LocalDateTime object from form (using global handler)
+                                val consultaDateTime = values["consultaDateTime"] as kotlinx.datetime.LocalDateTime
+
                                 addConsultaViewModel.onEvent(
                                     AddConsultaUiEvent.AddConsulta(
                                         petId = petId,
                                         petName = petName,
                                         consultaType = consultaType,
-                                        consultaDate = run {
-                                            val dateStr = values["consultaDate"] as String
-                                            val timeStr = values["consultaTime"] as String
-                                            val date = if (dateStr.contains("-")) {
-                                                // YYYY-MM-DD format
-                                                kotlinx.datetime.LocalDate.parse(dateStr)
-                                            } else {
-                                                // DD/MM/YYYY format
-                                                val dateParts = dateStr.split("/")
-                                                val day = dateParts[0].toInt()
-                                                val month = dateParts[1].toInt()
-                                                val year = dateParts[2].toInt()
-                                                kotlinx.datetime.LocalDate(year, month, day)
-                                            }
-                                            val timeParts = timeStr.split(":")
-                                            val hour = timeParts[0].toInt()
-                                            val minute = timeParts[1].toInt()
-                                            val time = kotlinx.datetime.LocalTime(hour, minute)
-                                            kotlinx.datetime.LocalDateTime(date, time)
-                                        },
-                                        consultaTime = values["consultaTime"] as String,
+                                        consultaDate = consultaDateTime,
+                                        consultaTime = String.format("%02d:%02d", consultaDateTime.hour, consultaDateTime.minute),
                                         symptoms = values["symptoms"]?.toString() ?: "",
                                         notes = values["notes"]?.toString() ?: "",
                                         price = values["price"]?.toString() ?: "0",
@@ -417,6 +401,9 @@ fun EditConsultaDialog(
                                     else -> ConsultaType.OTHER
                                 }
 
+                                // Extract LocalDateTime object from form (using global handler)
+                                val consultaDateTime = values["consultaDateTime"] as kotlinx.datetime.LocalDateTime
+
                                 updateConsultaViewModel.onEvent(
                                     UpdateConsultaUiEvent.UpdateConsulta(
                                         id = consulta.id,
@@ -424,33 +411,21 @@ fun EditConsultaDialog(
                                         petName = petName,
                                         veterinarianName = values["veterinarianName"]?.toString() ?: consulta.veterinarianName,
                                         consultaType = consultaType,
-                                        consultaDate = run {
-                                            val dateStr = values["consultaDate"] as String
-                                            val timeStr = values["consultaTime"] as String
-                                            val date = if (dateStr.contains("-")) {
-                                                // YYYY-MM-DD format
-                                                kotlinx.datetime.LocalDate.parse(dateStr)
-                                            } else {
-                                                // DD/MM/YYYY format
-                                                val dateParts = dateStr.split("/")
-                                                val day = dateParts[0].toInt()
-                                                val month = dateParts[1].toInt()
-                                                val year = dateParts[2].toInt()
-                                                kotlinx.datetime.LocalDate(year, month, day)
-                                            }
-                                            val timeParts = timeStr.split(":")
-                                            val hour = timeParts[0].toInt()
-                                            val minute = timeParts[1].toInt()
-                                            val time = kotlinx.datetime.LocalTime(hour, minute)
-                                            kotlinx.datetime.LocalDateTime(date, time)
-                                        },
-                                        consultaTime = values["consultaTime"]?.toString() ?: consulta.consultaTime,
+                                        consultaDate = consultaDateTime,
+                                        consultaTime = String.format("%02d:%02d", consultaDateTime.hour, consultaDateTime.minute),
                                         symptoms = values["symptoms"]?.toString() ?: consulta.symptoms,
                                         diagnosis = values["diagnosis"]?.toString() ?: consulta.diagnosis,
                                         treatment = values["treatment"]?.toString() ?: consulta.treatment,
                                         prescriptions = values["prescriptions"]?.toString() ?: consulta.prescriptions,
                                         notes = values["notes"]?.toString() ?: consulta.notes,
-                                        nextAppointment = values["nextAppointment"]?.toString()?.let { kotlinx.datetime.LocalDateTime.parse(it) },
+                                        nextAppointment = values["nextAppointment"]?.let {
+                                            when (it) {
+                                                is kotlinx.datetime.LocalDateTime -> it
+                                                else -> it.toString().takeIf { str -> str.isNotBlank() }?.let { str -> 
+                                                    kotlinx.datetime.LocalDateTime.parse(str) 
+                                                }
+                                            }
+                                        },
                                         price = values["price"]?.toString() ?: consulta.price.toString(),
                                     )
                                 )

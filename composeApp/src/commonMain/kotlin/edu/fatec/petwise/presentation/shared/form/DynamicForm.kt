@@ -31,6 +31,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import edu.fatec.petwise.features.auth.shared.InputMasks
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -949,8 +955,9 @@ private fun RenderDateField(
         PlatformDatePicker(
             fieldDefinition = fieldDefinition,
             fieldState = fieldState,
-            onValueChange = { newValue ->
-                onValueChange(newValue)
+            onValueChange = { selectedDate ->
+                val localDateTime = toLocalDateTime(fieldDefinition.type, selectedDate)
+                onValueChange(localDateTime)
                 showDatePicker = false
                 onBlur()
             }
@@ -962,7 +969,7 @@ private fun RenderDateField(
 private fun RenderTimeField(
     fieldDefinition: FormFieldDefinition,
     fieldState: FieldState,
-    onValueChange: (String) -> Unit,
+    onValueChange: (Any?) -> Unit,
     onFocus: () -> Unit,
     onBlur: () -> Unit,
     fieldHeight: Dp,
@@ -1017,8 +1024,9 @@ private fun RenderTimeField(
         PlatformTimePicker(
             fieldDefinition = fieldDefinition,
             fieldState = fieldState,
-            onValueChange = { newValue ->
-                onValueChange(newValue)
+            onValueChange = { selectedTime ->
+                val localDateTime = toLocalDateTime(fieldDefinition.type, selectedTime)
+                onValueChange(localDateTime)
                 showTimePicker = false
                 onBlur()
             }
@@ -1134,7 +1142,16 @@ private fun RenderDateTimeField(
             fieldState = fieldState.copy(displayValue = dateValue),
             onValueChange = { newDate ->
                 dateValue = newDate.toString()
-                onValueChange("$newDate $timeValue")
+                if (timeValue.isNotEmpty()) {
+                    try {
+                        val date = newDate as LocalDate
+                        val time = LocalTime.parse(timeValue)
+                        val localDateTime = LocalDateTime(date, time)
+                        onValueChange(localDateTime)
+                    } catch (e: Exception) {
+                        // Handle parsing error if needed
+                    }
+                }
                 showDatePicker = false
             }
         )
@@ -1146,7 +1163,16 @@ private fun RenderDateTimeField(
             fieldState = fieldState.copy(displayValue = timeValue),
             onValueChange = { newTime ->
                 timeValue = newTime
-                onValueChange("$dateValue $newTime")
+                if (dateValue.isNotEmpty()) {
+                    try {
+                        val date = LocalDate.parse(dateValue)
+                        val time = LocalTime.parse(newTime)
+                        val localDateTime = LocalDateTime(date, time)
+                        onValueChange(localDateTime)
+                    } catch (e: Exception) {
+                        // Handle parsing error if needed
+                    }
+                }
                 showTimePicker = false
                 onBlur()
             }
@@ -1178,6 +1204,25 @@ private fun calculateFieldHeight(screenWidth: Dp): Dp {
 private fun shouldShowFieldError(fieldState: FieldState, formHasBeenSubmitted: Boolean): Boolean {
     return fieldState.errors.isNotEmpty() && 
         (fieldState.isTouched || formHasBeenSubmitted)
+}
+
+private fun toLocalDateTime(fieldType: FormFieldType, value: Any?): LocalDateTime? {
+    return when (fieldType) {
+        FormFieldType.DATE -> {
+            val date = value as? LocalDate ?: return null
+            LocalDateTime(date, LocalTime(0, 0, 0))
+        }
+        FormFieldType.TIME -> {
+            val time = value as? LocalTime ?: return null
+            val currentInstant = Clock.System.now()
+            val currentDate = currentInstant.toLocalDateTime(TimeZone.currentSystemDefault()).date
+            LocalDateTime(currentDate, time)
+        }
+        FormFieldType.DATETIME -> {
+            value as? LocalDateTime
+        }
+        else -> null
+    }
 }
 
 private fun extractCleanErrorMessage(rawMessage: String): String {

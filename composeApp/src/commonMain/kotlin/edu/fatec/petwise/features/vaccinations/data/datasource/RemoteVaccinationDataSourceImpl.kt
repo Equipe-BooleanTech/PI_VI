@@ -132,18 +132,26 @@ class RemoteVaccinationDataSourceImpl(
     }
 }
 
-private fun parseDateToIso(date: String): String {
-    val dateParts = if (date.contains("/")) {
-        // DD/MM/YYYY format
-        date.split("/")
-    } else {
-        // YYYY-MM-DD format
-        date.split("-").reversed() // Reverse to DD/MM/YYYY
-    }
-    val day = dateParts[0].toInt()
-    val month = dateParts[1].toInt()
-    val year = dateParts[2].toInt()
+private fun parseDateToIso(date: LocalDateTime): String {
+    return date.toString()
+}
 
-    val localDateTime = LocalDateTime(year, month, day, 0, 0, 0)
-    return localDateTime.toString()
+private fun parseDateToIso(date: String): String {
+    return try {
+        // Try to parse as LocalDateTime string first
+        LocalDateTime.parse(date).toString()
+    } catch (e: Exception) {
+        // Fallback for DD/MM/YYYY format
+        val dateParts = if (date.contains("/")) {
+            date.split("/")
+        } else {
+            date.split("-").reversed()
+        }
+        val day = dateParts[0].toInt()
+        val month = dateParts[1].toInt()
+        val year = dateParts[2].toInt()
+        
+        val localDateTime = LocalDateTime(year, month, day, 0, 0, 0)
+        localDateTime.toString()
+    }
 }

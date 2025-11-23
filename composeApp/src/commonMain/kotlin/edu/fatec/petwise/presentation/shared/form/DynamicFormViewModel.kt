@@ -16,6 +16,8 @@ import edu.fatec.petwise.core.data.DataRefreshEvent
 import edu.fatec.petwise.core.data.DataRefreshManager
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.doubleOrNull
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalDate
 
 @Immutable
 data class FormState(
@@ -235,11 +237,9 @@ class DynamicFormViewModel(
                 FormFieldType.SELECT, FormFieldType.RADIO, FormFieldType.SEGMENTED_CONTROL -> {
                     newValue
                 }
-                FormFieldType.DATE -> {
-                    newValue.toString() // Keep as ISO string
-                }
-                FormFieldType.TIME, FormFieldType.DATETIME -> {
-                    newValue?.toString() ?: ""
+                FormFieldType.DATE, FormFieldType.TIME, FormFieldType.DATETIME -> {
+                    // Preserve LocalDateTime objects for backend
+                    newValue
                 }
                 else -> {
                     newValue?.toString() ?: ""
@@ -256,10 +256,73 @@ class DynamicFormViewModel(
                     processedValue?.toString() ?: "false"
                 }
                 FormFieldType.DATE -> {
-                    if (newValue is kotlinx.datetime.LocalDate) {
-                        formatLocalDate(newValue)
-                    } else {
-                        processedValue?.toString() ?: ""
+                    when (newValue) {
+                        is LocalDateTime -> {
+                            // Format as DD/MM/YYYY for display
+                            val date = newValue.date
+                            "%02d/%02d/%04d".format(date.dayOfMonth, date.monthNumber, date.year)
+                        }
+                        is LocalDate -> {
+                            // Format as DD/MM/YYYY for display
+                            "%02d/%02d/%04d".format(newValue.dayOfMonth, newValue.monthNumber, newValue.year)
+                        }
+                        is String -> {
+                            val cleanString = newValue.trim()
+                            when {
+                                cleanString.contains("T") -> {
+                                    // Parse LocalDateTime string and format for display
+                                    try {
+                                        val dateTime = LocalDateTime.parse(cleanString)
+                                        val date = dateTime.date
+                                        "%02d/%02d/%04d".format(date.dayOfMonth, date.monthNumber, date.year)
+                                    } catch (e: Exception) {
+                                        cleanString
+                                    }
+                                }
+                                cleanString.matches(Regex("^\\d{2}/\\d{2}/\\d{4}$")) -> {
+                                    // Already in DD/MM/YYYY format
+                                    cleanString
+                                }
+                                cleanString.matches(Regex("^\\d{4}-\\d{2}-\\d{2}$")) -> {
+                                    // Convert from YYYY-MM-DD to DD/MM/YYYY
+                                    try {
+                                        val date = LocalDate.parse(cleanString)
+                                        "%02d/%02d/%04d".format(date.dayOfMonth, date.monthNumber, date.year)
+                                    } catch (e: Exception) {
+                                        cleanString
+                                    }
+                                }
+                                else -> cleanString
+                            }
+                        }
+                        else -> processedValue?.toString() ?: ""
+                    }
+                }
+                FormFieldType.TIME -> {
+                    when (newValue) {
+                        is LocalDateTime -> {
+                            // Format as HH:MM for display
+                            val time = newValue.time
+                            "%02d:%02d".format(time.hour, time.minute)
+                        }
+                        else -> processedValue?.toString() ?: ""
+                    }
+                }
+                FormFieldType.DATETIME -> {
+                    when (newValue) {
+                        is LocalDateTime -> {
+                            // Format as DD/MM/YYYY HH:MM for display
+                            val date = newValue.date
+                            val time = newValue.time
+                            "%02d/%02d/%04d %02d:%02d".format(
+                                date.dayOfMonth, 
+                                date.monthNumber, 
+                date.year,
+                                time.hour,
+                                time.minute
+                            )
+                        }
+                        else -> processedValue?.toString() ?: ""
                     }
                 }
                 else -> {

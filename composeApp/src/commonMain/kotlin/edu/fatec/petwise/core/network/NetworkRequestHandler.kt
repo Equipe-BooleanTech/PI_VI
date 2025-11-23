@@ -137,8 +137,22 @@ class NetworkRequestHandler(
                     }
                 }
                 401 -> {
-                    println("NetworkRequestHandler: 401 Unauthorized - Token may be expired or invalid")
-                    NetworkResult.Error(NetworkException.Unauthorized())
+                    val errorBody = response.bodyAsText()
+                    println("NetworkRequestHandler: 401 Unauthorized - $errorBody")
+                    
+                    // Provide more context about the 401 error
+                    val errorMessage = when {
+                        errorBody.contains("token", ignoreCase = true) && errorBody.contains("expired", ignoreCase = true) -> 
+                            "Token expirado - faça login novamente"
+                        errorBody.contains("blacklist", ignoreCase = true) -> 
+                            "Sessão inválida - faça login novamente"
+                        errorBody.contains("invalid", ignoreCase = true) -> 
+                            "Credenciais inválidas - faça login novamente"
+                        else -> 
+                            "Erro temporário de autenticação - tente novamente"
+                    }
+                    
+                    NetworkResult.Error(NetworkException.Unauthorized(message = errorMessage))
                 }
                 403 -> {
                     println("NetworkRequestHandler: 403 Forbidden - Insufficient permissions")

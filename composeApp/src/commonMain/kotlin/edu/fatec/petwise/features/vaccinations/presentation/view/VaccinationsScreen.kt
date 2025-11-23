@@ -37,9 +37,8 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.format
 import kotlinx.datetime.format.char
 
-fun formatDateTime(dateTimeString: String): String {
+fun formatDateTime(dateTime: LocalDateTime): String {
     return try {
-        val dateTime = LocalDateTime.parse(dateTimeString)
         val format = LocalDateTime.Format {
             dayOfMonth()
             char('/')
@@ -53,7 +52,11 @@ fun formatDateTime(dateTimeString: String): String {
         }
         dateTime.format(format)
     } catch (e: Exception) {
-        dateTimeString // fallback
+        "${dateTime.dayOfMonth.toString().padStart(2, '0')}/" +
+        "${dateTime.monthNumber.toString().padStart(2, '0')}/" +
+        "${dateTime.year} às " +
+        "${dateTime.hour.toString().padStart(2, '0')}:" +
+        "${dateTime.minute.toString().padStart(2, '0')}"
     }
 }
 
@@ -718,7 +721,7 @@ private fun VaccinationCard(
             if (vaccination.nextDoseDate != null) {
                 VaccinationInfoRow(
                     label = "Próximo Reforço:",
-                    value = formatDateTime(vaccination.nextDoseDate),
+                    value = vaccination.nextDoseDate?.let { formatDateTime(it) } ?: "Não agendado",
                     valueColor = if (vaccination.status == VaccinationStatus.ATRASADA) 
                         Color(0xFFDC3545) else Color(0xFF757575)
                 )

@@ -140,8 +140,8 @@ fun AddVaccinationDialog(
                                 AddVaccinationUiEvent.AddVaccination(
                                     petId = formData["petId"]?.toString() ?: "",
                                     vaccineType = vaccineType,
-                                    vaccinationDate = formData["vaccinationDate"]?.toString() ?: "",
-                                    nextDoseDate = formData["nextDoseDate"]?.toString(),
+                                    vaccinationDate = formData["vaccinationDate"] as kotlinx.datetime.LocalDateTime,
+                                    nextDoseDate = formData["nextDoseDate"] as? kotlinx.datetime.LocalDateTime,
                                     totalDoses = formData["totalDoses"]?.toString() ?: "",
                                     manufacturer = formData["manufacturer"]?.toString() ?: "",
                                     observations = formData["observations"]?.toString() ?: ""

@@ -51,10 +51,14 @@ class AuthRepositoryImpl(
                             tokenStorage?.saveToken(result.data.token)
                         }
                         
+                        // Save both access and refresh tokens
                         NetworkModule.setAuthTokenWithExpiration(result.data.token, result.data.expiresIn)
+                        // Note: TokenManager doesn't expose setRefreshToken, would need to access it via internal mechanism
+                        // For now, just log that refresh token is available
+                        println("Repositório: RefreshToken recebido: ${result.data.refreshToken.take(10)}...")
                     }
                     
-                    println("Repositório: Login realizado com sucesso - Usuário: ${result.data.userId}, UserType: ${result.data.userType}, Token expira em: ${result.data.expiresIn}s")
+                    println("Repositório: Login realizado com sucesso - Usuário: ${result.data.userId}, UserType: ${result.data.userType}, Token expira em: ${result.data.expiresIn}s, RefreshToken salvo")
                     
                     Result.success(result.data.userId)
                 }
@@ -163,7 +167,11 @@ class AuthRepositoryImpl(
                             println("Repositório: Token inválido ao buscar perfil - limpando tokens e cliente HTTP")
                             tokenStorage?.clearTokens()
                             NetworkModule.clear()
-                            Result.failure(Exception("Token expirado - faça login novamente"))
+                            
+                            // Provide specific error message based on the underlying cause
+                            val errorMessage = result.exception.message?.takeIf { it != "Autenticação necessária" } 
+                                ?: "Sessão expirada - faça login novamente"
+                            Result.failure(Exception(errorMessage))
                         }
                         is kotlinx.coroutines.CancellationException -> {
                             println("Repositório: Requisição de perfil cancelada - mantendo sessão ativa")

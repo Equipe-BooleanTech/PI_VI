@@ -122,27 +122,9 @@ fun AddExamDialog(
                     onSubmitSuccess = { formData: Map<String, Any> ->
                         val petId = formData["petId"] as? String ?: ""
                         val examType = formData["examType"] as? String ?: ""
-                        val examDateStr = formData["examDate"] as? String ?: ""
-                        val examTimeStr = formData["examTime"] as? String ?: ""
+                        val examDateTime = formData["examDate"] as kotlinx.datetime.LocalDateTime
                         val results = formData["results"] as? String
                         val notes = formData["notes"] as? String
-
-                        val examDateTime = run {
-                            val dateParts = examDateStr.split(if (examDateStr.contains("-")) "-" else "/")
-                            val (day, month, year) = if (dateParts[0].length == 4) {
-                                // YYYY-MM-DD format
-                                Triple(dateParts[2].toInt(), dateParts[1].toInt(), dateParts[0].toInt())
-                            } else {
-                                // DD/MM/YYYY format
-                                Triple(dateParts[0].toInt(), dateParts[1].toInt(), dateParts[2].toInt())
-                            }
-                            val date = LocalDate(year, month, day)
-                            val timeParts = examTimeStr.split(":")
-                            val hour = timeParts[0].toInt()
-                            val minute = timeParts[1].toInt()
-                            val time = kotlinx.datetime.LocalTime(hour, minute)
-                            kotlinx.datetime.LocalDateTime(date, time)
-                        }
 
                         addExamViewModel.onEvent(
                             AddExamUiEvent.AddExam(

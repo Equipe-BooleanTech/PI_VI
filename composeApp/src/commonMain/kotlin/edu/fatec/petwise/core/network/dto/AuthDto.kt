@@ -22,9 +22,11 @@ data class LoginRequest(
 data class LoginResponse(
     val userId: String,
     val token: String,
+    val refreshToken: String,
     val expiresIn: Long,
     val userType: String,
     val fullName: String,
+    val email: String
 )
 
 @Serializable

@@ -167,7 +167,7 @@ fun PetDetailsScreen(
                                 HealthRecordCard(
                                     title = vaccination.vaccineType.getDisplayName(),
                                     description = if (vaccination.observations.isEmpty()) "Vacinação realizada" else vaccination.observations,
-                                    date = vaccination.vaccinationDate,
+                                    date = "${vaccination.vaccinationDate.dayOfMonth.toString().padStart(2, '0')}/${vaccination.vaccinationDate.monthNumber.toString().padStart(2, '0')}/${vaccination.vaccinationDate.year}",
                                     status = vaccination.status.getDisplayName(),
                                     type = "vacina"
                                 )
