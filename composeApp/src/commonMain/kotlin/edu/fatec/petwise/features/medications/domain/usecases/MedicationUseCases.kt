@@ -56,8 +56,6 @@ class AddMedicationUseCase(
                medication.dosage.isNotBlank() &&
                medication.frequency.isNotBlank() &&
                medication.durationDays > 0 &&
-               medication.startDate.isNotBlank() &&
-               medication.endDate.isNotBlank() &&
                medication.prescriptionId.isNotBlank()
     }
 }

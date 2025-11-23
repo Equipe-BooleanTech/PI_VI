@@ -270,11 +270,11 @@ fun MedicationCard(
     }
 }
 
-private fun formatDate(dateString: String): String {
+private fun formatDate(date: kotlinx.datetime.LocalDateTime): String {
     return try {
-        val date = kotlinx.datetime.LocalDate.parse(dateString)
-        "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year}"
+        val localDate = date.date
+        "${localDate.dayOfMonth.toString().padStart(2, '0')}/${localDate.monthNumber.toString().padStart(2, '0')}/${localDate.year}"
     } catch (e: Exception) {
-        dateString
+        date.toString()
     }
 }

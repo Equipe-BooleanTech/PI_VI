@@ -114,9 +114,9 @@ fun createEditMedicationFormConfiguration(medication: Medication, prescriptions:
             FormFieldDefinition(
                 id = "startDate",
                 label = "Data de Início",
-                type = FormFieldType.DATETIME,
+                type = FormFieldType.DATE,
                 placeholder = "Selecione a data",
-                default = JsonPrimitive(medication.startDate),
+                default = JsonPrimitive(medication.startDate.toString()),
                 validators = listOf(
                     ValidationRule(
                         type = ValidationType.REQUIRED,
@@ -127,9 +127,9 @@ fun createEditMedicationFormConfiguration(medication: Medication, prescriptions:
             FormFieldDefinition(
                 id = "endDate",
                 label = "Data de Término",
-                type = FormFieldType.DATETIME,
+                type = FormFieldType.DATE,
                 placeholder = "Selecione a data",
-                default = JsonPrimitive(medication.endDate),
+                default = JsonPrimitive(medication.endDate.toString()),
                 validators = listOf(
                     ValidationRule(
                         type = ValidationType.REQUIRED,

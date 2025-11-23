@@ -186,7 +186,7 @@ fun PetDetailsScreen(
                                 HealthRecordCard(
                                     title = medication.medicationName,
                                     description = medication.dosage,
-                                    date = medication.startDate,
+                                    date = medication.startDate.toString().substringBefore('T'),
                                     status = medication.status.displayName,
                                     type = "medicacao"
                                 )

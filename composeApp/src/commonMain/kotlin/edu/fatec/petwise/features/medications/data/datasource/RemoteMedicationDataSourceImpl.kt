@@ -86,8 +86,8 @@ class RemoteMedicationDataSourceImpl(
             dosage = medication.dosage,
             frequency = medication.frequency,
             durationDays = medication.durationDays,
-            startDate = parseDateToIso(medication.startDate),
-            endDate = parseDateToIso(medication.endDate),
+            startDate = medication.startDate,
+            endDate = medication.endDate,
             sideEffects = medication.sideEffects
         )
 
@@ -111,7 +111,7 @@ class RemoteMedicationDataSourceImpl(
             dosage = medication.dosage,
             frequency = medication.frequency,
             durationDays = medication.durationDays,
-            endDate = parseDateToIso(medication.endDate),
+            endDate = medication.endDate,
             sideEffects = medication.sideEffects
         )
 

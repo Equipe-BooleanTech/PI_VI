@@ -14,9 +14,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.Clock
 
 data class UpdateMedicationUiState(
     val isLoading: Boolean = false,
@@ -174,8 +175,8 @@ class UpdateMedicationViewModel(
                 val dosage = formData["dosage"] as? String ?: currentMedication.dosage
                 val frequency = formData["frequency"] as? String ?: currentMedication.frequency
                 val durationDaysStr = (formData["durationDays"] as? Int)?.toString() ?: (formData["durationDays"] as? String ?: currentMedication.durationDays.toString())
-                val startDate = formData["startDate"] as? String ?: currentMedication.startDate
-                val endDate = formData["endDate"] as? String ?: currentMedication.endDate
+                val startDateRaw = formData["startDate"]
+                val endDateRaw = formData["endDate"]
                 val sideEffects = formData["sideEffects"] as? String ?: currentMedication.sideEffects
 
                 // Convert string to int
@@ -189,8 +190,24 @@ class UpdateMedicationViewModel(
                     return@launch
                 }
 
+                // Parse dates
+                val startDate = when (startDateRaw) {
+                    is String -> {
+                        val fixed = startDateRaw.replace(Regex("T(\\d{2}:\\d{2})\\.(\\d{3})"), "T$1:00.$2")
+                        LocalDateTime.parse(fixed)
+                    }
+                    else -> currentMedication.startDate
+                }
+                val endDate = when (endDateRaw) {
+                    is String -> {
+                        val fixed = endDateRaw.replace(Regex("T(\\d{2}:\\d{2})\\.(\\d{3})"), "T$1:00.$2")
+                        LocalDateTime.parse(fixed)
+                    }
+                    else -> currentMedication.endDate
+                }
+
                 // Generate current timestamp for updatedAt
-                val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).toString()
+                val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
 
                 val updatedMedication = currentMedication.copy(
                     medicationName = medicationName,

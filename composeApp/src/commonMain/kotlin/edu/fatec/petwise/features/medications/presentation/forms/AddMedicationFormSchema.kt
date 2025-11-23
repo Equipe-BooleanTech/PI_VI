@@ -96,7 +96,7 @@ fun addMedicationFormConfiguration(prescriptions: List<Prescription>, pets: List
         FormFieldDefinition(
             id = "startDate",
             label = "Data de Início",
-            type = FormFieldType.DATETIME,
+            type = FormFieldType.DATE,
             placeholder = "Selecione a data",
             validators = listOf(
                 ValidationRule(
@@ -108,7 +108,7 @@ fun addMedicationFormConfiguration(prescriptions: List<Prescription>, pets: List
         FormFieldDefinition(
             id = "endDate",
             label = "Data de Término",
-            type = FormFieldType.DATETIME,
+            type = FormFieldType.DATE,
             placeholder = "Selecione a data",
             validators = listOf(
                 ValidationRule(
