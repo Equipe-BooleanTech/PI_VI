@@ -40,6 +40,7 @@ data class CreateExamRequest(
 
 @Serializable
 data class UpdateExamRequest(
+    val petId: String? = null,
     val examType: String? = null,
     val examDate: String? = null,
     val results: String? = null,

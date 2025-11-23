@@ -120,6 +120,14 @@ object PetDependencyContainer {
         return created
     }
 
+    fun provideGetPetsUseCase(): GetPetsUseCase {
+        return GetPetsUseCase(getRepository())
+    }
+
+    fun providePetRepository(): PetRepository {
+        return getRepository()
+    }
+
     fun reset() {
         petsViewModel?.viewModelScope?.cancel()
         addPetViewModel?.viewModelScope?.cancel()

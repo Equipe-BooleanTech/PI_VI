@@ -3,6 +3,7 @@ package edu.fatec.petwise.features.vaccinations.di
 import androidx.lifecycle.viewModelScope
 import edu.fatec.petwise.core.network.di.NetworkModule
 import edu.fatec.petwise.features.auth.di.AuthDependencyContainer
+import edu.fatec.petwise.features.pets.di.PetDependencyContainer
 import edu.fatec.petwise.features.vaccinations.data.datasource.RemoteVaccinationDataSourceImpl
 import edu.fatec.petwise.features.vaccinations.data.repository.VaccinationRepositoryImpl
 import edu.fatec.petwise.features.vaccinations.domain.repository.VaccinationRepository
@@ -64,7 +65,8 @@ object VaccinationDependencyContainer {
             getOverdueVaccinationsUseCase = GetOverdueVaccinationsUseCase(repo),
             deleteVaccinationUseCase = DeleteVaccinationUseCase(repo),
             markVaccinationAsAppliedUseCase = MarkVaccinationAsAppliedUseCase(repo),
-            scheduleNextDoseUseCase = ScheduleNextDoseUseCase(repo)
+            scheduleNextDoseUseCase = ScheduleNextDoseUseCase(repo),
+            getPetsUseCase = PetDependencyContainer.provideGetPetsUseCase()
         )
     }
 

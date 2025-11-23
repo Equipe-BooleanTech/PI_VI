@@ -2,17 +2,27 @@ package edu.fatec.petwise.features.vaccinations.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import edu.fatec.petwise.core.data.DataRefreshEvent
-import edu.fatec.petwise.core.data.DataRefreshManager
 import edu.fatec.petwise.features.vaccinations.domain.models.Vaccination
 import edu.fatec.petwise.features.vaccinations.domain.models.VaccinationFilterOptions
-import edu.fatec.petwise.features.vaccinations.domain.usecases.*
+import edu.fatec.petwise.features.vaccinations.domain.usecases.GetVaccinationsUseCase
+import edu.fatec.petwise.features.vaccinations.domain.usecases.GetVaccinationsByPetIdUseCase
+import edu.fatec.petwise.features.vaccinations.domain.usecases.FilterVaccinationsUseCase
+import edu.fatec.petwise.features.vaccinations.domain.usecases.GetUpcomingVaccinationsUseCase
+import edu.fatec.petwise.features.vaccinations.domain.usecases.GetOverdueVaccinationsUseCase
+import edu.fatec.petwise.features.vaccinations.domain.usecases.DeleteVaccinationUseCase
+import edu.fatec.petwise.features.vaccinations.domain.usecases.MarkVaccinationAsAppliedUseCase
+import edu.fatec.petwise.features.vaccinations.domain.usecases.ScheduleNextDoseUseCase
+import edu.fatec.petwise.features.pets.domain.models.Pet
+import edu.fatec.petwise.features.pets.domain.usecases.GetPetsUseCase
+import edu.fatec.petwise.core.data.DataRefreshManager
+import edu.fatec.petwise.core.data.DataRefreshEvent
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 data class VaccinationsUiState(
     val vaccinations: List<Vaccination> = emptyList(),
     val filteredVaccinations: List<Vaccination> = emptyList(),
+    val pets: List<Pet> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
     val filterOptions: VaccinationFilterOptions = VaccinationFilterOptions(),
@@ -42,7 +52,8 @@ class VaccinationsViewModel(
     private val getOverdueVaccinationsUseCase: GetOverdueVaccinationsUseCase,
     private val deleteVaccinationUseCase: DeleteVaccinationUseCase,
     private val markVaccinationAsAppliedUseCase: MarkVaccinationAsAppliedUseCase,
-    private val scheduleNextDoseUseCase: ScheduleNextDoseUseCase
+    private val scheduleNextDoseUseCase: ScheduleNextDoseUseCase,
+    private val getPetsUseCase: GetPetsUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(VaccinationsUiState())
@@ -90,11 +101,14 @@ class VaccinationsViewModel(
             _uiState.value = _uiState.value.copy(isLoading = true, error = null, showingUpcoming = false, showingOverdue = false)
             try {
                 getVaccinationsUseCase().collect { vaccinations ->
-                    _uiState.value = _uiState.value.copy(
-                        vaccinations = vaccinations,
-                        filteredVaccinations = vaccinations,
-                        isLoading = false
-                    )
+                    getPetsUseCase().collect { pets ->
+                        _uiState.value = _uiState.value.copy(
+                            vaccinations = vaccinations,
+                            filteredVaccinations = vaccinations,
+                            pets = pets,
+                            isLoading = false
+                        )
+                    }
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(

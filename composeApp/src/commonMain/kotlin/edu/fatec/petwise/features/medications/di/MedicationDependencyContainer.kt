@@ -2,6 +2,7 @@ package edu.fatec.petwise.features.medications.di
 
 import androidx.lifecycle.viewModelScope
 import edu.fatec.petwise.core.network.di.NetworkModule
+import edu.fatec.petwise.features.auth.di.AuthDependencyContainer
 import edu.fatec.petwise.features.medications.data.datasource.MedicationDataSource
 import edu.fatec.petwise.features.medications.data.datasource.RemoteMedicationDataSourceImpl
 import edu.fatec.petwise.features.medications.data.repository.MedicationRepositoryImpl
@@ -11,6 +12,9 @@ import edu.fatec.petwise.features.medications.presentation.viewmodel.AddMedicati
 import edu.fatec.petwise.features.medications.presentation.viewmodel.MedicationsViewModel
 import edu.fatec.petwise.features.medications.presentation.viewmodel.UpdateMedicationViewModel
 import kotlinx.coroutines.cancel
+import edu.fatec.petwise.features.prescriptions.di.PrescriptionDependencyContainer
+import edu.fatec.petwise.features.pets.di.PetDependencyContainer
+
 
 object MedicationDependencyContainer {
 
@@ -44,10 +48,11 @@ object MedicationDependencyContainer {
 
     private fun buildMedicationUseCases(): MedicationUseCases {
         val repo = getRepository()
+        val getMedicationsUseCase = GetMedicationsUseCase(repo)
         return MedicationUseCases(
-            getMedications = GetMedicationsUseCase(repo),
+            getMedications = getMedicationsUseCase,
             getMedicationById = GetMedicationByIdUseCase(repo),
-            addMedication = AddMedicationUseCase(repo),
+            addMedication = AddMedicationUseCase(repo, PrescriptionDependencyContainer.getPrescriptionByIdUseCase, getMedicationsUseCase),
             updateMedication = UpdateMedicationUseCase(repo),
             deleteMedication = DeleteMedicationUseCase(repo),
             markAsCompleted = MarkMedicationAsCompletedUseCase(repo),
@@ -66,7 +71,10 @@ object MedicationDependencyContainer {
     private fun buildAddMedicationViewModel(): AddMedicationViewModel {
         val useCases = buildMedicationUseCases()
         return AddMedicationViewModel(
-            addMedicationUseCase = useCases.addMedication
+            addMedicationUseCase = useCases.addMedication,
+            getPrescriptionsUseCase = PrescriptionDependencyContainer.provideGetPrescriptionsUseCase(),
+            getUserProfileUseCase = AuthDependencyContainer.provideGetUserProfileUseCase(),
+            getPetsUseCase = PetDependencyContainer.provideGetPetsUseCase()
         )
     }
 
@@ -74,7 +82,10 @@ object MedicationDependencyContainer {
         val useCases = buildMedicationUseCases()
         return UpdateMedicationViewModel(
             updateMedicationUseCase = useCases.updateMedication,
-            getMedicationByIdUseCase = useCases.getMedicationById
+            getMedicationByIdUseCase = useCases.getMedicationById,
+            getPrescriptionsUseCase = PrescriptionDependencyContainer.provideGetPrescriptionsUseCase(),
+            getUserProfileUseCase = AuthDependencyContainer.provideGetUserProfileUseCase(),
+            getPetsUseCase = PetDependencyContainer.provideGetPetsUseCase()
         )
     }
 

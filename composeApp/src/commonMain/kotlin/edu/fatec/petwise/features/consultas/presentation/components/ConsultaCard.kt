@@ -246,12 +246,6 @@ fun ConsultaCard(
                                 color = Color.fromHex(theme.palette.textPrimary)
                             )
                         )
-                        Text(
-                            text = consulta.consultaTime,
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                color = Color.fromHex(theme.palette.textSecondary)
-                            )
-                        )
                         if (consulta.price > 0) {
                             Text(
                                 text = "R$${consulta.price}",
@@ -327,5 +321,5 @@ private fun getConsultaTypeIcon(type: ConsultaType) = when (type) {
 }
 
 private fun formatDate(date: kotlinx.datetime.LocalDateTime): String {
-    return "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}"
+    return "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year} às ${date.hour.toString().padStart(2, '0')}:${date.minute.toString().padStart(2, '0')}"
 }

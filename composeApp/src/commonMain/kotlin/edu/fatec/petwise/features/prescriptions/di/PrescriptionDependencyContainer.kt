@@ -60,6 +60,10 @@ object PrescriptionDependencyContainer {
         UpdatePrescriptionViewModel(updatePrescriptionUseCase, getPrescriptionByIdUseCase, AuthDependencyContainer.provideGetUserProfileUseCase())
     }
 
+    fun provideGetPrescriptionsUseCase(): GetPrescriptionsUseCase {
+        return getPrescriptionsUseCase
+    }
+
     fun providePrescriptionRepository(): PrescriptionRepository {
         return repository
     }

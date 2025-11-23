@@ -1067,8 +1067,8 @@ private fun RenderDateTimeField(
                 onValueChange("$newValue $timeValue")
             },
             readOnly = false,
-            label = { Text("${labelText ?: "Date/Time"} - Date") },
-            placeholder = { Text("Select Date") },
+            label = { Text("${labelText ?: "Date/Time"} - Data") },
+            placeholder = { Text("Selecione uma data...") },
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = fieldHeight),
@@ -1086,7 +1086,7 @@ private fun RenderDateTimeField(
                 IconButton(onClick = { showDatePicker = true; onFocus() }) {
                     Icon(
                         imageVector = Icons.Filled.CalendarToday,
-                        contentDescription = "Select Date",
+                        contentDescription = "Selecione uma data...",
                         tint = colorScheme.onSurfaceVariant
                     )
                 }
@@ -1101,8 +1101,8 @@ private fun RenderDateTimeField(
                 onBlur()
             },
             readOnly = false,
-            label = { Text("${labelText ?: "Date/Time"} - Time") },
-            placeholder = { Text("Select Time") },
+            label = { Text("${labelText ?: "Date/Time"} - Horário") },
+            placeholder = { Text("Selecione um horário...") },
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = fieldHeight),
@@ -1120,7 +1120,7 @@ private fun RenderDateTimeField(
                 IconButton(onClick = { showTimePicker = true; onFocus() }) {
                     Icon(
                         imageVector = Icons.Filled.Schedule,
-                        contentDescription = "Select Time",
+                        contentDescription = "Selecione um horário...",
                         tint = colorScheme.onSurfaceVariant
                     )
                 }

@@ -19,6 +19,7 @@ import edu.fatec.petwise.features.pets.presentation.components.PetInfoCard
 import edu.fatec.petwise.features.pets.presentation.components.HealthRecordCard
 import edu.fatec.petwise.features.pets.presentation.viewmodel.PetDetailsUiEvent
 import edu.fatec.petwise.features.pets.presentation.viewmodel.PetDetailsViewModel
+import edu.fatec.petwise.features.pets.presentation.viewmodel.PetDetailsUiState
 import edu.fatec.petwise.features.pets.di.PetDependencyContainer
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.fromHex
@@ -29,8 +30,8 @@ fun PetDetailsScreen(
     pet: Pet,
     onBackClick: () -> Unit
 ) {
-    val petDetailsViewModel = remember { PetDependencyContainer.providePetDetailsViewModel() }
-    val uiState by petDetailsViewModel.uiState.collectAsState()
+    val petDetailsViewModel: PetDetailsViewModel = remember { PetDependencyContainer.providePetDetailsViewModel() }
+    val uiState: PetDetailsUiState by petDetailsViewModel.uiState.collectAsState()
     val theme = PetWiseTheme.Light
 
     LaunchedEffect(pet.id) {
@@ -144,7 +145,7 @@ fun PetDetailsScreen(
                             items(uiState.consultations.take(3)) { consultation ->
                                 HealthRecordCard(
                                     title = consultation.consultaType.displayName,
-                                    description = consultation.symptoms.ifEmpty { "Consulta veterinária" },
+                                    description = if (consultation.symptoms.isEmpty()) "Consulta veterinária" else consultation.symptoms,
                                     date = "${consultation.consultaDate.dayOfMonth.toString().padStart(2, '0')}/" +
                                            "${consultation.consultaDate.monthNumber.toString().padStart(2, '0')}/" +
                                            "${consultation.consultaDate.year}",
@@ -165,7 +166,7 @@ fun PetDetailsScreen(
                             items(uiState.vaccinations.take(3)) { vaccination ->
                                 HealthRecordCard(
                                     title = vaccination.vaccineType.getDisplayName(),
-                                    description = vaccination.observations.ifEmpty { "Vacinação realizada" },
+                                    description = if (vaccination.observations.isEmpty()) "Vacinação realizada" else vaccination.observations,
                                     date = vaccination.vaccinationDate,
                                     status = vaccination.status.getDisplayName(),
                                     type = "vacina"

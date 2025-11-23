@@ -1,9 +1,11 @@
 package edu.fatec.petwise.features.medications.presentation.forms
 
 import edu.fatec.petwise.presentation.shared.form.*
+import edu.fatec.petwise.features.prescriptions.domain.models.Prescription
+import edu.fatec.petwise.features.pets.domain.models.Pet
 import kotlinx.serialization.json.JsonPrimitive
 
-val addMedicationFormConfiguration: FormConfiguration = FormConfiguration(
+fun addMedicationFormConfiguration(prescriptions: List<Prescription>, pets: List<Pet>): FormConfiguration = FormConfiguration(
     id = "add_medication_form",
     title = "Adicionar Novo Medicamento",
     description = "Preencha as informações do medicamento para adicionar ao sistema.",
@@ -94,7 +96,7 @@ val addMedicationFormConfiguration: FormConfiguration = FormConfiguration(
         FormFieldDefinition(
             id = "startDate",
             label = "Data de Início",
-            type = FormFieldType.DATE,
+            type = FormFieldType.DATETIME,
             placeholder = "Selecione a data",
             validators = listOf(
                 ValidationRule(
@@ -106,7 +108,7 @@ val addMedicationFormConfiguration: FormConfiguration = FormConfiguration(
         FormFieldDefinition(
             id = "endDate",
             label = "Data de Término",
-            type = FormFieldType.DATE,
+            type = FormFieldType.DATETIME,
             placeholder = "Selecione a data",
             validators = listOf(
                 ValidationRule(
@@ -117,13 +119,17 @@ val addMedicationFormConfiguration: FormConfiguration = FormConfiguration(
         ),
         FormFieldDefinition(
             id = "prescriptionId",
-            label = "ID da Prescrição",
-            type = FormFieldType.TEXT,
-            placeholder = "ID da prescrição relacionada",
+            label = "Prescrição",
+            type = FormFieldType.SELECT,
+            options = prescriptions.map { prescription ->
+                val pet = pets.find { it.id == prescription.petId }
+                val petName = pet?.name ?: "Pet não encontrado"
+                "${prescription.id} | $petName | ${prescription.medications}"
+            }, 
             validators = listOf(
                 ValidationRule(
                     type = ValidationType.REQUIRED,
-                    message = "ID da prescrição é obrigatório"
+                    message = "Selecione uma prescrição"
                 )
             )
         ),

@@ -167,7 +167,7 @@ fun MedicationCard(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "${medication.durationDays} dias (${medication.startDate} - ${medication.endDate})",
+                            text = "${medication.durationDays} dias (${formatDate(medication.startDate)} - ${formatDate(medication.endDate)})",
                             style = MaterialTheme.typography.bodySmall.copy(
                                 color = Color.fromHex(theme.palette.textSecondary)
                             ),
@@ -267,5 +267,14 @@ fun MedicationCard(
                 }
             }
         }
+    }
+}
+
+private fun formatDate(dateString: String): String {
+    return try {
+        val date = kotlinx.datetime.LocalDate.parse(dateString)
+        "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year}"
+    } catch (e: Exception) {
+        dateString
     }
 }
