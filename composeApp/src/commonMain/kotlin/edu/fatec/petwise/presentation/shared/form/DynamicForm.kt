@@ -57,7 +57,7 @@ fun DynamicForm(
             when (event) {
                 is FormEvent.FormSubmitted -> {
                     if (event.isValid) {
-                        onSubmitSuccess?.invoke(event.values)
+                        onSubmitSuccess?.invoke(viewModel.getTypedFieldValues())
                     }
                 }
                 is FormEvent.ErrorOccurred -> {
@@ -915,9 +915,45 @@ private fun RenderDateField(
         fieldDefinition.label
     }
 
+    // Format the display value for DATE fields - show only the date part
+    val displayValue = remember(fieldState.value, fieldState.displayValue) {
+        when {
+            fieldState.value is LocalDateTime -> {
+                val date = (fieldState.value as LocalDateTime).date
+                "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year}"
+            }
+            fieldState.value is LocalDate -> {
+                val date = fieldState.value as LocalDate
+                "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year}"
+            }
+            fieldState.displayValue.isNotEmpty() -> {
+                // Try to parse existing display value and reformat it
+                try {
+                    when {
+                        fieldState.displayValue.contains('T') -> {
+                            // Parse LocalDateTime string format
+                            val dateTime = LocalDateTime.parse(fieldState.displayValue)
+                            val date = dateTime.date
+                            "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year}"
+                        }
+                        fieldState.displayValue.contains('-') && fieldState.displayValue.length == 10 -> {
+                            // Parse LocalDate string format (YYYY-MM-DD)
+                            val date = LocalDate.parse(fieldState.displayValue)
+                            "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year}"
+                        }
+                        else -> fieldState.displayValue
+                    }
+                } catch (e: Exception) {
+                    fieldState.displayValue
+                }
+            }
+            else -> ""
+        }
+    }
+
     OutlinedTextField(
-        value = fieldState.displayValue,
-        onValueChange = { onValueChange(it) },
+        value = displayValue,
+        onValueChange = { /* Read-only field */ },
         readOnly = true,
         label = labelText?.let { { Text(it) } },
         placeholder = fieldDefinition.placeholder?.let { { Text(it) } },
@@ -956,6 +992,8 @@ private fun RenderDateField(
             fieldDefinition = fieldDefinition,
             fieldState = fieldState,
             onValueChange = { selectedDate ->
+                // Convert LocalDate to LocalDateTime with default time (00:00:00)
+                // The date is stored as LocalDateTime but displayed as date only
                 val localDateTime = toLocalDateTime(fieldDefinition.type, selectedDate)
                 onValueChange(localDateTime)
                 showDatePicker = false

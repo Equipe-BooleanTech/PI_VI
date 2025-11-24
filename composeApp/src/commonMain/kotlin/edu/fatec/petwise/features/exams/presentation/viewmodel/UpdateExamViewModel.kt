@@ -61,8 +61,7 @@ class UpdateExamViewModel(
                 val veterinaryId = userProfileResult.getOrNull()?.id ?: ""
 
                 val examType = formData["examType"]?.content ?: ""
-                val examDate = formData["examDate"]?.content ?: ""
-                val examTime = formData["examTime"]?.content ?: ""
+                val examDateTimeStr = formData["examDate"]?.content ?: ""
                 val results = formData["results"]?.content?.takeIf { it.isNotBlank() }
                 val status = formData["status"]?.content ?: ""
                 val notes = formData["notes"]?.content?.takeIf { it.isNotBlank() }
@@ -75,37 +74,58 @@ class UpdateExamViewModel(
                     return@launch
                 }
 
-                if (examTime.isBlank()) {
+                if (examDateTimeStr.isBlank()) {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        errorMessage = "Horário do exame é obrigatório"
+                        errorMessage = "Data e horário do exame são obrigatórios"
                     )
                     return@launch
                 }
 
-                val currentTime = Clock.System.now().toEpochMilliseconds().toString()
-                val examDateTimeParsed = run {
-                    val dateParts = examDate.split(if (examDate.contains("-")) "-" else "/")
-                    val (day, month, year) = if (dateParts[0].length == 4) {
-                        // YYYY-MM-DD format
-                        Triple(dateParts[2].toInt(), dateParts[1].toInt(), dateParts[0].toInt())
+                val examDateTime = try {
+                    if (examDateTimeStr.contains('T')) {
+                        // ISO format: 2023-11-23T15:30:00
+                        kotlinx.datetime.LocalDateTime.parse(examDateTimeStr)
                     } else {
-                        // DD/MM/YYYY format
-                        Triple(dateParts[0].toInt(), dateParts[1].toInt(), dateParts[2].toInt())
+                        // User friendly format: DD/MM/YYYY HH:mm
+                        val parts = examDateTimeStr.split(" ")
+                        if (parts.size == 2) {
+                            val dateParts = parts[0].split("/")
+                            val timeParts = parts[1].split(":")
+                            if (dateParts.size == 3 && timeParts.size >= 2) {
+                                val day = dateParts[0].toInt()
+                                val month = dateParts[1].toInt()
+                                val year = dateParts[2].toInt()
+                                val hour = timeParts[0].toInt()
+                                val minute = timeParts[1].toInt()
+                                
+                                val date = kotlinx.datetime.LocalDate(year, month, day)
+                                val time = kotlinx.datetime.LocalTime(hour, minute)
+                                kotlinx.datetime.LocalDateTime(date, time)
+                            } else {
+                                throw IllegalArgumentException("Invalid date/time format")
+                            }
+                        } else {
+                            throw IllegalArgumentException("Expected date and time separated by space")
+                        }
                     }
-                    val date = LocalDate(year, month, day)
-                    val timeParts = examTime.split(":")
-                    val hour = timeParts[0].toInt()
-                    val minute = timeParts[1].toInt()
-                    val time = kotlinx.datetime.LocalTime(hour, minute)
-                    kotlinx.datetime.LocalDateTime(date, time)
+                } catch (e: Exception) {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        errorMessage = "Formato de data/hora inválido: ${e.message}"
+                    )
+                    return@launch
                 }
+
+                val examTime = "${examDateTime.hour.toString().padStart(2, '0')}:${examDateTime.minute.toString().padStart(2, '0')}"
+
+                val currentTime = Clock.System.now().toEpochMilliseconds().toString()
                 val updatedExam = Exam(
                     id = examId,
                     petId = originalExam.petId,
                     veterinaryId = veterinaryId,
                     examType = examType,
-                    examDate = examDateTimeParsed,
+                    examDate = examDateTime,
                     examTime = examTime,
                     results = results,
                     status = status,

@@ -18,6 +18,100 @@ import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.doubleOrNull
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalTime
+
+/**
+ * Global helper functions for converting form values between string and typed representations
+ */
+object FormValueConverters {
+    
+    /**
+     * Safely converts a form value to LocalDateTime
+     * Handles both string representations and direct LocalDateTime objects
+     */
+    fun toLocalDateTime(value: Any?, fieldType: FormFieldType): LocalDateTime? {
+        return when {
+            value is LocalDateTime -> value
+            value is String && value.isNotEmpty() -> {
+                try {
+                    when {
+                        value.contains('T') -> LocalDateTime.parse(value)
+                        fieldType == FormFieldType.DATE -> {
+                            // Parse date and add default time
+                            val date = if (value.contains('/')) {
+                                // Parse DD/MM/YYYY format
+                                val parts = value.split('/')
+                                if (parts.size == 3) {
+                                    LocalDate(parts[2].toInt(), parts[1].toInt(), parts[0].toInt())
+                                } else {
+                                    LocalDate.parse(value)
+                                }
+                            } else {
+                                LocalDate.parse(value)
+                            }
+                            LocalDateTime(date, LocalTime(0, 0, 0))
+                        }
+                        else -> LocalDateTime.parse("${value}T00:00:00")
+                    }
+                } catch (e: Exception) {
+                    println("FormValueConverters: Error parsing LocalDateTime from '$value': ${e.message}")
+                    null
+                }
+            }
+            else -> null
+        }
+    }
+    
+    /**
+     * Safely converts a form value to LocalDate
+     */
+    fun toLocalDate(value: Any?): LocalDate? {
+        return when {
+            value is LocalDate -> value
+            value is LocalDateTime -> value.date
+            value is String && value.isNotEmpty() -> {
+                try {
+                    when {
+                        value.contains('T') -> LocalDateTime.parse(value).date
+                        value.contains('/') -> {
+                            // Parse DD/MM/YYYY format
+                            val parts = value.split('/')
+                            if (parts.size == 3) {
+                                LocalDate(parts[2].toInt(), parts[1].toInt(), parts[0].toInt())
+                            } else {
+                                LocalDate.parse(value)
+                            }
+                        }
+                        else -> LocalDate.parse(value)
+                    }
+                } catch (e: Exception) {
+                    println("FormValueConverters: Error parsing LocalDate from '$value': ${e.message}")
+                    null
+                }
+            }
+            else -> null
+        }
+    }
+    
+    /**
+     * Converts form values map to typed values for easy consumption by ViewModels
+     */
+    fun convertFormValues(formData: Map<String, Any>, fieldDefinitions: List<FormFieldDefinition>): Map<String, Any> {
+        return formData.mapValues { (fieldId, value) ->
+            val fieldDef = fieldDefinitions.find { it.id == fieldId }
+            when (fieldDef?.type) {
+                FormFieldType.DATE, FormFieldType.DATETIME -> {
+                    toLocalDateTime(value, fieldDef.type) ?: value
+                }
+                FormFieldType.TIME -> {
+                    // For TIME fields, try to convert to LocalDateTime with current date
+                    toLocalDateTime(value, fieldDef.type) ?: value
+                }
+                else -> value
+            }
+        }
+    }
+}
 
 @Immutable
 data class FormState(
@@ -820,16 +914,82 @@ class DynamicFormViewModel(
     }
 
     private fun getAllFieldValues(): Map<String, Any> {
-        return _state.value.fieldStates
+        val result = _state.value.fieldStates
             .filter { (_, fieldState) -> fieldState.isVisible }
-            .mapValues { (_, fieldState) ->
-                fieldState.value ?: ""
+            .mapValues { (fieldId, fieldState) ->
+                val fieldConfig = _state.value.configuration.fields.find { it.id == fieldId }
+                when {
+                    // For DATE, TIME, and DATETIME fields, ensure LocalDateTime is serialized as string
+                    fieldConfig?.type == FormFieldType.DATE && fieldState.value is LocalDateTime -> {
+                        val dateTimeString = (fieldState.value as LocalDateTime).toString()
+                        println("DynamicFormViewModel: DATE field '$fieldId' - LocalDateTime: ${fieldState.value} -> String: $dateTimeString")
+                        dateTimeString
+                    }
+                    fieldConfig?.type == FormFieldType.TIME && fieldState.value is LocalDateTime -> {
+                        val dateTimeString = (fieldState.value as LocalDateTime).toString()
+                        println("DynamicFormViewModel: TIME field '$fieldId' - LocalDateTime: ${fieldState.value} -> String: $dateTimeString")
+                        dateTimeString
+                    }
+                    fieldConfig?.type == FormFieldType.DATETIME && fieldState.value is LocalDateTime -> {
+                        val dateTimeString = (fieldState.value as LocalDateTime).toString()
+                        println("DynamicFormViewModel: DATETIME field '$fieldId' - LocalDateTime: ${fieldState.value} -> String: $dateTimeString")
+                        dateTimeString
+                    }
+                    fieldState.value is LocalDate -> {
+                        val dateString = fieldState.value.toString()
+                        println("DynamicFormViewModel: LocalDate field '$fieldId' - LocalDate: ${fieldState.value} -> String: $dateString")
+                        dateString
+                    }
+                    fieldState.value is LocalTime -> {
+                        val timeString = fieldState.value.toString()
+                        println("DynamicFormViewModel: LocalTime field '$fieldId' - LocalTime: ${fieldState.value} -> String: $timeString")
+                        timeString
+                    }
+                    else -> {
+                        val value = fieldState.value ?: ""
+                        if (fieldConfig?.type == FormFieldType.DATE || fieldConfig?.type == FormFieldType.TIME || fieldConfig?.type == FormFieldType.DATETIME) {
+                            println("DynamicFormViewModel: Date/Time field '$fieldId' - Raw value: $value (${value::class.simpleName})")
+                        }
+                        value
+                    }
+                }
             }
+        
+        println("DynamicFormViewModel: getAllFieldValues() result: $result")
+        return result
+    }
+    
+    /**
+     * Gets field values with proper typing for LocalDateTime fields
+     * This should be used by form submission handlers that need typed values
+     */
+    fun getTypedFieldValues(): Map<String, Any> {
+        val stringValues = getAllFieldValues()
+        return FormValueConverters.convertFormValues(stringValues, _state.value.configuration.fields)
     }
 
     private fun getAllFieldValuesIncludingInvisible(): Map<String, Any> {
-        return _state.value.fieldStates.mapValues { (_, fieldState) ->
-            fieldState.value ?: ""
+        return _state.value.fieldStates.mapValues { (fieldId, fieldState) ->
+            val fieldConfig = _state.value.configuration.fields.find { it.id == fieldId }
+            when {
+                // For DATE, TIME, and DATETIME fields, ensure LocalDateTime is serialized as string
+                fieldConfig?.type == FormFieldType.DATE && fieldState.value is LocalDateTime -> {
+                    (fieldState.value as LocalDateTime).toString()
+                }
+                fieldConfig?.type == FormFieldType.TIME && fieldState.value is LocalDateTime -> {
+                    (fieldState.value as LocalDateTime).toString()
+                }
+                fieldConfig?.type == FormFieldType.DATETIME && fieldState.value is LocalDateTime -> {
+                    (fieldState.value as LocalDateTime).toString()
+                }
+                fieldState.value is LocalDate -> {
+                    fieldState.value.toString()
+                }
+                fieldState.value is LocalTime -> {
+                    fieldState.value.toString()
+                }
+                else -> fieldState.value ?: ""
+            }
         }
     }
 

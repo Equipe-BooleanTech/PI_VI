@@ -44,8 +44,30 @@ class DefaultValidationEngine(
         
         // Handle LocalDateTime values for date/time fields
         val stringValue = when {
-            value is LocalDateTime -> value.toString()
-            value is LocalDate -> value.toString()
+            value is LocalDateTime -> {
+                when (field.type) {
+                    FormFieldType.DATE -> {
+                        // For DATE fields, format as user-friendly date only
+                        val date = value.date
+                        "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year}"
+                    }
+                    FormFieldType.TIME -> {
+                        // For TIME fields, format as time only
+                        val time = value.time
+                        "${time.hour.toString().padStart(2, '0')}:${time.minute.toString().padStart(2, '0')}"
+                    }
+                    FormFieldType.DATETIME -> {
+                        // For DATETIME fields, format as date and time
+                        val date = value.date
+                        val time = value.time
+                        "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year} ${time.hour.toString().padStart(2, '0')}:${time.minute.toString().padStart(2, '0')}"
+                    }
+                    else -> value.toString()
+                }
+            }
+            value is LocalDate -> {
+                "${value.dayOfMonth.toString().padStart(2, '0')}/${value.monthNumber.toString().padStart(2, '0')}/${value.year}"
+            }
             else -> value?.toString() ?: ""
         }
 
