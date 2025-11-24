@@ -187,15 +187,7 @@ fun PrescriptionsScreen() {
                     updatePrescriptionViewModel.onEvent(UpdatePrescriptionUiEvent.ClearState)
                 },
                 onSuccess = { formData ->
-                    val jsonFormData = formData.mapValues { (_, value) ->
-                        when (value) {
-                            is String -> JsonPrimitive(value)
-                            is Number -> JsonPrimitive(value.toString())
-                            is Boolean -> JsonPrimitive(value)
-                            else -> JsonPrimitive(value.toString())
-                        }
-                    }
-                    updatePrescriptionViewModel.onEvent(UpdatePrescriptionUiEvent.UpdatePrescription(prescription.id ?: "", jsonFormData))
+                    updatePrescriptionViewModel.onEvent(UpdatePrescriptionUiEvent.UpdatePrescription(prescription.id ?: "", formData))
                 }
             )
         }

@@ -82,13 +82,6 @@ fun addPrescriptionFormConfiguration(petOptions: List<SelectOption> = emptyList(
             validators = emptyList()
         ),
         FormFieldDefinition(
-            id = "medicalRecordId",
-            label = "Registro Médico (Opcional)",
-            type = FormFieldType.TEXT,
-            placeholder = "ID do registro médico",
-            validators = emptyList()
-        ),
-        FormFieldDefinition(
             id = "observations",
             label = "Observações",
             type = FormFieldType.TEXTAREA,

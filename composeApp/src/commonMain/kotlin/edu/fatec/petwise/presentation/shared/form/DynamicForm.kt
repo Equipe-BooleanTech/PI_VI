@@ -31,6 +31,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import edu.fatec.petwise.features.auth.shared.InputMasks
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,7 +57,7 @@ fun DynamicForm(
             when (event) {
                 is FormEvent.FormSubmitted -> {
                     if (event.isValid) {
-                        onSubmitSuccess?.invoke(event.values)
+                        onSubmitSuccess?.invoke(viewModel.getTypedFieldValues())
                     }
                 }
                 is FormEvent.ErrorOccurred -> {
@@ -894,7 +900,7 @@ private fun RenderTextAreaField(
 private fun RenderDateField(
     fieldDefinition: FormFieldDefinition,
     fieldState: FieldState,
-    onValueChange: (String) -> Unit,
+    onValueChange: (Any?) -> Unit,
     onFocus: () -> Unit,
     onBlur: () -> Unit,
     fieldHeight: Dp,
@@ -909,10 +915,46 @@ private fun RenderDateField(
         fieldDefinition.label
     }
 
+    // Format the display value for DATE fields - show only the date part
+    val displayValue = remember(fieldState.value, fieldState.displayValue) {
+        when {
+            fieldState.value is LocalDateTime -> {
+                val date = (fieldState.value as LocalDateTime).date
+                "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year}"
+            }
+            fieldState.value is LocalDate -> {
+                val date = fieldState.value as LocalDate
+                "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year}"
+            }
+            fieldState.displayValue.isNotEmpty() -> {
+                // Try to parse existing display value and reformat it
+                try {
+                    when {
+                        fieldState.displayValue.contains('T') -> {
+                            // Parse LocalDateTime string format
+                            val dateTime = LocalDateTime.parse(fieldState.displayValue)
+                            val date = dateTime.date
+                            "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year}"
+                        }
+                        fieldState.displayValue.contains('-') && fieldState.displayValue.length == 10 -> {
+                            // Parse LocalDate string format (YYYY-MM-DD)
+                            val date = LocalDate.parse(fieldState.displayValue)
+                            "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year}"
+                        }
+                        else -> fieldState.displayValue
+                    }
+                } catch (e: Exception) {
+                    fieldState.displayValue
+                }
+            }
+            else -> ""
+        }
+    }
+
     OutlinedTextField(
-        value = fieldState.displayValue,
-        onValueChange = onValueChange,
-        readOnly = false,
+        value = displayValue,
+        onValueChange = { /* Read-only field */ },
+        readOnly = true,
         label = labelText?.let { { Text(it) } },
         placeholder = fieldDefinition.placeholder?.let { { Text(it) } },
         modifier = Modifier
@@ -949,8 +991,11 @@ private fun RenderDateField(
         PlatformDatePicker(
             fieldDefinition = fieldDefinition,
             fieldState = fieldState,
-            onValueChange = { newValue ->
-                onValueChange(newValue)
+            onValueChange = { selectedDate ->
+                // Convert LocalDate to LocalDateTime with default time (00:00:00)
+                // The date is stored as LocalDateTime but displayed as date only
+                val localDateTime = toLocalDateTime(fieldDefinition.type, selectedDate)
+                onValueChange(localDateTime)
                 showDatePicker = false
                 onBlur()
             }
@@ -962,7 +1007,7 @@ private fun RenderDateField(
 private fun RenderTimeField(
     fieldDefinition: FormFieldDefinition,
     fieldState: FieldState,
-    onValueChange: (String) -> Unit,
+    onValueChange: (Any?) -> Unit,
     onFocus: () -> Unit,
     onBlur: () -> Unit,
     fieldHeight: Dp,
@@ -1017,8 +1062,9 @@ private fun RenderTimeField(
         PlatformTimePicker(
             fieldDefinition = fieldDefinition,
             fieldState = fieldState,
-            onValueChange = { newValue ->
-                onValueChange(newValue)
+            onValueChange = { selectedTime ->
+                val localDateTime = toLocalDateTime(fieldDefinition.type, selectedTime)
+                onValueChange(localDateTime)
                 showTimePicker = false
                 onBlur()
             }
@@ -1030,7 +1076,7 @@ private fun RenderTimeField(
 private fun RenderDateTimeField(
     fieldDefinition: FormFieldDefinition,
     fieldState: FieldState,
-    onValueChange: (String) -> Unit,
+    onValueChange: (Any?) -> Unit,
     onFocus: () -> Unit,
     onBlur: () -> Unit,
     fieldHeight: Dp,
@@ -1067,8 +1113,8 @@ private fun RenderDateTimeField(
                 onValueChange("$newValue $timeValue")
             },
             readOnly = false,
-            label = { Text("${labelText ?: "Date/Time"} - Date") },
-            placeholder = { Text("Select Date") },
+            label = { Text("${labelText ?: "Date/Time"} - Data") },
+            placeholder = { Text("Selecione uma data...") },
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = fieldHeight),
@@ -1086,7 +1132,7 @@ private fun RenderDateTimeField(
                 IconButton(onClick = { showDatePicker = true; onFocus() }) {
                     Icon(
                         imageVector = Icons.Filled.CalendarToday,
-                        contentDescription = "Select Date",
+                        contentDescription = "Selecione uma data...",
                         tint = colorScheme.onSurfaceVariant
                     )
                 }
@@ -1101,8 +1147,8 @@ private fun RenderDateTimeField(
                 onBlur()
             },
             readOnly = false,
-            label = { Text("${labelText ?: "Date/Time"} - Time") },
-            placeholder = { Text("Select Time") },
+            label = { Text("${labelText ?: "Date/Time"} - Horário") },
+            placeholder = { Text("Selecione um horário...") },
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = fieldHeight),
@@ -1120,7 +1166,7 @@ private fun RenderDateTimeField(
                 IconButton(onClick = { showTimePicker = true; onFocus() }) {
                     Icon(
                         imageVector = Icons.Filled.Schedule,
-                        contentDescription = "Select Time",
+                        contentDescription = "Selecione um horário...",
                         tint = colorScheme.onSurfaceVariant
                     )
                 }
@@ -1133,8 +1179,17 @@ private fun RenderDateTimeField(
             fieldDefinition = fieldDefinition,
             fieldState = fieldState.copy(displayValue = dateValue),
             onValueChange = { newDate ->
-                dateValue = newDate
-                onValueChange("$newDate $timeValue")
+                dateValue = newDate.toString()
+                if (timeValue.isNotEmpty()) {
+                    try {
+                        val date = newDate as LocalDate
+                        val time = LocalTime.parse(timeValue)
+                        val localDateTime = LocalDateTime(date, time)
+                        onValueChange(localDateTime)
+                    } catch (e: Exception) {
+                        // Handle parsing error if needed
+                    }
+                }
                 showDatePicker = false
             }
         )
@@ -1146,7 +1201,16 @@ private fun RenderDateTimeField(
             fieldState = fieldState.copy(displayValue = timeValue),
             onValueChange = { newTime ->
                 timeValue = newTime
-                onValueChange("$dateValue $newTime")
+                if (dateValue.isNotEmpty()) {
+                    try {
+                        val date = LocalDate.parse(dateValue)
+                        val time = LocalTime.parse(newTime)
+                        val localDateTime = LocalDateTime(date, time)
+                        onValueChange(localDateTime)
+                    } catch (e: Exception) {
+                        // Handle parsing error if needed
+                    }
+                }
                 showTimePicker = false
                 onBlur()
             }
@@ -1178,6 +1242,25 @@ private fun calculateFieldHeight(screenWidth: Dp): Dp {
 private fun shouldShowFieldError(fieldState: FieldState, formHasBeenSubmitted: Boolean): Boolean {
     return fieldState.errors.isNotEmpty() && 
         (fieldState.isTouched || formHasBeenSubmitted)
+}
+
+private fun toLocalDateTime(fieldType: FormFieldType, value: Any?): LocalDateTime? {
+    return when (fieldType) {
+        FormFieldType.DATE -> {
+            val date = value as? LocalDate ?: return null
+            LocalDateTime(date, LocalTime(0, 0, 0))
+        }
+        FormFieldType.TIME -> {
+            val time = value as? LocalTime ?: return null
+            val currentInstant = Clock.System.now()
+            val currentDate = currentInstant.toLocalDateTime(TimeZone.currentSystemDefault()).date
+            LocalDateTime(currentDate, time)
+        }
+        FormFieldType.DATETIME -> {
+            value as? LocalDateTime
+        }
+        else -> null
+    }
 }
 
 private fun extractCleanErrorMessage(rawMessage: String): String {

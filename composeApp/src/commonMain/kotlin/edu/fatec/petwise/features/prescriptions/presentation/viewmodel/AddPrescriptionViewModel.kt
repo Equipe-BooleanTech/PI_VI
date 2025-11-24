@@ -66,7 +66,7 @@ class AddPrescriptionViewModel(
                     instructions = event.formData["instructions"] as? String ?: "",
                     diagnosis = event.formData["diagnosis"] as? String,
                     validUntil = event.formData["validUntil"] as? String,
-                    status = "ATIVA", // Default status
+                    status = "ATIVA",
                     medications = event.formData["medications"] as? String ?: "",
                     observations = event.formData["observations"] as? String ?: "",
                     active = true,

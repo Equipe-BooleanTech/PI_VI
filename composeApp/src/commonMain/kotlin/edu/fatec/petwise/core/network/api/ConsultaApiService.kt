@@ -12,7 +12,7 @@ interface ConsultaApiService {
     suspend fun getConsultaById(id: String): NetworkResult<ConsultaDto>
     suspend fun createConsulta(request: CreateConsultaRequest): NetworkResult<ConsultaDto>
     suspend fun updateConsulta(id: String, request: UpdateConsultaRequest): NetworkResult<ConsultaDto>
-    suspend fun deleteConsulta(id: String): NetworkResult<ConsultaDto>
+    suspend fun deleteConsulta(id: String): NetworkResult<MessageResponse>
     suspend fun updateConsultaStatus(id: String, request: UpdateConsultaStatusRequest): NetworkResult<ConsultaDto>
     suspend fun cancelConsulta(id: String, request: CancelConsultaRequest): NetworkResult<CancelConsultaResponse>
     suspend fun searchConsultas(query: String, page: Int = 1, pageSize: Int = 20): NetworkResult<List<ConsultaDto>>
@@ -59,8 +59,8 @@ class ConsultaApiServiceImpl(
         )
     }
 
-    override suspend fun deleteConsulta(id: String): NetworkResult<ConsultaDto> {
-        return networkHandler.delete<ConsultaDto>(ApiEndpoints.getConsulta(id))
+    override suspend fun deleteConsulta(id: String): NetworkResult<MessageResponse> {
+        return networkHandler.delete<MessageResponse>(ApiEndpoints.getConsulta(id))
     }
 
     override suspend fun updateConsultaStatus(

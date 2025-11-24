@@ -137,6 +137,10 @@ class RemotePrescriptionDataSourceImpl(
 }
 
 private fun parseDateToIso(date: String): String {
+    // If already ISO format with T, return as is
+    if (date.contains("T")) {
+        return date
+    }
     val dateParts = if (date.contains("/")) {
         // DD/MM/YYYY format
         date.split("/")

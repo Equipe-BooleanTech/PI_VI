@@ -37,26 +37,13 @@ fun createEditExamFormConfiguration(exam: Exam): FormConfiguration = FormConfigu
         FormFieldDefinition(
             id = "examDate",
             label = "Data do Exame",
-            type = FormFieldType.DATE,
+            type = FormFieldType.DATETIME,
             placeholder = "Selecione a data do exame",
             default = JsonPrimitive("${exam.examDate.dayOfMonth.toString().padStart(2, '0')}/${exam.examDate.monthNumber.toString().padStart(2, '0')}/${exam.examDate.year}"),
             validators = listOf(
                 ValidationRule(
                     type = ValidationType.REQUIRED,
                     message = "Data do exame é obrigatória"
-                )
-            )
-        ),
-        FormFieldDefinition(
-            id = "examTime",
-            label = "Horário do Exame",
-            type = FormFieldType.TIME,
-            placeholder = "HH:MM",
-            default = JsonPrimitive(exam.examTime),
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Horário do exame é obrigatório"
                 )
             )
         ),

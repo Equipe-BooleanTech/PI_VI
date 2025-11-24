@@ -150,7 +150,7 @@ sealed class NetworkException(
     }
 
     class NotFound(
-        message: String = "Recurso não encontrado",
+        message: String = "Usuário não encontrado",
         val resourceType: String? = null,
         val resourceId: String? = null
     ) : NetworkException(message) {

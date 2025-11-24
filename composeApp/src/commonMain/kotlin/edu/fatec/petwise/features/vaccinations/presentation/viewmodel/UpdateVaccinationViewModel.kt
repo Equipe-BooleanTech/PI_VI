@@ -43,10 +43,40 @@ class UpdateVaccinationViewModel(
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null, isSuccess = false)
             
             try {
-                // Extract form data
+                // Extract form data - note: LocalDateTime objects should come from the global handler
                 val vaccineTypeStr = formData["vaccineType"]?.content ?: ""
-                val vaccinationDate = formData["vaccinationDate"]?.content ?: ""
-                val nextDoseDate = formData["nextDoseDate"]?.content?.takeIf { it.isNotBlank() }
+                
+                // Handle LocalDateTime objects that come from the global handler
+                val vaccinationDate = try {
+                    // Try to parse as LocalDateTime first (from global handler)
+                    val dateStr = formData["vaccinationDate"]?.content ?: ""
+                    if (dateStr.contains("T")) {
+                        kotlinx.datetime.LocalDateTime.parse(dateStr)
+                    } else {
+                        // Fallback for string format
+                        kotlinx.datetime.LocalDateTime.parse("${dateStr}T00:00:00")
+                    }
+                } catch (e: Exception) {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        errorMessage = "Data de vacinação inválida"
+                    )
+                    return@launch
+                }
+                
+                val nextDoseDate = try {
+                    val nextDateStr = formData["nextDoseDate"]?.content?.takeIf { it.isNotBlank() }
+                    nextDateStr?.let {
+                        if (it.contains("T")) {
+                            kotlinx.datetime.LocalDateTime.parse(it)
+                        } else {
+                            kotlinx.datetime.LocalDateTime.parse("${it}T00:00:00")
+                        }
+                    }
+                } catch (e: Exception) {
+                    null
+                }
+                
                 val totalDoses = formData["totalDoses"]?.content?.toIntOrNull() ?: 1
                 val manufacturer = formData["manufacturer"]?.content?.takeIf { it.isNotBlank() }
                 val statusStr = formData["status"]?.content ?: ""
@@ -61,25 +91,10 @@ class UpdateVaccinationViewModel(
                     return@launch
                 }
 
-                if (vaccinationDate.isBlank()) {
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        errorMessage = "Data de aplicação é obrigatória"
-                    )
-                    return@launch
-                }
-
                 if (statusStr.isBlank()) {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         errorMessage = "Status é obrigatório"
-                    )
-                    return@launch
-                }
-                if (vaccineTypeStr.isBlank()) {
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        errorMessage = "Tipo de vacina é obrigatório"
                     )
                     return@launch
                 }

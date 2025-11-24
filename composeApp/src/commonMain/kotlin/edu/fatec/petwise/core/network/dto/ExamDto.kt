@@ -40,6 +40,7 @@ data class CreateExamRequest(
 
 @Serializable
 data class UpdateExamRequest(
+    val petId: String? = null,
     val examType: String? = null,
     val examDate: String? = null,
     val results: String? = null,
@@ -63,5 +64,45 @@ fun ExamDto.toExam(): Exam {
         attachmentUrl = attachmentUrl,
         createdAt = createdAt,
         updatedAt = updatedAt
+    )
+}
+
+fun Exam.toDto(): ExamDto {
+    return ExamDto(
+        id = id,
+        petId = petId,
+        veterinaryId = veterinaryId,
+        examType = examType,
+        examDate = examDate.toString(),
+        results = results,
+        status = status,
+        notes = notes,
+        attachmentUrl = attachmentUrl,
+        createdAt = createdAt,
+        updatedAt = updatedAt
+    )
+}
+
+fun Exam.toCreateRequest(): CreateExamRequest {
+    return CreateExamRequest(
+        petId = petId,
+        examType = examType,
+        examDate = examDate.toString(),
+        results = results,
+        status = status,
+        notes = notes,
+        attachmentUrl = attachmentUrl
+    )
+}
+
+fun Exam.toUpdateRequest(): UpdateExamRequest {
+    return UpdateExamRequest(
+        petId = petId,
+        examType = examType,
+        examDate = examDate.toString(),
+        results = results,
+        status = status,
+        notes = notes,
+        attachmentUrl = attachmentUrl
     )
 }

@@ -3,6 +3,7 @@ package edu.fatec.petwise.core.network.dto
 import edu.fatec.petwise.features.medications.domain.models.Medication
 import edu.fatec.petwise.features.medications.domain.models.MedicationFrequency
 import edu.fatec.petwise.features.medications.domain.models.MedicationStatus
+import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -14,12 +15,12 @@ data class MedicationDto(
     val dosage: String,
     val frequency: String,
     val durationDays: Int,
-    val startDate: String,
-    val endDate: String,
+    val startDate: LocalDateTime,
+    val endDate: LocalDateTime,
     val sideEffects: String = "",
     val status: String = "ACTIVE",
-    val createdAt: String,
-    val updatedAt: String
+    val createdAt: LocalDateTime,
+    val updatedAt: LocalDateTime
 )
 
 @Serializable
@@ -29,8 +30,8 @@ data class CreateMedicationRequest(
     val dosage: String,
     val frequency: String,
     val durationDays: Int,
-    val startDate: String,
-    val endDate: String,
+    val startDate: LocalDateTime,
+    val endDate: LocalDateTime,
     val sideEffects: String = ""
 )
 
@@ -39,7 +40,7 @@ data class UpdateMedicationRequest(
     val dosage: String? = null,
     val frequency: String? = null,
     val durationDays: Int? = null,
-    val endDate: String? = null,
+    val endDate: LocalDateTime? = null,
     val sideEffects: String? = null
 )
 

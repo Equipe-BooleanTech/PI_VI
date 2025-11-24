@@ -1,5 +1,6 @@
 package edu.fatec.petwise.features.medications.domain.models
 
+import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -11,12 +12,12 @@ data class Medication(
     val dosage: String,
     val frequency: String,
     val durationDays: Int,
-    val startDate: String,
-    val endDate: String,
+    val startDate: LocalDateTime,
+    val endDate: LocalDateTime,
     val sideEffects: String = "",
     val status: MedicationStatus = MedicationStatus.ACTIVE,
-    val createdAt: String,
-    val updatedAt: String
+    val createdAt: LocalDateTime,
+    val updatedAt: LocalDateTime
 )
 
 enum class MedicationFrequency(val displayName: String) {

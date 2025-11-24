@@ -79,6 +79,7 @@ class RemoteExamDataSourceImpl(
 
     override suspend fun updateExam(exam: Exam): Exam {
         val request = UpdateExamRequest(
+            petId = exam.petId,
             examType = exam.examType,
             examDate = exam.examDate.toString(),
             results = exam.results,

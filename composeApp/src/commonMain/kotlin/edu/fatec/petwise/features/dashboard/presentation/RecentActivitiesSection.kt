@@ -62,7 +62,6 @@ fun RecentActivitiesSection(
             }
         }
         UserType.VETERINARY -> {
-            // For VETERINARY, show medical activities (consultations, vaccines, prescriptions, exams, labs)
             upcomingConsultas.take(3).map { consulta ->
                 val date = consulta.consultaDate
                 val formattedDate = "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year} ${consulta.consultaTime}"
@@ -78,41 +77,8 @@ fun RecentActivitiesSection(
                 )
             }
         }
-        UserType.PHARMACY -> {
-            // For PHARMACY, show medication-related activities
-            upcomingConsultas.take(3).map { consulta ->
-                val date = consulta.consultaDate
-                val formattedDate = "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year} ${consulta.consultaTime}"
-
-                RecentActivityData(
-                    id = consulta.id,
-                    title = "Prescrição pendente",
-                    description = "${consulta.petName} - Medicação prescrita",
-                    date = formattedDate,
-                    icon = Icons.Default.Add,
-                    iconBackground = "#9C27B0",
-                    route = "prescriptions/${consulta.id}"
-                )
-            }
-        }
-        UserType.PETSHOP -> {
-            // For PETSHOP, show product-related activities
-            // TODO: Replace with actual product activities when available
-            upcomingConsultas.take(3).map { consulta ->
-                val date = consulta.consultaDate
-                val formattedDate = "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year} ${consulta.consultaTime}"
-
-                RecentActivityData(
-                    id = consulta.id,
-                    title = "Produto vendido",
-                    description = "${consulta.petName} - Compra realizada",
-                    date = formattedDate,
-                    icon = Icons.Default.FlashOn,
-                    iconBackground = "#00b942",
-                    route = "suprimentos/${consulta.id}"
-                )
-            }
-        }
+        UserType.PHARMACY -> emptyList<RecentActivityData>()
+        UserType.PETSHOP -> emptyList<RecentActivityData>()
     }
 
     if (activities.isEmpty()) {

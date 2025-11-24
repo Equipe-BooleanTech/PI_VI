@@ -3,7 +3,9 @@ package edu.fatec.petwise.features.medications.domain.usecases
 import edu.fatec.petwise.features.medications.domain.models.Medication
 import edu.fatec.petwise.features.medications.domain.models.MedicationFilterOptions
 import edu.fatec.petwise.features.medications.domain.repository.MedicationRepository
+import edu.fatec.petwise.features.prescriptions.domain.usecases.GetPrescriptionByIdUseCase
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 
 class GetMedicationsUseCase(
     private val repository: MedicationRepository
@@ -30,7 +32,9 @@ class GetMedicationByIdUseCase(
 }
 
 class AddMedicationUseCase(
-    private val repository: MedicationRepository
+    private val repository: MedicationRepository,
+    private val getPrescriptionByIdUseCase: GetPrescriptionByIdUseCase,
+    private val getMedicationsUseCase: GetMedicationsUseCase
 ) {
     suspend operator fun invoke(medication: Medication): Result<Medication> {
         return if (validateMedication(medication)) {
@@ -40,13 +44,18 @@ class AddMedicationUseCase(
         }
     }
 
-    private fun validateMedication(medication: Medication): Boolean {
+    private suspend fun validateMedication(medication: Medication): Boolean {
+        val prescriptionExists = getPrescriptionByIdUseCase(medication.prescriptionId).first() != null
+        if (!prescriptionExists) return false
+
+        val existingMedications = getMedicationsUseCase.getMedicationsByPrescriptionId(medication.prescriptionId).first()
+        val duplicate = existingMedications.any { it.medicationName.equals(medication.medicationName, ignoreCase = true) }
+        if (duplicate) return false
+
         return medication.medicationName.isNotBlank() &&
                medication.dosage.isNotBlank() &&
                medication.frequency.isNotBlank() &&
                medication.durationDays > 0 &&
-               medication.startDate.isNotBlank() &&
-               medication.endDate.isNotBlank() &&
                medication.prescriptionId.isNotBlank()
     }
 }

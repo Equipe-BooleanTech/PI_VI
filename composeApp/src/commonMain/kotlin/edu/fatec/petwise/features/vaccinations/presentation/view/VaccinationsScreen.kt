@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import edu.fatec.petwise.features.vaccinations.domain.models.Vaccination
 import edu.fatec.petwise.features.vaccinations.domain.models.VaccinationStatus
+import edu.fatec.petwise.features.pets.domain.models.Pet
 import edu.fatec.petwise.features.vaccinations.presentation.components.AddVaccinationDialog
 import edu.fatec.petwise.features.vaccinations.presentation.components.EditVaccinationDialog
 import edu.fatec.petwise.features.vaccinations.presentation.components.DeleteVaccinationConfirmationDialog
@@ -32,6 +33,32 @@ import edu.fatec.petwise.features.vaccinations.presentation.viewmodel.AddVaccina
 import edu.fatec.petwise.features.vaccinations.di.VaccinationDependencyContainer
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.fromHex
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.format
+import kotlinx.datetime.format.char
+
+fun formatDateTime(dateTime: LocalDateTime): String {
+    return try {
+        val format = LocalDateTime.Format {
+            dayOfMonth()
+            char('/')
+            monthNumber()
+            char('/')
+            year()
+            chars(" às ")
+            hour()
+            char(':')
+            minute()
+        }
+        dateTime.format(format)
+    } catch (e: Exception) {
+        "${dateTime.dayOfMonth.toString().padStart(2, '0')}/" +
+        "${dateTime.monthNumber.toString().padStart(2, '0')}/" +
+        "${dateTime.year} às " +
+        "${dateTime.hour.toString().padStart(2, '0')}:" +
+        "${dateTime.minute.toString().padStart(2, '0')}"
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,6 +72,7 @@ fun VaccinationsScreen(
     val addUiState by addVaccinationViewModel.uiState.collectAsState()
     val updateUiState by updateVaccinationViewModel.uiState.collectAsState()
     val vaccinations = uiState.vaccinations
+    val pets = uiState.pets
     val pendingVaccinations = remember(vaccinations) {
         vaccinations.filter {
             it.status == VaccinationStatus.ATRASADA || it.status == VaccinationStatus.AGENDADA
@@ -103,6 +131,7 @@ fun VaccinationsScreen(
                     VaccinationsListContent(
                         vaccinations = vaccinations,
                         pendingVaccinations = pendingVaccinations,
+                        pets = pets,
                         onEditVaccination = { vaccination ->
                             vaccinationToEdit = vaccination
                             showEditDialog = true
@@ -364,6 +393,7 @@ private fun EmptyContent(
 private fun VaccinationsListContent(
     vaccinations: List<Vaccination>,
     pendingVaccinations: List<Vaccination>,
+    pets: List<Pet>,
     onEditVaccination: (Vaccination) -> Unit,
     onDeleteVaccination: (Vaccination) -> Unit,
     onScheduleVaccination: (String) -> Unit
@@ -375,7 +405,7 @@ private fun VaccinationsListContent(
     ) {
         if (pendingVaccinations.isNotEmpty()) {
             item {
-                PendingVaccinationsCard(pendingVaccinations = pendingVaccinations)
+                PendingVaccinationsCard(pendingVaccinations = pendingVaccinations, pets = pets)
             }
         }
         
@@ -392,6 +422,7 @@ private fun VaccinationsListContent(
         ) { vaccination: Vaccination ->
             VaccinationCard(
                 vaccination = vaccination,
+                pets = pets,
                 onEdit = { onEditVaccination(vaccination) },
                 onDelete = { onDeleteVaccination(vaccination) },
                 onSchedule = { onScheduleVaccination(vaccination.id) }
@@ -445,7 +476,7 @@ private fun VaccinationErrorSnackbar(
 }
 
 @Composable
-private fun PendingVaccinationsCard(pendingVaccinations: List<Vaccination>) {
+private fun PendingVaccinationsCard(pendingVaccinations: List<Vaccination>, pets: List<Pet>) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -482,12 +513,12 @@ private fun PendingVaccinationsCard(pendingVaccinations: List<Vaccination>) {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "${vaccination.petId} - ${vaccination.vaccineType.getDisplayName()}",
+                        text = "${pets.find { it.id == vaccination.petId }?.name ?: vaccination.petId} - ${vaccination.vaccineType.getDisplayName()}",
                         fontSize = 14.sp,
                         color = Color(0xFF856404)
                     )
                     Text(
-                        text = vaccination.nextDoseDate ?: "",
+                        text = vaccination.nextDoseDate?.let { formatDateTime(it) } ?: "",
                         fontSize = 14.sp,
                         color = Color(0xFF856404)
                     )
@@ -615,6 +646,7 @@ private fun VaccinationInfoRow(
 @Composable
 private fun VaccinationCard(
     vaccination: Vaccination,
+    pets: List<Pet>,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     onSchedule: () -> Unit
@@ -638,7 +670,7 @@ private fun VaccinationCard(
                     color = Color(0xFF2196F3).copy(alpha = 0.1f)
                 ) {
                     Text(
-                        text = vaccination.petId,
+                        text = pets.find { it.id == vaccination.petId }?.name ?: vaccination.petId,
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
                         fontSize = 13.sp,
                         color = Color(0xFF2196F3),
@@ -663,7 +695,7 @@ private fun VaccinationCard(
                 
                 if (vaccination.status == VaccinationStatus.APLICADA) {
                     Text(
-                        text = vaccination.vaccinationDate,
+                        text = formatDateTime(vaccination.vaccinationDate),
                         fontSize = 13.sp,
                         color = Color(0xFF757575)
                     )
@@ -683,13 +715,13 @@ private fun VaccinationCard(
             
             VaccinationInfoRow(
                 label = "Data de Aplicação:",
-                value = vaccination.vaccinationDate
+                value = formatDateTime(vaccination.vaccinationDate)
             )
             
             if (vaccination.nextDoseDate != null) {
                 VaccinationInfoRow(
                     label = "Próximo Reforço:",
-                    value = vaccination.nextDoseDate,
+                    value = vaccination.nextDoseDate?.let { formatDateTime(it) } ?: "Não agendado",
                     valueColor = if (vaccination.status == VaccinationStatus.ATRASADA) 
                         Color(0xFFDC3545) else Color(0xFF757575)
                 )

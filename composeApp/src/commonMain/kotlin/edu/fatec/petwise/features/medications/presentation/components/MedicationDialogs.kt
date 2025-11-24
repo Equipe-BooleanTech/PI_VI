@@ -35,10 +35,16 @@ fun AddMedicationDialog(
     val theme = PetWiseTheme.Light
     val addMedicationState by addMedicationViewModel.uiState.collectAsState()
 
-    val formConfiguration = addMedicationFormConfiguration
+    val formConfiguration = addMedicationFormConfiguration(addMedicationState.prescriptions, addMedicationState.pets)
 
-    val formViewModel = viewModel<DynamicFormViewModel>(key = "add_medication_form") {
+    val formViewModel = viewModel<DynamicFormViewModel>(key = "add_medication_form_${addMedicationState.prescriptions.size}_${addMedicationState.pets.size}") {
         DynamicFormViewModel(initialConfiguration = formConfiguration)
+    }
+    
+    LaunchedEffect(addMedicationState) {
+        val newConfig = addMedicationFormConfiguration(addMedicationState.prescriptions, addMedicationState.pets)
+        formViewModel.resetForm()
+        formViewModel.updateConfiguration(newConfig)
     }
     
     LaunchedEffect(addMedicationState.isSuccess) {
@@ -182,10 +188,21 @@ fun EditMedicationDialog(
     val theme = PetWiseTheme.Light
     val updateMedicationState by updateMedicationViewModel.uiState.collectAsState()
 
-    val formConfiguration = createEditMedicationFormConfiguration(medication)
+    val formConfiguration = createEditMedicationFormConfiguration(medication, updateMedicationState.prescriptions, updateMedicationState.pets)
 
-    val formViewModel = viewModel<DynamicFormViewModel>(key = "edit_medication_form_${medication.id}") {
+    val formViewModel = viewModel<DynamicFormViewModel>(key = "edit_medication_form_${medication.id}_${updateMedicationState.prescriptions.size}_${updateMedicationState.pets.size}") {
         DynamicFormViewModel(initialConfiguration = formConfiguration)
+    }
+    
+    LaunchedEffect(updateMedicationState) {
+        val med = updateMedicationState.medication ?: medication
+        val newConfig = createEditMedicationFormConfiguration(
+            med,
+            updateMedicationState.prescriptions,
+            updateMedicationState.pets
+        )
+        formViewModel.resetForm()
+        formViewModel.updateConfiguration(newConfig)
     }
     
     LaunchedEffect(updateMedicationState.isSuccess) {

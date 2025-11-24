@@ -8,8 +8,8 @@ data class Vaccination(
     val petId: String,
     val veterinarianId: String,
     val vaccineType: VaccineType,
-    val vaccinationDate: String,
-    val nextDoseDate: String?,
+    val vaccinationDate: kotlinx.datetime.LocalDateTime,
+    val nextDoseDate: kotlinx.datetime.LocalDateTime?,
     val totalDoses: Int,
     val manufacturer: String?,
     val observations: String = "",
@@ -53,7 +53,7 @@ data class VaccinationFilterOptions(
     val petId: String? = null,
     val vaccineType: VaccineType? = null,
     val status: VaccinationStatus? = null,
-    val startDate: String? = null,
-    val endDate: String? = null,
+    val startDate: kotlinx.datetime.LocalDateTime? = null,
+    val endDate: kotlinx.datetime.LocalDateTime? = null,
     val searchQuery: String = ""
 )

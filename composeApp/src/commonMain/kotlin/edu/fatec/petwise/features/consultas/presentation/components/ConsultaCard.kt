@@ -221,24 +221,6 @@ fun ConsultaCard(
                                     )
                                 }
                             }
-                            
-                            // Cancel button for OWNER and VETERINARY users
-                            if (userType == UserType.OWNER || userType == UserType.VETERINARY) {
-                                onCancelClick?.let { cancelClick ->
-                                    IconButton(
-                                        onClick = { cancelClick(consulta) },
-                                        modifier = Modifier.size(36.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Cancel,
-                                            contentDescription = "Cancelar consulta",
-                                            tint = Color.fromHex("#FF9800"),
-                                            modifier = Modifier.size(20.dp)
-                                        )
-                                    }
-                                }
-                            }
-                            
                             // Delete button only for VETERINARY users
                             if (userType == UserType.VETERINARY) {
                                 onDeleteClick?.let { deleteClick ->
@@ -262,12 +244,6 @@ fun ConsultaCard(
                             style = MaterialTheme.typography.bodySmall.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = Color.fromHex(theme.palette.textPrimary)
-                            )
-                        )
-                        Text(
-                            text = consulta.consultaTime,
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                color = Color.fromHex(theme.palette.textSecondary)
                             )
                         )
                         if (consulta.price > 0) {
@@ -345,5 +321,5 @@ private fun getConsultaTypeIcon(type: ConsultaType) = when (type) {
 }
 
 private fun formatDate(date: kotlinx.datetime.LocalDateTime): String {
-    return "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}"
+    return "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year} às ${date.hour.toString().padStart(2, '0')}:${date.minute.toString().padStart(2, '0')}"
 }

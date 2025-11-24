@@ -86,8 +86,8 @@ class RemoteMedicationDataSourceImpl(
             dosage = medication.dosage,
             frequency = medication.frequency,
             durationDays = medication.durationDays,
-            startDate = parseDateToIso(medication.startDate),
-            endDate = parseDateToIso(medication.endDate),
+            startDate = medication.startDate,
+            endDate = medication.endDate,
             sideEffects = medication.sideEffects
         )
 
@@ -111,7 +111,7 @@ class RemoteMedicationDataSourceImpl(
             dosage = medication.dosage,
             frequency = medication.frequency,
             durationDays = medication.durationDays,
-            endDate = parseDateToIso(medication.endDate),
+            endDate = medication.endDate,
             sideEffects = medication.sideEffects
         )
 
@@ -205,6 +205,18 @@ class RemoteMedicationDataSourceImpl(
 }
 
 private fun parseDateToIso(date: String): String {
+    if (date.contains("T")) {
+        // Already a datetime string, ensure it has milliseconds
+        return if (date.contains(".")) date else date + ".000"
+    }
+    if (date.contains(" ")) {
+        // Format like "2025-11-23 15:00"
+        val parts = date.split(" ")
+        val datePart = parts[0]
+        val timePart = parts[1]
+        return "${datePart}T${timePart}:00.000"
+    }
+    // Parse date only
     val dateParts = if (date.contains("/")) {
         date.split("/")
     } else {
@@ -215,5 +227,5 @@ private fun parseDateToIso(date: String): String {
     val year = dateParts[2].toInt()
 
     val localDateTime = LocalDateTime(year, month, day, 0, 0, 0)
-    return localDateTime.toString()
+    return localDateTime.toString() + ".000"
 }

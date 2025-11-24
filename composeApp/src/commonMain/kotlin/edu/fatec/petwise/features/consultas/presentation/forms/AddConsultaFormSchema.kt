@@ -49,30 +49,18 @@ fun createAddConsultaFormConfiguration(petOptions: List<SelectOption> = emptyLis
             )
         ),
         FormFieldDefinition(
-            id = "consultaDate",
-            label = "Data da Consulta",
-            type = FormFieldType.DATE,
-            placeholder = "DD/MM/YYYY",
+            id = "consultaDateTime",
+            label = "Data e Horário da Consulta",
+            type = FormFieldType.DATETIME,
+            placeholder = "DD/MM/YYYY HH:MM",
             validators = listOf(
                 ValidationRule(
                     type = ValidationType.REQUIRED,
-                    message = "Data é obrigatória"
+                    message = "Data e horário são obrigatórios"
                 ),
                 ValidationRule(
                     type = ValidationType.DATE,
-                    message = "Data inválida"
-                )
-            )
-        ),
-        FormFieldDefinition(
-            id = "consultaTime",
-            label = "Horário",
-            type = FormFieldType.TIME,
-            placeholder = "HH:MM",
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Horário é obrigatório"
+                    message = "Data/horário inválidos"
                 )
             )
         ),
@@ -173,32 +161,19 @@ fun createEditConsultaFormConfiguration(consulta: Consulta, petOptions: List<Sel
             )
         ),
         FormFieldDefinition(
-            id = "consultaDate",
-            label = "Data da Consulta",
-            type = FormFieldType.DATE,
-            placeholder = "DD/MM/YYYY",
-            default = JsonPrimitive("${consulta.consultaDate.dayOfMonth.toString().padStart(2, '0')}/${consulta.consultaDate.monthNumber.toString().padStart(2, '0')}/${consulta.consultaDate.year}"),
+            id = "consultaDateTime",
+            label = "Data e Horário da Consulta",
+            type = FormFieldType.DATETIME,
+            placeholder = "DD/MM/YYYY HH:MM",
+            default = JsonPrimitive("${consulta.consultaDate.dayOfMonth.toString().padStart(2, '0')}/${consulta.consultaDate.monthNumber.toString().padStart(2, '0')}/${consulta.consultaDate.year} ${consulta.consultaDate.hour.toString().padStart(2, '0')}:${consulta.consultaDate.minute.toString().padStart(2, '0')}"),
             validators = listOf(
                 ValidationRule(
                     type = ValidationType.REQUIRED,
-                    message = "Data é obrigatória"
+                    message = "Data e horário são obrigatórios"
                 ),
                 ValidationRule(
                     type = ValidationType.DATE,
-                    message = "Data inválida"
-                )
-            )
-        ),
-        FormFieldDefinition(
-            id = "consultaTime",
-            label = "Horário",
-            type = FormFieldType.TIME,
-            placeholder = "HH:MM",
-            default = JsonPrimitive(consulta.consultaTime),
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.REQUIRED,
-                    message = "Horário é obrigatório"
+                    message = "Data/horário inválidos"
                 )
             )
         ),

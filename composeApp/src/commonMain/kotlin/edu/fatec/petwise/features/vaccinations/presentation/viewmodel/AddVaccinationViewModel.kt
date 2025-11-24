@@ -24,8 +24,8 @@ sealed class AddVaccinationUiEvent {
     data class AddVaccination(
         val petId: String,
         val vaccineType: VaccineType,
-        val vaccinationDate: String,
-        val nextDoseDate: String?,
+        val vaccinationDate: kotlinx.datetime.LocalDateTime,
+        val nextDoseDate: kotlinx.datetime.LocalDateTime?,
         val totalDoses: String,
         val manufacturer: String,
         val observations: String

@@ -6,8 +6,11 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.toInstant
 
 /**
  * Engine de validação para formulários, suportando várias regras de validação
@@ -38,10 +41,38 @@ class DefaultValidationEngine(
         allValues: Map<String, Any>
     ): ValidationResult {
         val errors = mutableListOf<FormError.ValidationError>()
-        val stringValue = value?.toString() ?: ""
+        
+        // Handle LocalDateTime values for date/time fields
+        val stringValue = when {
+            value is LocalDateTime -> {
+                when (field.type) {
+                    FormFieldType.DATE -> {
+                        // For DATE fields, format as user-friendly date only
+                        val date = value.date
+                        "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year}"
+                    }
+                    FormFieldType.TIME -> {
+                        // For TIME fields, format as time only
+                        val time = value.time
+                        "${time.hour.toString().padStart(2, '0')}:${time.minute.toString().padStart(2, '0')}"
+                    }
+                    FormFieldType.DATETIME -> {
+                        // For DATETIME fields, format as date and time
+                        val date = value.date
+                        val time = value.time
+                        "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year} ${time.hour.toString().padStart(2, '0')}:${time.minute.toString().padStart(2, '0')}"
+                    }
+                    else -> value.toString()
+                }
+            }
+            value is LocalDate -> {
+                "${value.dayOfMonth.toString().padStart(2, '0')}/${value.monthNumber.toString().padStart(2, '0')}/${value.year}"
+            }
+            else -> value?.toString() ?: ""
+        }
 
         for (rule in field.validators) {
-            val validationError = validateRule(rule, field.id, stringValue, allValues)
+            val validationError = validateRule(rule, field.id, value, stringValue, allValues)
             if (validationError != null) {
                 errors.add(validationError)
             }
@@ -81,19 +112,25 @@ class DefaultValidationEngine(
     private suspend fun validateRule(
         rule: ValidationRule,
         fieldId: String,
-        value: String,
+        rawValue: Any?,
+        stringValue: String,
         allValues: Map<String, Any>
     ): FormError.ValidationError? {
 
         when (rule.type) {
             ValidationType.MAX_DATE -> {
-                if (value.isBlank()) return null
+                if (rawValue == null) return null
                 val maxDateMillis = rule.value?.let {
                     (it as? JsonPrimitive)?.content?.toLongOrNull()
                 } ?: return null
                 
                 return try {
-                    val dateMillis = parseDateToEpochMillis(value) ?: return FormError.ValidationError(
+                    val dateMillis = when (rawValue) {
+                        is LocalDateTime -> rawValue.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds()
+                        is LocalDate -> rawValue.atStartOfDayIn(TimeZone.currentSystemDefault()).toEpochMilliseconds()
+                        is String -> parseDateToEpochMillis(rawValue)
+                        else -> parseDateToEpochMillis(stringValue)
+                    } ?: return FormError.ValidationError(
                         id = "${fieldId}_max_date_${currentTimeMs()}",
                         message = rule.message ?: "Data inválida",
                         fieldId = fieldId,
@@ -118,13 +155,18 @@ class DefaultValidationEngine(
             }
 
             ValidationType.MIN_DATE -> {
-                if (value.isBlank()) return null
+                if (rawValue == null) return null
                 val minDateMillis = rule.value?.let {
                     (it as? JsonPrimitive)?.content?.toLongOrNull()
                 } ?: return null
                 
                 return try {
-                    val dateMillis = parseDateToEpochMillis(value) ?: return FormError.ValidationError(
+                    val dateMillis = when (rawValue) {
+                        is LocalDateTime -> rawValue.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds()
+                        is LocalDate -> rawValue.atStartOfDayIn(TimeZone.currentSystemDefault()).toEpochMilliseconds()
+                        is String -> parseDateToEpochMillis(rawValue)
+                        else -> parseDateToEpochMillis(stringValue)
+                    } ?: return FormError.ValidationError(
                         id = "${fieldId}_min_date_${currentTimeMs()}",
                         message = rule.message ?: "Data inválida",
                         fieldId = fieldId,
@@ -151,32 +193,35 @@ class DefaultValidationEngine(
         }
 
         val isValid = when (rule.type) {
-            ValidationType.REQUIRED -> value.isNotBlank()
+            ValidationType.REQUIRED -> when (rawValue) {
+                is LocalDateTime, is LocalDate -> true
+                else -> stringValue.isNotBlank()
+            }
 
             ValidationType.EMAIL -> {
-                if (value.isBlank()) return null
-                value.matches(Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$"))
+                if (stringValue.isBlank()) return null
+                stringValue.matches(Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$"))
             }
 
             ValidationType.PHONE -> {
-                if (value.isBlank()) return null
-                val rawPhone = value.replace(Regex("[^0-9]"), "")
+                if (stringValue.isBlank()) return null
+                val rawPhone = stringValue.replace(Regex("[^0-9]"), "")
                 rawPhone.matches(Regex("^\\d{10,11}$"))
             }
 
             ValidationType.CPF -> {
-                if (value.isBlank()) return null
-                validateCPF(value.replace(Regex("[^0-9]"), ""))
+                if (stringValue.isBlank()) return null
+                validateCPF(stringValue.replace(Regex("[^0-9]"), ""))
             }
 
             ValidationType.CNPJ -> {
-                if (value.isBlank()) return null
-                validateCNPJ(value.replace(Regex("[^0-9]"), ""))
+                if (stringValue.isBlank()) return null
+                validateCNPJ(stringValue.replace(Regex("[^0-9]"), ""))
             }
 
             ValidationType.CEP -> {
-                if (value.isBlank()) return null
-                val rawCep = value.replace(Regex("[^0-9]"), "")
+                if (stringValue.isBlank()) return null
+                val rawCep = stringValue.replace(Regex("[^0-9]"), "")
                 rawCep.matches(Regex("^\\d{8}$"))
             }
 
@@ -184,37 +229,37 @@ class DefaultValidationEngine(
                 val minLength = rule.value?.let {
                     (it as? JsonPrimitive)?.content?.toIntOrNull()
                 } ?: 0
-                value.length >= minLength
+                stringValue.length >= minLength
             }
 
             ValidationType.MAX_LENGTH -> {
                 val maxLength = rule.value?.let {
                     (it as? JsonPrimitive)?.content?.toIntOrNull()
                 } ?: Int.MAX_VALUE
-                value.length <= maxLength
+                stringValue.length <= maxLength
             }
 
             ValidationType.PATTERN -> {
-                if (value.isBlank()) return null
+                if (stringValue.isBlank()) return null
                 val pattern = rule.value?.let {
                     (it as? JsonPrimitive)?.content
                 } ?: return null
                 try {
-                    value.matches(Regex(pattern))
+                    stringValue.matches(Regex(pattern))
                 } catch (e: Exception) {
                     false
                 }
             }
 
             ValidationType.NUMERIC -> {
-                if (value.isBlank()) return null
-                value.matches(Regex("^[0-9]+$"))
+                if (stringValue.isBlank()) return null
+                stringValue.matches(Regex("^[0-9]+$"))
             }
 
             ValidationType.DECIMAL -> {
-                if (value.isBlank()) return null
+                if (stringValue.isBlank()) return null
                 try {
-                    value.toDouble()
+                    stringValue.toDouble()
                     true
                 } catch (e: NumberFormatException) {
                     false
@@ -222,26 +267,29 @@ class DefaultValidationEngine(
             }
 
             ValidationType.PASSWORD_STRENGTH -> {
-                if (value.isBlank()) return null
-                value.length >= 8 &&
-                value.any { it.isLetter() } &&
-                value.any { it.isDigit() }
+                if (stringValue.isBlank()) return null
+                stringValue.length >= 8 &&
+                stringValue.any { it.isLetter() } &&
+                stringValue.any { it.isDigit() }
             }
 
             ValidationType.MATCHES_FIELD -> {
                 val otherFieldId = rule.field ?: return null
                 val otherValue = allValues[otherFieldId]?.toString() ?: ""
-                value == otherValue
+                stringValue == otherValue
             }
 
             ValidationType.DATE -> {
-                if (value.isBlank()) return null
-                try {
-                    // Use the same date parsing logic as parseDateToEpochMillis
-                    // This validates the date format and ensures it's a valid date
-                    parseDateToEpochMillis(value) != null
-                } catch (e: Exception) {
-                    false
+                when (rawValue) {
+                    is LocalDateTime, is LocalDate -> true
+                    else -> {
+                        if (stringValue.isBlank()) return null
+                        try {
+                            parseDateToEpochMillis(stringValue) != null
+                        } catch (e: Exception) {
+                            false
+                        }
+                    }
                 }
             }
 
@@ -250,11 +298,16 @@ class DefaultValidationEngine(
             }
 
             ValidationType.DATE_RANGE -> {
-                if (value.isBlank()) return null
-                try {
-                    parseDateToEpochMillis(value) != null
-                } catch (e: Exception) {
-                    false
+                when (rawValue) {
+                    is LocalDateTime, is LocalDate -> true
+                    else -> {
+                        if (stringValue.isBlank()) return null
+                        try {
+                            parseDateToEpochMillis(stringValue) != null
+                        } catch (e: Exception) {
+                            false
+                        }
+                    }
                 }
             }
 
@@ -313,21 +366,35 @@ class DefaultValidationEngine(
 
     private fun parseDateToEpochMillis(dateString: String): Long? {
         return try {
+            // Clean the input string first
+            val cleanedString = dateString.trim()
+            
             when {
-                dateString.matches(Regex("^\\d{4}-\\d{2}-\\d{2}$")) -> {
-                    val local = LocalDate.parse(dateString)
+                cleanedString.matches(Regex("^\\d{4}-\\d{2}-\\d{2}$")) -> {
+                    val local = LocalDate.parse(cleanedString)
                     val instant = local.atStartOfDayIn(TimeZone.currentSystemDefault())
                     instant.toEpochMilliseconds()
                 }
-                dateString.matches(Regex("^\\d{2}/\\d{2}/\\d{4}$")) -> {
-                    val parts = dateString.split('/')
+                cleanedString.matches(Regex("^\\d{2}/\\d{2}/\\d{4}$")) -> {
+                    val parts = cleanedString.split('/')
                     if (parts.size != 3) return null
                     val day = parts[0].toIntOrNull() ?: return null
                     val month = parts[1].toIntOrNull() ?: return null
                     val year = parts[2].toIntOrNull() ?: return null
+                    
+                    // Validate ranges
+                    if (day < 1 || day > 31 || month < 1 || month > 12 || year < 1900 || year > 2100) {
+                        return null
+                    }
+                    
                     val local = LocalDate(year, month, day)
                     val instant = local.atStartOfDayIn(TimeZone.currentSystemDefault())
                     instant.toEpochMilliseconds()
+                }
+                cleanedString.contains('T') -> {
+                    // Handle LocalDateTime strings
+                    val dateTime = LocalDateTime.parse(cleanedString)
+                    dateTime.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds()
                 }
                 else -> null
             }

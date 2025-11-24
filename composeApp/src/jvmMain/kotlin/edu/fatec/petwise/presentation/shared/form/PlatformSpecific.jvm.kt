@@ -20,6 +20,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -130,7 +133,7 @@ actual class PlatformFileHandling {
 actual fun PlatformDatePicker(
     fieldDefinition: FormFieldDefinition,
     fieldState: FieldState,
-    onValueChange: (String) -> Unit,
+    onValueChange: (kotlinx.datetime.LocalDate) -> Unit,
     modifier: Modifier
 ) {
     val maxDate = fieldDefinition.validators.find { it.type == ValidationType.MAX_DATE }
@@ -175,16 +178,16 @@ actual fun PlatformDatePicker(
     
     DatePickerDialog(
         onDismissRequest = { 
-            onValueChange(fieldState.displayValue)
+            // Dismiss without changing value
         },
         confirmButton = {
             TextButton(
                 onClick = {
                     datePickerState.selectedDateMillis?.let { millis ->
                         if (millis in minDate..effectiveMaxDate) {
-                            val date = java.util.Date(millis)
-                            val formatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
-                            onValueChange(formatter.format(date))
+                            val instant = kotlinx.datetime.Instant.fromEpochMilliseconds(millis)
+                            val localDate = instant.toLocalDateTime(kotlinx.datetime.TimeZone.UTC).date
+                            onValueChange(localDate)
                         }
                     }
                 }
@@ -195,7 +198,7 @@ actual fun PlatformDatePicker(
         dismissButton = {
             TextButton(
                 onClick = { 
-                    onValueChange(fieldState.displayValue)
+                    // Dismiss without changing value
                 }
             ) {
                 Text("Cancelar")
