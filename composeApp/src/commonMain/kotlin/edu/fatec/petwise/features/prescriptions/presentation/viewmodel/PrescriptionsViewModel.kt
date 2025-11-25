@@ -6,6 +6,8 @@ import edu.fatec.petwise.core.data.DataRefreshEvent
 import edu.fatec.petwise.core.data.DataRefreshManager
 import edu.fatec.petwise.features.prescriptions.domain.models.Prescription
 import edu.fatec.petwise.features.prescriptions.domain.usecases.*
+import edu.fatec.petwise.features.pets.domain.usecases.GetPetsUseCase
+import edu.fatec.petwise.features.auth.domain.usecases.GetUserProfileUseCase
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -16,7 +18,9 @@ data class PrescriptionsUiState(
     val error: String? = null,
     val selectedPrescription: Prescription? = null,
     val searchQuery: String = "",
-    val filterStatus: String? = null
+    val filterStatus: String? = null,
+    val petNames: Map<String, String> = emptyMap(),
+    val veterinaryName: String = ""
 )
 
 sealed class PrescriptionsUiEvent {
@@ -31,7 +35,9 @@ sealed class PrescriptionsUiEvent {
 
 class PrescriptionsViewModel(
     private val getPrescriptionsUseCase: GetPrescriptionsUseCase,
-    private val deletePrescriptionUseCase: DeletePrescriptionUseCase
+    private val deletePrescriptionUseCase: DeletePrescriptionUseCase,
+    private val getPetsUseCase: GetPetsUseCase,
+    private val getUserProfileUseCase: GetUserProfileUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PrescriptionsUiState())
@@ -39,6 +45,8 @@ class PrescriptionsViewModel(
 
     init {
         observeDataRefresh()
+        loadPetNames()
+        loadVeterinaryName()
     }
 
     private fun observeDataRefresh() {
@@ -175,5 +183,36 @@ class PrescriptionsViewModel(
 
     private fun clearError() {
         _uiState.value = _uiState.value.copy(error = null)
+    }
+
+    private fun loadPetNames() {
+        viewModelScope.launch {
+            try {
+                getPetsUseCase().collect { pets ->
+                    val petNamesMap = pets.associate { it.id to it.name }
+                    _uiState.value = _uiState.value.copy(petNames = petNamesMap)
+                }
+            } catch (e: Exception) {
+                println("PrescriptionsViewModel: Erro ao carregar nomes dos pets: ${e.message}")
+            }
+        }
+    }
+
+    private fun loadVeterinaryName() {
+        viewModelScope.launch {
+            try {
+                val result = getUserProfileUseCase.execute()
+                result.fold(
+                    onSuccess = { profile ->
+                        _uiState.value = _uiState.value.copy(veterinaryName = profile.fullName)
+                    },
+                    onFailure = { error ->
+                        println("PrescriptionsViewModel: Erro ao carregar nome do veterinário: ${error.message}")
+                    }
+                )
+            } catch (e: Exception) {
+                println("PrescriptionsViewModel: Erro ao carregar nome do veterinário: ${e.message}")
+            }
+        }
     }
 }

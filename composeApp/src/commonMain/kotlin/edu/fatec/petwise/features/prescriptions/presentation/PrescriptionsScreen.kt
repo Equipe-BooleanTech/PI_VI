@@ -111,6 +111,8 @@ fun PrescriptionsScreen() {
                 else -> {
                     PrescriptionsList(
                         prescriptions = filteredPrescriptions,
+                        petNames = uiState.petNames,
+                        veterinaryName = uiState.veterinaryName,
                         onPrescriptionClick = { /* No action needed for now */ },
                         onEditClick = { prescription ->
                             prescriptionToEdit = prescription
@@ -451,6 +453,8 @@ private fun NoResultsContent(
 @Composable
 private fun PrescriptionsList(
     prescriptions: List<Prescription>,
+    petNames: Map<String, String>,
+    veterinaryName: String,
     onPrescriptionClick: (Prescription) -> Unit,
     onEditClick: (Prescription) -> Unit,
     onDeleteClick: (Prescription) -> Unit
@@ -463,6 +467,8 @@ private fun PrescriptionsList(
         items(prescriptions, key = { it.id ?: "" }) { prescription ->
             PrescriptionCard(
                 prescription = prescription,
+                petName = petNames[prescription.petId] ?: "Pet não encontrado",
+                veterinaryName = veterinaryName.ifEmpty { "Veterinário" },
                 onClick = onPrescriptionClick,
                 onEditClick = onEditClick,
                 onDeleteClick = onDeleteClick
@@ -474,6 +480,8 @@ private fun PrescriptionsList(
 @Composable
 fun PrescriptionCard(
     prescription: Prescription,
+    petName: String = "",
+    veterinaryName: String = "",
     onClick: (Prescription) -> Unit = {},
     onEditClick: (Prescription) -> Unit = {},
     onDeleteClick: (Prescription) -> Unit = {}
@@ -481,6 +489,38 @@ fun PrescriptionCard(
     val theme = PetWiseTheme.Light
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
+
+    // Format date (prescriptionDate is a String like "2024-01-15T10:30:00")
+    val formattedDate = remember(prescription.prescriptionDate) {
+        try {
+            val dateStr = prescription.prescriptionDate.substringBefore("T")
+            val parts = dateStr.split("-")
+            if (parts.size == 3) {
+                "${parts[2]}/${parts[1]}/${parts[0]}"
+            } else {
+                prescription.prescriptionDate
+            }
+        } catch (e: Exception) {
+            prescription.prescriptionDate
+        }
+    }
+
+    // Format validUntil date
+    val formattedValidUntil = remember(prescription.validUntil) {
+        prescription.validUntil?.let { validUntil ->
+            try {
+                val dateStr = validUntil.substringBefore("T")
+                val parts = dateStr.split("-")
+                if (parts.size == 3) {
+                    "${parts[2]}/${parts[1]}/${parts[0]}"
+                } else {
+                    validUntil
+                }
+            } catch (e: Exception) {
+                validUntil
+            }
+        }
+    }
 
     Card(
         modifier = Modifier
@@ -515,32 +555,174 @@ fun PrescriptionCard(
                     )
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Pet ID: ${prescription.petId}",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color.fromHex(theme.palette.textSecondary)
+                
+                // Pet name
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Pets,
+                        contentDescription = null,
+                        tint = Color.fromHex("#673AB7"),
+                        modifier = Modifier.size(16.dp)
                     )
-                )
-                Text(
-                    text = "Veterinário ID: ${prescription.veterinaryId}",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color.fromHex(theme.palette.textSecondary)
-                    )
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = Color.fromHex("#673AB7").copy(alpha = 0.1f),
-                    modifier = Modifier.wrapContentWidth()
-                ) {
+                    Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = prescription.medications,
-                        color = Color.fromHex("#673AB7"),
-                        style = MaterialTheme.typography.labelSmall.copy(
+                        text = petName,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = Color.fromHex("#333333"),
                             fontWeight = FontWeight.Medium
-                        ),
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
                     )
+                }
+                
+                Spacer(modifier = Modifier.height(4.dp))
+                
+                // Veterinary name
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = null,
+                        tint = Color.fromHex("#2196F3"),
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Dr(a). $veterinaryName",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = Color.fromHex("#666666")
+                        )
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(4.dp))
+                
+                // Prescription date
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.CalendarMonth,
+                        contentDescription = null,
+                        tint = Color.Gray,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Data: $formattedDate",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = Color.Gray
+                        )
+                    )
+                }
+                
+                // Valid until date
+                formattedValidUntil?.let { validUntil ->
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Event,
+                            contentDescription = null,
+                            tint = Color.fromHex("#FF9800"),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Válido até: $validUntil",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = Color.fromHex("#FF9800")
+                            )
+                        )
+                    }
+                }
+                
+                // Instructions if available
+                if (prescription.instructions.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = null,
+                            tint = Color.fromHex("#4CAF50"),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = prescription.instructions,
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = Color.fromHex("#666666")
+                            ),
+                            maxLines = 2
+                        )
+                    }
+                }
+                
+                // Diagnosis if available
+                prescription.diagnosis?.let { diagnosis ->
+                    if (diagnosis.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.LocalHospital,
+                                contentDescription = null,
+                                tint = Color.fromHex("#F44336"),
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "Diagnóstico: $diagnosis",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = Color.fromHex("#666666")
+                                ),
+                                maxLines = 1
+                            )
+                        }
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = Color.fromHex("#673AB7").copy(alpha = 0.1f),
+                        modifier = Modifier.wrapContentWidth()
+                    ) {
+                        Text(
+                            text = formattedDate,
+                            color = Color.fromHex("#673AB7"),
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Medium
+                            ),
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = when (prescription.status.uppercase()) {
+                            "ACTIVE", "ATIVA" -> Color.fromHex("#4CAF50").copy(alpha = 0.1f)
+                            "PENDING", "PENDENTE" -> Color.fromHex("#FF9800").copy(alpha = 0.1f)
+                            "EXPIRED", "EXPIRADA" -> Color.fromHex("#F44336").copy(alpha = 0.1f)
+                            else -> Color.fromHex("#9E9E9E").copy(alpha = 0.1f)
+                        },
+                        modifier = Modifier.wrapContentWidth()
+                    ) {
+                        Text(
+                            text = when (prescription.status.uppercase()) {
+                                "ACTIVE", "ATIVA" -> "Ativa"
+                                "PENDING", "PENDENTE" -> "Pendente"
+                                "EXPIRED", "EXPIRADA" -> "Expirada"
+                                else -> prescription.status
+                            },
+                            color = when (prescription.status.uppercase()) {
+                                "ACTIVE", "ATIVA" -> Color.fromHex("#4CAF50")
+                                "PENDING", "PENDENTE" -> Color.fromHex("#FF9800")
+                                "EXPIRED", "EXPIRADA" -> Color.fromHex("#F44336")
+                                else -> Color.fromHex("#9E9E9E")
+                            },
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Medium
+                            ),
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
                 }
             }
 
