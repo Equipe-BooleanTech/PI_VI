@@ -137,9 +137,10 @@ sealed class NetworkException(
 
     class Unauthorized(
         message: String = "Autenticação necessária",
-        val shouldRefreshToken: Boolean = true
+        val shouldRefreshToken: Boolean = true,
+        val requiresRelogin: Boolean = false
     ) : NetworkException(message) {
-        override val isRetryable: Boolean = shouldRefreshToken
+        override val isRetryable: Boolean = shouldRefreshToken && !requiresRelogin
     }
 
     class Forbidden(

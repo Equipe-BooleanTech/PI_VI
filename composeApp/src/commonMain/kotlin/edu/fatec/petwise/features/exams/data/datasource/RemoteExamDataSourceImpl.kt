@@ -1,5 +1,6 @@
 package edu.fatec.petwise.features.exams.data.datasource
 
+import edu.fatec.petwise.core.network.NetworkException
 import edu.fatec.petwise.core.network.NetworkResult
 import edu.fatec.petwise.core.network.api.ExamApiService
 import edu.fatec.petwise.core.network.dto.*
@@ -42,7 +43,15 @@ class RemoteExamDataSourceImpl(
                 exams
             }
             is NetworkResult.Error -> {
-                println("API Error: ${result.exception.message}")
+                val exception = result.exception
+                println("API Error: ${exception.message}")
+                
+                // Check if this is a blacklisted token error that requires re-login
+                if (exception is NetworkException.Unauthorized && exception.requiresRelogin) {
+                    println("API: Token blacklisted/invalid - throwing exception to trigger re-login")
+                    throw Exception("SESSION_EXPIRED:${exception.message?.substringAfter(":") ?: "Sessão expirada"}")
+                }
+                
                 emptyList()
             }
             is NetworkResult.Loading -> emptyList()

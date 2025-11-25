@@ -152,9 +152,12 @@ class AuthTokenStorageImpl(private val storage: KeyValueStorage) : AuthTokenStor
     private var tokenExpirationTime: Long = 0
 
     init {
-        // Load from storage
-        token = storage.getString("access_token")
+        // Load from storage - treat empty strings as null
+        val storedToken = storage.getString("access_token")
+        token = if (storedToken.isNullOrBlank()) null else storedToken
         tokenExpirationTime = storage.getLong("token_expiration") ?: 0
+        
+        println("AuthTokenStorage: Inicializado - token carregado: ${token?.take(10) ?: "NENHUM"}")
     }
 
     override fun saveToken(token: String) {
@@ -167,13 +170,17 @@ class AuthTokenStorageImpl(private val storage: KeyValueStorage) : AuthTokenStor
 
     override fun getToken(): String? {
         val currentToken = token
-        if (currentToken != null && isTokenExpired()) {
+        // Treat empty strings as null
+        if (currentToken.isNullOrBlank()) {
+            return null
+        }
+        if (isTokenExpired()) {
             println("AuthTokenStorage: Token expired, clearing tokens")
             clearTokens()
             return null
         }
         
-        println("AuthTokenStorage: Returning token: ${currentToken?.take(10)}... (expires in ${getRemainingTime()}ms)")
+        println("AuthTokenStorage: Returning token: ${currentToken.take(10)}... (expires in ${getRemainingTime()}ms)")
         return currentToken
     }
 
