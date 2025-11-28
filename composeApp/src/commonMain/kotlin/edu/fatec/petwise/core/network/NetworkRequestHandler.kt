@@ -199,10 +199,18 @@ class NetworkRequestHandler(
                     )
                 }
                 in 500..599 -> {
-                    println("NetworkRequestHandler: Server error ${response.status.value} - ${response.status.description}")
+                    val errorResponse = try {
+                        response.body<ApiErrorResponse>()
+                    } catch (e: Exception) {
+                        null
+                    }
+                    val errorBody = response.bodyAsText()
+                    println("NetworkRequestHandler: Server error ${response.status.value} - $errorBody")
+                    val errorMessage = extractErrorMessage(errorResponse, errorBody)
                     NetworkResult.Error(
                         NetworkException.ServerError(
-                            message = "Erro do servidor (${response.status.value}): ${response.status.description}"
+                            code = response.status.value,
+                            message = errorMessage
                         )
                     )
                 }

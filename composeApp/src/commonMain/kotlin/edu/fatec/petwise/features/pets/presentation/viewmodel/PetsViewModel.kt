@@ -97,8 +97,8 @@ class PetsViewModel(
                     _uiState.value = _uiState.value.copy(
                         pets = pets,
                         filteredPets = pets,
-                        isLoading = false,
-                        errorMessage = null
+                        isLoading = false
+                        // Don't clear errorMessage here - let it be cleared by user action
                     )
                 }
             } catch (e: Exception) {
@@ -224,21 +224,43 @@ class PetsViewModel(
                 deletePetUseCase(petId).fold(
                     onSuccess = {
                         println("Pet excluído com sucesso: $petId")
-                        loadPets()
+                        // Don't call loadPets here - let the caller handle it
                     },
                     onFailure = { error ->
                         println("Erro ao excluir pet: ${error.message}")
+                        val userFriendlyMessage = mapDeleteErrorToUserMessage(error.message)
                         _uiState.value = _uiState.value.copy(
-                            errorMessage = error.message ?: "Erro ao deletar pet"
+                            errorMessage = userFriendlyMessage
                         )
                     }
                 )
             } catch (e: Exception) {
                 println("Exceção durante exclusão do pet: ${e.message}")
+                val userFriendlyMessage = mapDeleteErrorToUserMessage(e.message)
                 _uiState.value = _uiState.value.copy(
-                    errorMessage = e.message ?: "Erro ao deletar pet"
+                    errorMessage = userFriendlyMessage
                 )
             }
+        }
+    }
+
+    private fun mapDeleteErrorToUserMessage(errorMessage: String?): String {
+        return when {
+            errorMessage?.contains("Pet não encontrado") == true -> {
+                "Pet não encontrado ou já foi removido do sistema."
+            }
+            errorMessage?.contains("Você não tem permissão") == true -> {
+                "Você não tem permissão para remover este pet. Apenas o dono pode fazer isso."
+            }
+            errorMessage?.contains("Não é possível remover o pet pois existem") == true -> {
+                "Não é possível remover o pet porque existem registros veterinários associados (vacinas, prescrições ou exames). Entre em contato com seu veterinário para mais informações."
+            }
+            errorMessage?.contains("Token expirado") == true ||
+            errorMessage?.contains("Sessão expirada") == true ||
+            errorMessage?.contains("deve estar logado") == true -> {
+                "Sua sessão expirou. Faça login novamente."
+            }
+            else -> errorMessage ?: "Erro ao deletar pet. Tente novamente."
         }
     }
 

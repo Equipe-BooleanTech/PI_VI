@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewModelScope
 import edu.fatec.petwise.features.pets.domain.models.*
 import edu.fatec.petwise.features.pets.presentation.components.PetCard
 import edu.fatec.petwise.features.pets.presentation.components.AddPetDialog
@@ -26,6 +27,8 @@ import edu.fatec.petwise.features.pets.presentation.viewmodel.*
 import edu.fatec.petwise.features.pets.di.PetDependencyContainer
 import edu.fatec.petwise.presentation.theme.PetWiseTheme
 import edu.fatec.petwise.presentation.theme.fromHex
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,6 +51,8 @@ fun PetsScreen(
     var showDeleteConfirmation by remember { mutableStateOf(false) }
     var showEditPetDialog by remember { mutableStateOf(false) }
     var petToEdit by remember { mutableStateOf<Pet?>(null) }
+
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(navigationKey) {
         println("PetsScreen: Recarregando pets - navigationKey: $navigationKey")
@@ -211,6 +216,7 @@ fun PetsScreen(
                 selectedPetIds = setOf()
                 selectionMode = false
                 showDeleteConfirmation = false
+                // Reload pets after bulk operations
                 petsViewModel.onEvent(PetsUiEvent.LoadPets)
             },
             onDismiss = { showDeleteConfirmation = false }
