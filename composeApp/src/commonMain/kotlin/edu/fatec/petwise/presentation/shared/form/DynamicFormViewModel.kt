@@ -354,11 +354,11 @@ class DynamicFormViewModel(
                         is LocalDateTime -> {
                             // Format as DD/MM/YYYY for display
                             val date = newValue.date
-                            "%02d/%02d/%04d".format(date.dayOfMonth, date.monthNumber, date.year)
+                            "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year}"
                         }
                         is LocalDate -> {
                             // Format as DD/MM/YYYY for display
-                            "%02d/%02d/%04d".format(newValue.dayOfMonth, newValue.monthNumber, newValue.year)
+                            "${newValue.dayOfMonth.toString().padStart(2, '0')}/${newValue.monthNumber.toString().padStart(2, '0')}/${newValue.year}"
                         }
                         is String -> {
                             val cleanString = newValue.trim()
@@ -368,7 +368,7 @@ class DynamicFormViewModel(
                                     try {
                                         val dateTime = LocalDateTime.parse(cleanString)
                                         val date = dateTime.date
-                                        "%02d/%02d/%04d".format(date.dayOfMonth, date.monthNumber, date.year)
+                                        "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year}"
                                     } catch (e: Exception) {
                                         cleanString
                                     }
@@ -381,7 +381,7 @@ class DynamicFormViewModel(
                                     // Convert from YYYY-MM-DD to DD/MM/YYYY
                                     try {
                                         val date = LocalDate.parse(cleanString)
-                                        "%02d/%02d/%04d".format(date.dayOfMonth, date.monthNumber, date.year)
+                                        "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year}"
                                     } catch (e: Exception) {
                                         cleanString
                                     }
@@ -397,7 +397,7 @@ class DynamicFormViewModel(
                         is LocalDateTime -> {
                             // Format as HH:MM for display
                             val time = newValue.time
-                            "%02d:%02d".format(time.hour, time.minute)
+                            "${time.hour.toString().padStart(2, '0')}:${time.minute.toString().padStart(2, '0')}"
                         }
                         else -> processedValue?.toString() ?: ""
                     }
@@ -408,13 +408,7 @@ class DynamicFormViewModel(
                             // Format as DD/MM/YYYY HH:MM for display
                             val date = newValue.date
                             val time = newValue.time
-                            "%02d/%02d/%04d %02d:%02d".format(
-                                date.dayOfMonth, 
-                                date.monthNumber, 
-                date.year,
-                                time.hour,
-                                time.minute
-                            )
+                            "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year} ${time.hour.toString().padStart(2, '0')}:${time.minute.toString().padStart(2, '0')}"
                         }
                         else -> processedValue?.toString() ?: ""
                     }

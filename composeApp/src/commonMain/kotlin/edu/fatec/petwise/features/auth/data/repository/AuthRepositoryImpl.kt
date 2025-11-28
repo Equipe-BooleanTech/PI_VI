@@ -162,24 +162,34 @@ class AuthRepositoryImpl(
                     Result.success(result.data)
                 }
                 is NetworkResult.Error -> {
-                    when (result.exception) {
+                    when (val exception = result.exception) {
                         is edu.fatec.petwise.core.network.NetworkException.Unauthorized -> {
-                            println("Repositório: Token inválido ao buscar perfil - limpando tokens e cliente HTTP")
-                            tokenStorage?.clearTokens()
-                            NetworkModule.clear()
-                            
-                            // Provide specific error message based on the underlying cause
-                            val errorMessage = result.exception.message?.takeIf { it != "Autenticação necessária" } 
-                                ?: "Sessão expirada - faça login novamente"
-                            Result.failure(Exception(errorMessage))
+                            // Check if this error requires re-login (blacklisted/invalid/expired token)
+                            if (exception.requiresRelogin) {
+                                println("Repositório: Token inválido/blacklisted - limpando tokens e forçando re-login")
+                                withContext(NonCancellable) {
+                                    tokenStorage?.clearTokens()
+                                    NetworkModule.clearAuthToken()
+                                }
+                                // Extract user-friendly message (remove prefix like TOKEN_BLACKLISTED:)
+                                val userMessage = exception.message?.substringAfter(":") 
+                                    ?: "Sua sessão expirou. Faça login novamente."
+                                Result.failure(Exception("SESSION_EXPIRED:$userMessage"))
+                            } else {
+                                // Regular 401 - might be temporary, don't clear tokens
+                                println("Repositório: Erro 401 ao buscar perfil - NÃO limpando tokens (pode ser erro temporário)")
+                                val errorMessage = exception.message?.takeIf { it != "Autenticação necessária" } 
+                                    ?: "Erro temporário de autenticação - tente novamente"
+                                Result.failure(Exception(errorMessage))
+                            }
                         }
                         is kotlinx.coroutines.CancellationException -> {
                             println("Repositório: Requisição de perfil cancelada - mantendo sessão ativa")
                             Result.failure(Exception("Busca de perfil cancelada - sessão mantida"))
                         }
                         else -> {
-                            println("Repositório: Erro ao buscar perfil - ${result.exception.message}")
-                            Result.failure(Exception(result.exception.message ?: "Erro ao buscar perfil do usuário"))
+                            println("Repositório: Erro ao buscar perfil - ${exception.message}")
+                            Result.failure(Exception(exception.message ?: "Erro ao buscar perfil do usuário"))
                         }
                     }
                 }

@@ -169,22 +169,32 @@ class TokenManagerImpl(private val storage: KeyValueStorage) : TokenManager {
     private var tokenSetTime: Long = 0
 
     init {
-        // Load from storage
-        accessToken = storage.getString("access_token")
-        refreshToken = storage.getString("refresh_token")
+        // Load from storage - treat empty strings as null
+        val storedToken = storage.getString("access_token")
+        accessToken = if (storedToken.isNullOrBlank()) null else storedToken
+        
+        val storedRefresh = storage.getString("refresh_token")
+        refreshToken = if (storedRefresh.isNullOrBlank()) null else storedRefresh
+        
         tokenExpirationTime = storage.getLong("token_expiration") ?: 0
         tokenSetTime = storage.getLong("token_set_time") ?: 0
+        
+        println("TokenManager: Inicializado - token carregado: ${accessToken?.take(10) ?: "NENHUM"}")
     }
 
     override fun getAccessToken(): String? {
         val token = accessToken
-        if (token != null && isTokenExpired()) {
+        // Treat empty strings as null
+        if (token.isNullOrBlank()) {
+            return null
+        }
+        if (isTokenExpired()) {
             println("TokenManager: Token expirado, limpando tokens")
             clearTokens()
             return null
         }
         
-        println("TokenManager: Retornando token de acesso: ${token?.take(10)}... (expira em ${getRemainingTokenTime()}ms)")
+        println("TokenManager: Retornando token de acesso: ${token.take(10)}... (expira em ${getRemainingTokenTime()}ms)")
         return token
     }
 
@@ -241,9 +251,19 @@ class TokenManagerImpl(private val storage: KeyValueStorage) : TokenManager {
     }
 
     private fun saveToStorage() {
-        storage.putString("access_token", accessToken ?: "")
-        storage.putLong("token_expiration", tokenExpirationTime)
-        storage.putLong("token_set_time", tokenSetTime)
+        val token = accessToken
+        if (token.isNullOrBlank()) {
+            // Remove keys when token is null/empty instead of saving empty string
+            storage.remove("access_token")
+            storage.remove("token_expiration")
+            storage.remove("token_set_time")
+            println("TokenManager: Token nulo/vazio - removendo do storage")
+        } else {
+            storage.putString("access_token", token)
+            storage.putLong("token_expiration", tokenExpirationTime)
+            storage.putLong("token_set_time", tokenSetTime)
+            println("TokenManager: Token salvo no storage: ${token.take(10)}...")
+        }
     }
 }
 

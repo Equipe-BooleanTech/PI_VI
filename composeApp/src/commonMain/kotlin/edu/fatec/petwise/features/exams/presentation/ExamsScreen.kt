@@ -99,6 +99,8 @@ fun ExamsScreen(
                 else -> {
                     ExamsListContent(
                         exams = exams,
+                        petNames = uiState.petNames,
+                        veterinaryName = uiState.veterinaryName,
                         onEditExam = { exam ->
                             examToEdit = exam
                             showEditDialog = true
@@ -449,6 +451,8 @@ private fun NoResultsContent(
 @Composable
 private fun ExamsListContent(
     exams: List<Exam>,
+    petNames: Map<String, String>,
+    veterinaryName: String,
     onEditExam: (Exam) -> Unit,
     onDeleteExam: (Exam) -> Unit
 ) {
@@ -460,6 +464,8 @@ private fun ExamsListContent(
         items(exams, key = { it.id }) { exam ->
             ExamCard(
                 exam = exam,
+                petName = petNames[exam.petId] ?: "Pet não encontrado",
+                veterinaryName = veterinaryName.ifEmpty { "Veterinário" },
                 onClick = { /* Could be used for details view */ },
                 onEditClick = onEditExam,
                 onDeleteClick = onDeleteExam
@@ -515,12 +521,22 @@ private fun ExamErrorSnackbar(
 @Composable
 fun ExamCard(
     exam: Exam,
+    petName: String = "",
+    veterinaryName: String = "",
     onClick: (Exam) -> Unit = {},
     onEditClick: (Exam) -> Unit = {},
     onDeleteClick: (Exam) -> Unit = {}
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
+
+    // Format date
+    val formattedDate = remember(exam.examDate) {
+        val day = exam.examDate.dayOfMonth.toString().padStart(2, '0')
+        val month = exam.examDate.monthNumber.toString().padStart(2, '0')
+        val year = exam.examDate.year
+        "$day/$month/$year"
+    }
 
     Card(
         modifier = Modifier
@@ -556,12 +572,86 @@ fun ExamCard(
                     )
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Data: ${exam.examDate.date} às ${exam.examTime}",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color.Gray
+                
+                // Pet name
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Pets,
+                        contentDescription = null,
+                        tint = Color.fromHex("#2196F3"),
+                        modifier = Modifier.size(16.dp)
                     )
-                )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = petName,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = Color.fromHex("#333333"),
+                            fontWeight = FontWeight.Medium
+                        )
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(4.dp))
+                
+                // Veterinary name
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = null,
+                        tint = Color.fromHex("#673AB7"),
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Dr(a). $veterinaryName",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = Color.fromHex("#666666")
+                        )
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(4.dp))
+                
+                // Date and time
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.CalendarMonth,
+                        contentDescription = null,
+                        tint = Color.Gray,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "$formattedDate às ${exam.examTime}",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = Color.Gray
+                        )
+                    )
+                }
+                
+                // Results if available
+                exam.results?.let { results ->
+                    if (results.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Description,
+                                contentDescription = null,
+                                tint = Color.fromHex("#4CAF50"),
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "Resultado: $results",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = Color.fromHex("#666666")
+                                ),
+                                maxLines = 1
+                            )
+                        }
+                    }
+                }
+                
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -572,7 +662,7 @@ fun ExamCard(
                         modifier = Modifier.wrapContentWidth()
                     ) {
                         Text(
-                            text = exam.examDate.date.toString(),
+                            text = formattedDate,
                             color = Color.fromHex("#2196F3"),
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Medium

@@ -2,6 +2,7 @@ package edu.fatec.petwise.features.prescriptions.di
 
 import edu.fatec.petwise.core.network.di.NetworkModule
 import edu.fatec.petwise.features.auth.di.AuthDependencyContainer
+import edu.fatec.petwise.features.pets.di.PetDependencyContainer
 import edu.fatec.petwise.features.prescriptions.data.datasource.RemotePrescriptionDataSource
 import edu.fatec.petwise.features.prescriptions.data.datasource.RemotePrescriptionDataSourceImpl
 import edu.fatec.petwise.features.prescriptions.data.repository.PrescriptionRepositoryImpl
@@ -53,7 +54,12 @@ object PrescriptionDependencyContainer {
     }
 
     val prescriptionsViewModel: PrescriptionsViewModel by lazy {
-        PrescriptionsViewModel(getPrescriptionsUseCase, deletePrescriptionUseCase)
+        PrescriptionsViewModel(
+            getPrescriptionsUseCase,
+            deletePrescriptionUseCase,
+            PetDependencyContainer.provideGetPetsUseCase(),
+            AuthDependencyContainer.provideGetUserProfileUseCase()
+        )
     }
 
     val updatePrescriptionViewModel: UpdatePrescriptionViewModel by lazy {

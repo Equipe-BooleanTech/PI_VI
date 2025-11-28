@@ -2,6 +2,52 @@
 
 import kotlinx.serialization.Serializable
 
+public fun extractErrorMessage(errorResponse: ApiErrorResponse?, errorBody: String?): String {
+    return when {
+        errorResponse?.message != null -> errorResponse.message
+        errorBody != null -> {
+            try {
+                when {
+                    errorBody.contains("\"message\":") -> {
+                        val patterns = listOf("\"message\":\"", "\"message\": \"")
+                        for (pattern in patterns) {
+                            val messageStart = errorBody.indexOf(pattern)
+                            if (messageStart != -1) {
+                                val start = messageStart + pattern.length
+                                val end = errorBody.indexOf("\"", start)
+                                if (end != -1) {
+                                    return errorBody.substring(start, end)
+                                }
+                            }
+                        }
+                        errorBody
+                    }
+                    errorBody.contains("\"error\":") -> {
+                        val patterns = listOf("\"error\":\"", "\"error\": \"")
+                        for (pattern in patterns) {
+                            val errorStart = errorBody.indexOf(pattern)
+                            if (errorStart != -1) {
+                                val start = errorStart + pattern.length
+                                val end = errorBody.indexOf("\"", start)
+                                if (end != -1) {
+                                    return errorBody.substring(start, end)
+                                }
+                            }
+                        }
+                        errorBody
+                    }
+                    errorBody.contains("Regra de negócio violada") -> "Email ou senha incorretos"
+                    errorBody.length > 100 -> "Erro no servidor"
+                    else -> errorBody
+                }
+            } catch (e: Exception) {
+                "Erro inesperado"
+            }
+        }
+        else -> "Erro desconhecido"
+    }
+}
+
 sealed class NetworkResult<out T> {
 
     data class Success<T>(
@@ -137,9 +183,10 @@ sealed class NetworkException(
 
     class Unauthorized(
         message: String = "Autenticação necessária",
-        val shouldRefreshToken: Boolean = true
+        val shouldRefreshToken: Boolean = true,
+        val requiresRelogin: Boolean = false
     ) : NetworkException(message) {
-        override val isRetryable: Boolean = shouldRefreshToken
+        override val isRetryable: Boolean = shouldRefreshToken && !requiresRelogin
     }
 
     class Forbidden(
@@ -273,51 +320,5 @@ suspend fun <T> NetworkResult<T>.recoverWith(
     is NetworkResult.Success -> this
     is NetworkResult.Error -> fallback(exception)
     is NetworkResult.Loading -> this
-}
-
-private fun extractErrorMessage(errorResponse: ApiErrorResponse?, errorBody: String?): String {
-    return when {
-        errorResponse?.message != null -> errorResponse.message
-        errorBody != null -> {
-            try {
-                when {
-                    errorBody.contains("\"message\":") -> {
-                        val patterns = listOf("\"message\":\"", "\"message\": \"")
-                        for (pattern in patterns) {
-                            val messageStart = errorBody.indexOf(pattern)
-                            if (messageStart != -1) {
-                                val start = messageStart + pattern.length
-                                val end = errorBody.indexOf("\"", start)
-                                if (end != -1) {
-                                    return errorBody.substring(start, end)
-                                }
-                            }
-                        }
-                        errorBody
-                    }
-                    errorBody.contains("\"error\":") -> {
-                        val patterns = listOf("\"error\":\"", "\"error\": \"")
-                        for (pattern in patterns) {
-                            val errorStart = errorBody.indexOf(pattern)
-                            if (errorStart != -1) {
-                                val start = errorStart + pattern.length
-                                val end = errorBody.indexOf("\"", start)
-                                if (end != -1) {
-                                    return errorBody.substring(start, end)
-                                }
-                            }
-                        }
-                        errorBody
-                    }
-                    errorBody.contains("Regra de negócio violada") -> "Email ou senha incorretos"
-                    errorBody.length > 100 -> "Erro no servidor"
-                    else -> errorBody
-                }
-            } catch (e: Exception) {
-                "Erro inesperado"
-            }
-        }
-        else -> "Erro desconhecido"
-    }
 }
 

@@ -2,6 +2,7 @@ package edu.fatec.petwise.features.exams.di
 
 import edu.fatec.petwise.core.network.di.NetworkModule
 import edu.fatec.petwise.features.auth.di.AuthDependencyContainer
+import edu.fatec.petwise.features.pets.di.PetDependencyContainer
 import edu.fatec.petwise.features.exams.data.datasource.RemoteExamDataSource
 import edu.fatec.petwise.features.exams.data.datasource.RemoteExamDataSourceImpl
 import edu.fatec.petwise.features.exams.data.repository.ExamRepositoryImpl
@@ -49,7 +50,12 @@ object ExamDependencyContainer {
     }
 
     val examsViewModel: ExamsViewModel by lazy {
-        ExamsViewModel(getExamsUseCase, deleteExamUseCase)
+        ExamsViewModel(
+            getExamsUseCase,
+            deleteExamUseCase,
+            PetDependencyContainer.provideGetPetsUseCase(),
+            AuthDependencyContainer.provideGetUserProfileUseCase()
+        )
     }
 
     val updateExamViewModel: UpdateExamViewModel by lazy {
