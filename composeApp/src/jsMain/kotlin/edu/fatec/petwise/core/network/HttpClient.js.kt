@@ -22,7 +22,7 @@ actual fun getUserAgent(): String {
 
 actual fun getPlatformName(): String = "Web"
 
-actual fun getPlatformApiUrl(): String = "http://localhost:8080"
+actual fun getPlatformApiUrl(): String = "http://localhost:8081"
 
 actual fun generateRequestId(): String {
     val timestamp = Date.now().toLong()

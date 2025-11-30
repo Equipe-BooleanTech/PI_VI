@@ -24,6 +24,6 @@ actual fun getUserAgent(): String {
 
 actual fun getPlatformName(): String = "iOS"
 
-actual fun getPlatformApiUrl(): String = "http://localhost:8080"
+actual fun getPlatformApiUrl(): String = "http://localhost:8081"
 
 actual fun generateRequestId(): String = NSUUID().UUIDString()

@@ -24,6 +24,6 @@ actual fun getUserAgent(): String {
 
 actual fun getPlatformName(): String = "JVM"
 
-actual fun getPlatformApiUrl(): String = "http://localhost:8080"
+actual fun getPlatformApiUrl(): String = "http://localhost:8081"
 
 actual fun generateRequestId(): String = UUID.randomUUID().toString()
