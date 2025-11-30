@@ -1,7 +1,10 @@
 package edu.fatec.petwise.core.network
 
+expect fun getPlatformApiUrl(): String
+
 object NetworkConfig {
-    const val API_URL = "http://localhost:8080" // Para TESTES LOCAIS APENAS!!!
+    val API_URL: String get() = getPlatformApiUrl()
+    
     const val REQUEST_TIMEOUT = 30_000L
     const val CONNECT_TIMEOUT = 15_000L
     const val SOCKET_TIMEOUT = 30_000L
@@ -100,6 +103,12 @@ object ApiEndpoints {
     const val SUPRIMENTOS_PRICE_RANGE = "$SUPRIMENTOS/price-range"
     const val SUPRIMENTOS_BY_SHOP = "$SUPRIMENTOS/shop"
 
+    // IoT / PetTag endpoints
+    const val IOT = "/api/iot"
+    const val IOT_START_PAIRING = "$IOT/start-pairing"
+    const val IOT_CHECK_IN = "$IOT/check-in"
+    const val IOT_LAST_READ = "$IOT/last-read"
+    fun getPetByTag(tagUid: String) = "$IOT/pet-by-tag/$tagUid"
 }
 
 object PetWiseHttpHeaders {

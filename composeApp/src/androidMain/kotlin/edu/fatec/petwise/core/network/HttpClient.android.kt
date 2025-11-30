@@ -21,5 +21,6 @@ actual fun getUserAgent(): String {
 
 actual fun getPlatformName(): String = "Android"
 
+actual fun getPlatformApiUrl(): String = "http://10.0.2.2:8080"
 
 actual fun generateRequestId(): String = UUID.randomUUID().toString()

@@ -19,7 +19,7 @@ actual object KeyValueStorage {
 
     actual fun getLong(key: String): Long? {
         val value = defaults.integerForKey(key)
-        return if (value == 0L && !defaults.objectForKey(key)?.let { true } ?: false) null else value
+        return if (value == 0L && defaults.objectForKey(key) == null) null else value
     }
 
     actual fun remove(key: String) {
@@ -27,6 +27,6 @@ actual object KeyValueStorage {
     }
 
     actual fun clear() {
-        defaults.removePersistentDomainForName(NSUserDefaults.standardUserDefaults.persistentDomainNames.firstOrNull() as? String ?: "")
+        defaults.removePersistentDomainForName(NSUserDefaults.standardUserDefaults.persistentDomainNames().firstOrNull() as? String ?: "")
     }
 }

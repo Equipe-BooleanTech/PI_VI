@@ -22,11 +22,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Help
 import androidx.compose.material.icons.filled.LocalPharmacy
 import androidx.compose.material.icons.filled.MedicalInformation
+import androidx.compose.material.icons.filled.Nfc
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -207,6 +206,11 @@ fun MoreMenu(
                             title = "Laboratório",
                             icon = Icons.Default.MedicalInformation,
                             tabScreen = NavigationManager.TabScreen.Labs
+                        ),
+                        MoreMenuItem(
+                            title = "Tag NFC",
+                            icon = Icons.Default.Nfc,
+                            tabScreen = NavigationManager.TabScreen.PetTags
                         )
                     )
                     "PHARMACY" -> listOf(
@@ -238,6 +242,11 @@ fun MoreMenu(
                             title = "Pets",
                             icon = Icons.Default.Person,
                             tabScreen = NavigationManager.TabScreen.Pets
+                        ),
+                        MoreMenuItem(
+                            title = "Tag NFC",
+                            icon = Icons.Default.Nfc,
+                            tabScreen = NavigationManager.TabScreen.PetTags
                         )
                     )
                 }

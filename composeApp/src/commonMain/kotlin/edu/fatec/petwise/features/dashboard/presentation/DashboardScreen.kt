@@ -375,6 +375,17 @@ fun DashboardScreen(
                         UnauthorizedScreen(paddingValues, "Você não tem permissão para acessar Brinquedos")
                     }
                 }
+                NavigationManager.TabScreen.PetTags -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues)
+                    ) {
+                        edu.fatec.petwise.features.pettags.presentation.view.PetTagScreen(
+                            navigationKey = currentTabScreen
+                        )
+                    }
+                }
                 NavigationManager.TabScreen.EditProfile -> {
                     Box(
                         modifier = Modifier

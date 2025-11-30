@@ -91,7 +91,8 @@ fun createDefaultHttpClient(
                         val shouldSend = !isAuthEndpoint && (
                             request.url.host.contains("petwise") || 
                             request.url.host.contains("localhost") ||
-                            request.url.host.contains("127.0.0.1")
+                            request.url.host.contains("127.0.0.1") ||
+                            request.url.host.contains("10.0.2.2") // Android emulator host
                         )
                         
                         println("HttpClient: sendWithoutRequest para ${request.url} (isAuth: $isAuthEndpoint): $shouldSend")

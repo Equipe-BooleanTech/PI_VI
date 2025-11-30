@@ -66,5 +66,6 @@ class NavigationManager {
         object Food : TabScreen()
         object Hygiene : TabScreen()
         object Toys : TabScreen()
+        object PetTags : TabScreen()
     }
 }
