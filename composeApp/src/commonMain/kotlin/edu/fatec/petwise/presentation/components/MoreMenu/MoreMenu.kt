@@ -52,6 +52,7 @@ import edu.fatec.petwise.navigation.NavigationManager
 import edu.fatec.petwise.presentation.theme.fromHex
 import edu.fatec.petwise.features.auth.presentation.viewmodel.AuthViewModel
 import edu.fatec.petwise.features.auth.domain.usecases.GetUserProfileUseCase
+import edu.fatec.petwise.core.network.getPlatformName
 
 data class MoreMenuItem(
     val title: String,
@@ -207,11 +208,6 @@ fun MoreMenu(
                             icon = Icons.Default.MedicalInformation,
                             tabScreen = NavigationManager.TabScreen.Labs
                         ),
-                        MoreMenuItem(
-                            title = "Tag NFC",
-                            icon = Icons.Default.Nfc,
-                            tabScreen = NavigationManager.TabScreen.PetTags
-                        )
                     )
                     "PHARMACY" -> listOf(
                         MoreMenuItem(
@@ -242,13 +238,20 @@ fun MoreMenu(
                             title = "Pets",
                             icon = Icons.Default.Person,
                             tabScreen = NavigationManager.TabScreen.Pets
-                        ),
-                        MoreMenuItem(
-                            title = "Tag NFC",
-                            icon = Icons.Default.Nfc,
-                            tabScreen = NavigationManager.TabScreen.PetTags
                         )
-                    )
+                    ).let { items ->
+                        // Tag NFC is only available on Android and iOS (native platforms with NFC support)
+                        val platform = getPlatformName()
+                        if (platform == "Android" || platform == "iOS") {
+                            items + MoreMenuItem(
+                                title = "Tag NFC",
+                                icon = Icons.Default.Nfc,
+                                tabScreen = NavigationManager.TabScreen.PetTags
+                            )
+                        } else {
+                            items
+                        }
+                    }
                 }
 
                 Column(

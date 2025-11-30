@@ -323,8 +323,12 @@ class DynamicFormViewModel(
                 }
                 FormFieldType.DECIMAL -> {
                     when (newValue) {
-                        is Number -> newValue
-                        is String -> newValue.toDoubleOrNull() ?: newValue
+                        is Number -> newValue.toDouble()
+                        is String -> {
+                            // Handle locale-specific decimal separators (both , and .)
+                            val cleanValue = newValue.replace(',', '.').trim()
+                            cleanValue.toDoubleOrNull() ?: newValue
+                        }
                         else -> newValue
                     }
                 }
@@ -938,6 +942,28 @@ class DynamicFormViewModel(
                         val timeString = fieldState.value.toString()
                         println("DynamicFormViewModel: LocalTime field '$fieldId' - LocalTime: ${fieldState.value} -> String: $timeString")
                         timeString
+                    }
+                    // Ensure DECIMAL fields return Double values
+                    fieldConfig?.type == FormFieldType.DECIMAL -> {
+                        when (val value = fieldState.value) {
+                            is Double -> value
+                            is Number -> value.toDouble()
+                            is String -> {
+                                // Handle locale-specific decimal separators
+                                val cleanValue = value.replace(',', '.').trim()
+                                cleanValue.toDoubleOrNull() ?: 0.0
+                            }
+                            else -> 0.0
+                        }
+                    }
+                    // Ensure NUMBER fields return Int values
+                    fieldConfig?.type == FormFieldType.NUMBER -> {
+                        when (val value = fieldState.value) {
+                            is Int -> value
+                            is Number -> value.toInt()
+                            is String -> value.trim().toIntOrNull() ?: 0
+                            else -> 0
+                        }
                     }
                     else -> {
                         val value = fieldState.value ?: ""
