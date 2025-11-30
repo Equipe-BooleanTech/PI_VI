@@ -117,34 +117,6 @@ fun createEditHygieneFormConfiguration(hygieneProduct: HygieneProduct): FormConf
             )
         ),
         FormFieldDefinition(
-            id = "expiryDate",
-            label = "Data de Validade",
-            type = FormFieldType.DATE,
-            placeholder = "DD/MM/AAAA",
-            default = JsonPrimitive(hygieneProduct.expiryDate ?: ""),
-            validators = listOf(
-                ValidationRule(
-                    type = ValidationType.DATE,
-                    message = "Digite uma data válida (DD/MM/AAAA)"
-                )
-            )
-        ),
-        FormFieldDefinition(
-            id = "imageUrl",
-            label = "URL da Imagem",
-            type = FormFieldType.TEXT,
-            placeholder = "https://...",
-            default = JsonPrimitive(hygieneProduct.imageUrl ?: ""),
-            validators = emptyList()
-        ),
-        FormFieldDefinition(
-            id = "active",
-            label = "Ativo",
-            type = FormFieldType.SWITCH,
-            default = JsonPrimitive(hygieneProduct.active),
-            validators = emptyList()
-        ),
-        FormFieldDefinition(
             id = "submit",
             label = "Salvar Alterações",
             type = FormFieldType.SUBMIT

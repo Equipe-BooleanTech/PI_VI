@@ -192,7 +192,7 @@ actual fun PlatformDatePicker(
         maxDate
     }
     
-    // Calculate safe year range
+    
     val currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)
     val minYear = if (minDate == Long.MIN_VALUE) {
         1900
@@ -205,7 +205,7 @@ actual fun PlatformDatePicker(
         java.util.Calendar.getInstance().apply { timeInMillis = effectiveMaxDate }.get(java.util.Calendar.YEAR)
     }
     
-    // Get initial selected date from field state
+    
     val initialSelectedDateMillis: Long? = try {
         when (val value = fieldState.value) {
             is kotlinx.datetime.LocalDateTime -> {
@@ -246,13 +246,13 @@ actual fun PlatformDatePicker(
         androidx.compose.material3.DatePickerDialog(
             onDismissRequest = { 
                 showDialog = false
-                // Return current field value to trigger close without change
+                
                 try {
                     when (val value = fieldState.value) {
                         is kotlinx.datetime.LocalDateTime -> onValueChange(value.date)
                         is kotlinx.datetime.LocalDate -> onValueChange(value)
                         else -> {
-                            // Return current date if no value set
+                            
                             val now = kotlinx.datetime.Clock.System.now()
                             onValueChange(now.toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault()).date)
                         }
@@ -272,12 +272,12 @@ actual fun PlatformDatePicker(
                                 val localDate = instant.toLocalDateTime(kotlinx.datetime.TimeZone.UTC).date
                                 onValueChange(localDate)
                             } catch (e: Exception) {
-                                // Fallback to current date on error
+                                
                                 val now = kotlinx.datetime.Clock.System.now()
                                 onValueChange(now.toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault()).date)
                             }
                         } ?: run {
-                            // No date selected, use current date
+                            
                             val now = kotlinx.datetime.Clock.System.now()
                             onValueChange(now.toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault()).date)
                         }
@@ -290,7 +290,7 @@ actual fun PlatformDatePicker(
                 androidx.compose.material3.TextButton(
                     onClick = { 
                         showDialog = false
-                        // Return current field value to trigger close without change
+                        
                         try {
                             when (val value = fieldState.value) {
                                 is kotlinx.datetime.LocalDateTime -> onValueChange(value.date)
@@ -333,7 +333,7 @@ actual fun PlatformTimePicker(
 ) {
     var showDialog by remember { mutableStateOf(true) }
     
-    // Parse initial time from field state
+    
     val (initialHour, initialMinute) = try {
         when (val value = fieldState.value) {
             is kotlinx.datetime.LocalDateTime -> Pair(value.hour, value.minute)
@@ -362,7 +362,7 @@ actual fun PlatformTimePicker(
         androidx.compose.ui.window.Dialog(
             onDismissRequest = { 
                 showDialog = false
-                // Return current value or default
+                
                 val currentValue = fieldState.displayValue.ifEmpty { 
                     "${initialHour.toString().padStart(2, '0')}:${initialMinute.toString().padStart(2, '0')}"
                 }

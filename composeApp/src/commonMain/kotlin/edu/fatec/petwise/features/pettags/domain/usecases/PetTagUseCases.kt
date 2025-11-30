@@ -4,9 +4,7 @@ import edu.fatec.petwise.features.pettags.domain.models.TagCheckInResult
 import edu.fatec.petwise.features.pettags.domain.models.TagReadResult
 import edu.fatec.petwise.features.pettags.domain.repository.PetTagRepository
 
-/**
- * Use case to start pairing mode for associating a tag with a pet
- */
+
 class StartPairingUseCase(
     private val repository: PetTagRepository
 ) {
@@ -18,9 +16,7 @@ class StartPairingUseCase(
     }
 }
 
-/**
- * Use case to perform a check-in when a tag is scanned
- */
+
 class CheckInUseCase(
     private val repository: PetTagRepository
 ) {
@@ -32,9 +28,7 @@ class CheckInUseCase(
     }
 }
 
-/**
- * Use case to get pet information by tag UID
- */
+
 class GetPetByTagUseCase(
     private val repository: PetTagRepository
 ) {
@@ -46,9 +40,7 @@ class GetPetByTagUseCase(
     }
 }
 
-/**
- * Use case to get the last tag read from the reader
- */
+
 class GetLastReadUseCase(
     private val repository: PetTagRepository
 ) {

@@ -82,11 +82,11 @@ class AddLabViewModel(
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
 
             try {
-                // Extract form data
+                
                 val name = formData["name"]?.content ?: ""
                 val contactInfo = formData["contactInfo"]?.content?.takeIf { it.isNotBlank() }
 
-                // Validate required fields
+                
                 if (name.isBlank()) {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,

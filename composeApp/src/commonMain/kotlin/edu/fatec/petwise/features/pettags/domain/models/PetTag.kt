@@ -2,9 +2,7 @@ package edu.fatec.petwise.features.pettags.domain.models
 
 import kotlinx.serialization.Serializable
 
-/**
- * Domain model representing a pet identification tag (NFC/RFID)
- */
+
 @Serializable
 data class PetTag(
     val id: String,
@@ -16,9 +14,7 @@ data class PetTag(
     val updatedAt: String? = null
 )
 
-/**
- * Result of a tag check-in operation
- */
+
 @Serializable
 data class TagCheckInResult(
     val petId: String,
@@ -29,9 +25,7 @@ data class TagCheckInResult(
     val message: String
 )
 
-/**
- * Result of a tag read operation
- */
+
 @Serializable
 data class TagReadResult(
     val tagUid: String?,
@@ -44,9 +38,7 @@ data class TagReadResult(
     val message: String
 )
 
-/**
- * Status of pairing mode
- */
+
 @Serializable
 data class PairingStatus(
     val isPairing: Boolean,
@@ -54,22 +46,18 @@ data class PairingStatus(
     val message: String
 )
 
-/**
- * Status of a tag scanning operation
- */
+
 enum class TagScanStatus {
-    IDLE,           // Not scanning
-    SCANNING,       // Actively scanning for tags
-    PAIRING,        // In pairing mode waiting for tag
-    TAG_FOUND,      // Tag detected
-    TAG_REGISTERED, // Tag successfully registered/paired
-    PET_FOUND,      // Pet info retrieved from tag
-    ERROR           // Error occurred
+    IDLE,           
+    SCANNING,       
+    PAIRING,        
+    TAG_FOUND,      
+    TAG_REGISTERED, 
+    PET_FOUND,      
+    ERROR           
 }
 
-/**
- * Filter options for pet tags
- */
+
 data class PetTagFilterOptions(
     val petId: String? = null,
     val isActive: Boolean? = null,

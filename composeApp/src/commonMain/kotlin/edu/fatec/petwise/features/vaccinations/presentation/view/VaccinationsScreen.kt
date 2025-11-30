@@ -140,7 +140,7 @@ fun VaccinationsScreen(
                             vaccinationToDelete = vaccination
                             showDeleteDialog = true
                         },
-                        onScheduleVaccination = { /* TODO: Implement scheduling */ }
+                        onScheduleVaccination = {  }
                     )
                 }
             }
@@ -154,7 +154,7 @@ fun VaccinationsScreen(
                     VaccinationErrorSnackbar(
                         message = errorMessage,
                         isError = true,
-                        onDismiss = { /* Clear error event */ },
+                        onDismiss = {  },
                         actionLabel = "Tentar Novamente",
                         onAction = { viewModel.onEvent(VaccinationsUiEvent.LoadVaccinations) }
                     )
@@ -163,7 +163,7 @@ fun VaccinationsScreen(
         }
     }
     
-    // Add Dialog
+    
     if (showAddDialog) {
         AddVaccinationDialog(
             addVaccinationViewModel = addVaccinationViewModel,
@@ -179,7 +179,7 @@ fun VaccinationsScreen(
         )
     }
 
-    // Delete Dialog
+    
     vaccinationToDelete?.let { vaccination ->
         if (showDeleteDialog) {
             DeleteVaccinationConfirmationDialog(
@@ -198,7 +198,7 @@ fun VaccinationsScreen(
         }
     }
 
-    // Edit Dialog
+    
     vaccinationToEdit?.let { vaccination ->
         if (showEditDialog) {
             EditVaccinationDialog(

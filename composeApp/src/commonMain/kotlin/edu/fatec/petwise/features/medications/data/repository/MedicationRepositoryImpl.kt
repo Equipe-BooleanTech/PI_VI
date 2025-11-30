@@ -105,11 +105,11 @@ class MedicationRepositoryImpl(
         try {
             println("Repositório: Buscando medicamentos ativos via API")
             val allMedications = remoteDataSource.getAllMedications()
-            // Filter for active medications (not completed or cancelled)
+            
             val activeMedications = allMedications.filter { medication ->
-                // You can add logic here to determine if a medication is active
-                // based on dates, status, etc.
-                true // For now, return all medications
+                
+                
+                true 
             }
             println("Repositório: ${activeMedications.size} medicamentos ativos encontrados")
             emit(activeMedications)
@@ -124,7 +124,7 @@ class MedicationRepositoryImpl(
             println("Repositório: Adicionando novo medicamento '${medication.medicationName}' via API")
             val createdMedication = remoteDataSource.createMedication(medication)
             println("Repositório: Medicamento '${createdMedication.medicationName}' criado com sucesso - ID: ${createdMedication.id}")
-            // TODO: Add DataRefreshManager.notifyMedicationsUpdated() when available
+            
             Result.success(createdMedication)
         } catch (e: Exception) {
             println("Repositório: Erro ao criar medicamento '${medication.medicationName}' - ${e.message}")
@@ -137,7 +137,7 @@ class MedicationRepositoryImpl(
             println("Repositório: Atualizando medicamento '${medication.medicationName}' (ID: ${medication.id}) via API")
             val updatedMedication = remoteDataSource.updateMedication(medication)
             println("Repositório: Medicamento '${updatedMedication.medicationName}' atualizado com sucesso")
-            // TODO: Add DataRefreshManager notifications when available
+            
             Result.success(updatedMedication)
         } catch (e: Exception) {
             println("Repositório: Erro ao atualizar medicamento '${medication.medicationName}' - ${e.message}")
@@ -150,7 +150,7 @@ class MedicationRepositoryImpl(
             println("Repositório: Excluindo medicamento com ID '$id' via API")
             remoteDataSource.deleteMedication(id)
             println("Repositório: Medicamento excluído com sucesso")
-            // TODO: Add DataRefreshManager.notifyMedicationsUpdated() when available
+            
             Result.success(Unit)
         } catch (e: Exception) {
             println("Repositório: Erro ao excluir medicamento com ID '$id' - ${e.message}")
@@ -163,7 +163,7 @@ class MedicationRepositoryImpl(
             println("Repositório: Marcando medicamento '$id' como concluído via API")
             val updatedMedication = remoteDataSource.markAsCompleted(id)
             println("Repositório: Medicamento '${updatedMedication.medicationName}' marcado como concluído")
-            // TODO: Add DataRefreshManager notifications when available
+            
             Result.success(updatedMedication)
         } catch (e: Exception) {
             println("Repositório: Erro ao marcar medicamento '$id' como concluído - ${e.message}")
@@ -176,7 +176,7 @@ class MedicationRepositoryImpl(
             println("Repositório: Pausando medicamento '$id' via API")
             val updatedMedication = remoteDataSource.pauseMedication(id)
             println("Repositório: Medicamento '${updatedMedication.medicationName}' pausado")
-            // TODO: Add DataRefreshManager notifications when available
+            
             Result.success(updatedMedication)
         } catch (e: Exception) {
             println("Repositório: Erro ao pausar medicamento '$id' - ${e.message}")
@@ -189,7 +189,7 @@ class MedicationRepositoryImpl(
             println("Repositório: Retomando medicamento '$id' via API")
             val updatedMedication = remoteDataSource.resumeMedication(id)
             println("Repositório: Medicamento '${updatedMedication.medicationName}' retomado")
-            // TODO: Add DataRefreshManager notifications when available
+            
             Result.success(updatedMedication)
         } catch (e: Exception) {
             println("Repositório: Erro ao retomar medicamento '$id' - ${e.message}")

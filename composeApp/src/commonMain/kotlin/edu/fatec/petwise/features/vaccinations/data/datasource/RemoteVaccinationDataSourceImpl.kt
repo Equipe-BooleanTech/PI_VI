@@ -138,10 +138,10 @@ private fun parseDateToIso(date: LocalDateTime): String {
 
 private fun parseDateToIso(date: String): String {
     return try {
-        // Try to parse as LocalDateTime string first
+        
         LocalDateTime.parse(date).toString()
     } catch (e: Exception) {
-        // Fallback for DD/MM/YYYY format
+        
         val dateParts = if (date.contains("/")) {
             date.split("/")
         } else {

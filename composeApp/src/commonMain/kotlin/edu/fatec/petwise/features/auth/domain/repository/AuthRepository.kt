@@ -1,8 +1,6 @@
 package edu.fatec.petwise.features.auth.domain.repository
 
-/**
- * Interface para repositório de autenticação
- */
+
 interface AuthRepository {
 
     suspend fun login(email: String, password: String): Result<String>

@@ -59,7 +59,7 @@ fun BottomNavigationBar(
     LaunchedEffect(Unit) {
         getUserProfileUseCase.execute().fold(
             onSuccess = { userProfile ->
-                // Normalize user type the same way as DashboardViewModel
+                
                 val normalizedUserType = when (userProfile.userType.uppercase()) {
                     "VETERINARY", "VETERINARIAN", "VET" -> "VETERINARY"
                     "PETSHOP" -> "PETSHOP"
@@ -95,7 +95,7 @@ fun BottomNavigationBar(
             BottomNavItem("Produtos", Icons.Default.ShoppingCart, NavigationManager.TabScreen.Food),
             BottomNavItem("Mais", Icons.Default.Menu, NavigationManager.TabScreen.More)
         )
-        else -> listOf( // OWNER
+        else -> listOf( 
             BottomNavItem("Início", Icons.Default.Home, NavigationManager.TabScreen.Home),
             BottomNavItem("Pets", Icons.Default.Pets, NavigationManager.TabScreen.Pets),
             BottomNavItem("Mais", Icons.Default.Menu, NavigationManager.TabScreen.More)

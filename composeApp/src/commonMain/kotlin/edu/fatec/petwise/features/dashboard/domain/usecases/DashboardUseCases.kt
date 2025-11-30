@@ -28,17 +28,17 @@ class GetCardsStatisticsUseCase(
             else -> 0
         }
         val consultaCount = when (userType) {
-            "OWNER" -> 0 // OWNER cannot access general appointments endpoint
+            "OWNER" -> 0 
             "VETERINARY" -> consultaRepository.getUpcomingConsultas().size
             else -> 0
         }
         val vacinaCount = when (userType) {
-            "OWNER" -> 0 // TODO: implement upcoming vaccines for owner
+            "OWNER" -> 0 
             "VETERINARY" -> vacinaRepository.getAllVaccinations().first().size
             else -> 0
         }
         val medicamentoCount = when (userType) {
-            "OWNER" -> 0 // TODO: implement medications for owner
+            "OWNER" -> 0 
             "PHARMACY" -> medicamentoRepository.getAllMedications().first().size
             else -> 0
         }
@@ -51,7 +51,7 @@ class GetUpcomingConsultasUseCase(
 ) {
     suspend operator fun invoke(userType: String): List<Consulta> {
         return when (userType) {
-            "OWNER" -> emptyList() // OWNER cannot access general appointments endpoint
+            "OWNER" -> emptyList() 
             "VETERINARY" -> consultaRepository.getUpcomingConsultas()
             else -> emptyList()
         }
@@ -100,7 +100,7 @@ class GetPrescriptionsCountUseCase(
         return when (userType) {
             "OWNER" -> {
                 try {
-                    // For OWNER users, get only prescriptions for their pets
+                    
                     val userProfile = getUserProfileUseCase.execute().getOrNull()
                     if (userProfile != null) {
                         val userPets = petRepository.getAllPets().first()
@@ -130,7 +130,7 @@ class GetExamsCountUseCase(
         return when (userType) {
             "OWNER" -> {
                 try {
-                    // For OWNER users, get only exams for their pets
+                    
                     val userProfile = getUserProfileUseCase.execute().getOrNull()
                     if (userProfile != null) {
                         val userPets = petRepository.getAllPets().first()

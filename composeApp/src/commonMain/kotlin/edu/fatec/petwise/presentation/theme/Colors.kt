@@ -8,11 +8,6 @@ val Branco = Color(0xFFFFFFFF)
 val AmareloDourado = Color(0xFFF1C40F)
 
 
-/**
- * Converte uma string hexadecimal para um objeto Color.
- * Suporta formatos com e sem canal alfa (ARGB ou RGB).
- * Se a string não for válida, retorna Color.Black.
- */
 fun Color.Companion.fromHex(hex: String): Color {
     val cleanHex = hex.removePrefix("#")
     return when (cleanHex.length) {
@@ -33,9 +28,5 @@ fun Color.Companion.fromHex(hex: String): Color {
     }
 }
 
-/**
- * Converte uma string hexadecimal para um objeto Color.
- * Suporta formatos com e sem canal alfa (ARGB ou RGB).
- * Se a string não for válida, retorna Color.Black.
- */
+
 fun fromHex(hex: String): Color = Color.fromHex(hex)

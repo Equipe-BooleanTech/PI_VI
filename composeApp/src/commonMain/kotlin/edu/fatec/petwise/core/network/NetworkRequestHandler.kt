@@ -140,13 +140,13 @@ class NetworkRequestHandler(
                     val errorBody = response.bodyAsText()
                     println("NetworkRequestHandler: 401 Unauthorized - $errorBody")
                     
-                    // Check if token is blacklisted or invalid - these require re-login
+                    
                     val isTokenInvalid = errorBody.contains("blacklist", ignoreCase = true) ||
                             errorBody.contains("invalid", ignoreCase = true) ||
                             errorBody.contains("expired", ignoreCase = true) ||
                             errorBody.contains("Token validation failed", ignoreCase = true)
                     
-                    // Provide more context about the 401 error
+                    
                     val errorMessage = when {
                         errorBody.contains("blacklist", ignoreCase = true) -> 
                             "TOKEN_BLACKLISTED:Sua sessão foi encerrada. Faça login novamente."

@@ -103,7 +103,7 @@ object ApiEndpoints {
     const val SUPRIMENTOS_PRICE_RANGE = "$SUPRIMENTOS/price-range"
     const val SUPRIMENTOS_BY_SHOP = "$SUPRIMENTOS/shop"
 
-    // IoT / PetTag endpoints
+    
     const val IOT = "/api/iot"
     const val IOT_START_PAIRING = "$IOT/start-pairing"
     const val IOT_CHECK_IN = "$IOT/check-in"

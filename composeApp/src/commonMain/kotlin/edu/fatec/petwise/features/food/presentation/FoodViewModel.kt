@@ -60,7 +60,7 @@ class FoodViewModel : ViewModel() {
     }
 
     private fun loadFoods() {
-        // Cancel any existing data loading job
+        
         currentDataJob?.cancel()
 
         currentDataJob = viewModelScope.launch {
@@ -86,9 +86,8 @@ class FoodViewModel : ViewModel() {
     }
 
 
-
     private fun searchFoods(query: String) {
-        // Cancel any existing data loading job
+        
         currentDataJob?.cancel()
 
         currentDataJob = viewModelScope.launch {
@@ -122,7 +121,7 @@ class FoodViewModel : ViewModel() {
     }
 
     private fun filterByCategory(category: String?) {
-        // Cancel any existing data loading job
+        
         currentDataJob?.cancel()
 
         currentDataJob = viewModelScope.launch {
@@ -162,7 +161,7 @@ class FoodViewModel : ViewModel() {
             try {
                 addFoodUseCase(food).fold(
                     onSuccess = { newFood ->
-                        // Reload foods to get updated list
+                        
                         loadFoods()
                     },
                     onFailure = { error ->
@@ -188,7 +187,7 @@ class FoodViewModel : ViewModel() {
             try {
                 updateFoodUseCase(food).fold(
                     onSuccess = { updatedFood ->
-                        // Reload foods to get updated list
+                        
                         loadFoods()
                     },
                     onFailure = { error ->
@@ -214,7 +213,7 @@ class FoodViewModel : ViewModel() {
             try {
                 deleteFoodUseCase(foodId).fold(
                     onSuccess = {
-                        // Reload foods to get updated list
+                        
                         loadFoods()
                     },
                     onFailure = { error ->

@@ -27,10 +27,10 @@ class FoodApiServiceImpl(
             deserializer = { jsonString ->
                 val json = Json { ignoreUnknownKeys = true }
                 try {
-                    // Try to parse as direct array first
+                    
                     json.decodeFromString<List<FoodDto>>(jsonString)
                 } catch (e: Exception) {
-                    // Fallback to wrapped object
+                    
                     val wrapped = json.decodeFromString<FoodListResponse>(jsonString)
                     wrapped.foods ?: emptyList()
                 }

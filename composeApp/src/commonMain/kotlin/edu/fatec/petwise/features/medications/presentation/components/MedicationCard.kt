@@ -39,7 +39,7 @@ fun MedicationCard(
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
 
-    // Calculate medication status based on dates
+    
     val currentDate = remember { kotlinx.datetime.Clock.System.now() }
     val startDate = remember(medication.startDate) {
         try {
@@ -112,7 +112,7 @@ fun MedicationCard(
                     )
                 }
 
-                // Medication icon
+                
                 Surface(
                     shape = CircleShape,
                     color = Color.fromHex("#2196F3").copy(alpha = 0.1f),
@@ -226,7 +226,7 @@ fun MedicationCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Status badge
+            
             Surface(
                 shape = RoundedCornerShape(12.dp),
                 color = statusColor.copy(alpha = 0.1f),
@@ -242,7 +242,7 @@ fun MedicationCard(
                 )
             }
 
-            // Side effects (if any)
+            
             if (medication.sideEffects.isNotBlank()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 

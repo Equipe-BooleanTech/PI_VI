@@ -33,10 +33,10 @@ class LabApiServiceImpl(
             deserializer = { jsonString ->
                 val json = Json { ignoreUnknownKeys = true }
                 try {
-                    // Try to parse as direct array first
+                    
                     json.decodeFromString<List<LabDto>>(jsonString)
                 } catch (e: Exception) {
-                    // Fallback to wrapped object
+                    
                     val wrapped = json.decodeFromString<LabListResponse>(jsonString)
                     wrapped.labs ?: emptyList()
                 }
@@ -75,10 +75,10 @@ class LabApiServiceImpl(
             deserializer = { jsonString ->
                 val json = Json { ignoreUnknownKeys = true }
                 try {
-                    // Try to parse as direct array first
+                    
                     json.decodeFromString<List<LabResultDto>>(jsonString)
                 } catch (e: Exception) {
-                    // Fallback to wrapped object
+                    
                     val wrapped = json.decodeFromString<LabResultListResponse>(jsonString)
                     wrapped.labResults ?: emptyList()
                 }

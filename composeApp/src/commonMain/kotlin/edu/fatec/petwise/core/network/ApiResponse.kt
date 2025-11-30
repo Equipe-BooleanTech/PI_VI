@@ -2,10 +2,7 @@ package edu.fatec.petwise.core.network
 
 import kotlinx.serialization.Serializable
 
-/**
- * Standard API response wrapper for consistent response handling
- * Includes metadata for pagination, timestamps, and request tracking
- */
+
 @Serializable
 data class ApiResponse<T>(
     val data: T,

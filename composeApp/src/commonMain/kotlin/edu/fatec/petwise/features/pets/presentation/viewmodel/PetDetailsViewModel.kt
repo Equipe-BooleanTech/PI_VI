@@ -55,14 +55,14 @@ class PetDetailsViewModel(
 
             try {
                 coroutineScope {
-                    // Load all pet-related data in parallel
+                    
                     val consultationsDeferred = async { getConsultasByPetUseCase(petId) }
                     val vaccinationsDeferred = async { getVaccinationsByPetUseCase(petId) }
                     val medicationsDeferred = async { getMedicationsByPetUseCase(petId) }
                     val examsDeferred = async { getExamsByPetUseCase(petId) }
                     val prescriptionsDeferred = async { getPrescriptionsByPetUseCase(petId) }
 
-                    // Wait for all to complete
+                    
                     val consultations = consultationsDeferred.await()
                     val vaccinations = vaccinationsDeferred.await()
                     val medications = medicationsDeferred.await()

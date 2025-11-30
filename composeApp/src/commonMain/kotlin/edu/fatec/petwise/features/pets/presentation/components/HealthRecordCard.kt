@@ -55,7 +55,7 @@ fun HealthRecordCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Icon
+            
             Card(
                 colors = CardDefaults.cardColors(
                     containerColor = Color.fromHex(color).copy(alpha = 0.1f)
@@ -74,7 +74,7 @@ fun HealthRecordCard(
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Content
+            
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
@@ -102,7 +102,7 @@ fun HealthRecordCard(
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Status
+            
             Card(
                 colors = CardDefaults.cardColors(
                     containerColor = Color.fromHex(statusColor).copy(alpha = 0.1f)

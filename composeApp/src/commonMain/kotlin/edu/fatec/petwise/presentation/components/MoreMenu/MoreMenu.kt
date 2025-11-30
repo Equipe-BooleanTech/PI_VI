@@ -240,7 +240,7 @@ fun MoreMenu(
                             tabScreen = NavigationManager.TabScreen.Pets
                         )
                     ).let { items ->
-                        // Tag NFC is only available on Android and iOS (native platforms with NFC support)
+                        
                         val platform = getPlatformName()
                         if (platform == "Android" || platform == "iOS") {
                             items + MoreMenuItem(

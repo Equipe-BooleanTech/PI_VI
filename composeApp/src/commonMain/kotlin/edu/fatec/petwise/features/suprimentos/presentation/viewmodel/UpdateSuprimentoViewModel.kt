@@ -10,9 +10,7 @@ import edu.fatec.petwise.features.suprimentos.domain.usecases.UpdateSuprimentoUs
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-/**
- * ViewModel for updating existing supplies
- */
+
 class UpdateSuprimentoViewModel(
     private val updateSuprimentoUseCase: UpdateSuprimentoUseCase,
     private val getSuprimentoByIdUseCase: GetSuprimentoByIdUseCase
@@ -109,9 +107,7 @@ class UpdateSuprimentoViewModel(
     }
 }
 
-/**
- * UI State for Update Suprimento screen
- */
+
 data class UpdateSuprimentoUiState(
     val isLoading: Boolean = false,
     val currentSuprimento: Suprimento? = null,
@@ -120,9 +116,7 @@ data class UpdateSuprimentoUiState(
     val successMessage: String? = null
 )
 
-/**
- * UI Events for Update Suprimento screen
- */
+
 sealed class UpdateSuprimentoUiEvent {
     data class LoadSuprimento(val id: String) : UpdateSuprimentoUiEvent()
     data class UpdateSuprimento(val suprimento: Suprimento) : UpdateSuprimentoUiEvent()

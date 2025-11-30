@@ -27,10 +27,10 @@ class PetApiServiceImpl(
         return networkHandler.getWithCustomDeserializer(ApiEndpoints.PETS, deserializer = { jsonString ->
             val json = Json { ignoreUnknownKeys = true }
             try {
-                // Try to parse as direct array first
+                
                 json.decodeFromString<List<PetDto>>(jsonString)
             } catch (e: Exception) {
-                // Fallback to wrapped object
+                
                 val wrapped = json.decodeFromString<PetListResponse>(jsonString)
                 wrapped.pets ?: emptyList()
             }
@@ -83,10 +83,10 @@ class PetApiServiceImpl(
         return networkHandler.getWithCustomDeserializer(ApiEndpoints.PETS_SEARCH, deserializer = { jsonString ->
             val json = Json { ignoreUnknownKeys = true }
             try {
-                // Try to parse as direct array first
+                
                 json.decodeFromString<List<PetDto>>(jsonString)
             } catch (e: Exception) {
-                // Fallback to wrapped object
+                
                 val wrapped = json.decodeFromString<PetListResponse>(jsonString)
                 wrapped.pets ?: emptyList()
             }
@@ -101,10 +101,10 @@ class PetApiServiceImpl(
         return networkHandler.getWithCustomDeserializer(ApiEndpoints.PETS_FAVORITES, deserializer = { jsonString ->
             val json = Json { ignoreUnknownKeys = true }
             try {
-                // Try to parse as direct array first
+                
                 json.decodeFromString<List<PetDto>>(jsonString)
             } catch (e: Exception) {
-                // Fallback to wrapped object
+                
                 val wrapped = json.decodeFromString<PetListResponse>(jsonString)
                 wrapped.pets ?: emptyList()
             }

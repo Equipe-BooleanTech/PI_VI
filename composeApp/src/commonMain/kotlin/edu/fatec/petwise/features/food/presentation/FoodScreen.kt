@@ -38,7 +38,7 @@ fun FoodScreen() {
     var selectionMode by remember { mutableStateOf(false) }
     var selectedFoodIds by remember { mutableStateOf(setOf<String>()) }
 
-    // Dialog states
+    
     var showAddFoodDialog by remember { mutableStateOf(false) }
     var showEditFoodDialog by remember { mutableStateOf(false) }
     var foodToEdit by remember { mutableStateOf<Food?>(null) }
@@ -68,13 +68,13 @@ fun FoodScreen() {
             selectionMode = selectionMode,
             selectedCount = selectedFoodIds.size,
             onSearchClick = { showSearchBar = !showSearchBar },
-            onFilterClick = { /* TODO: Implement filter */ },
+            onFilterClick = {  },
             onAddFoodClick = { showAddFoodDialog = true },
             onSelectionModeToggle = {
                 selectionMode = !selectionMode
                 if (!selectionMode) selectedFoodIds = setOf()
             },
-            onDeleteSelected = { /* TODO: Implement delete */ }
+            onDeleteSelected = {  }
         )
 
         if (showSearchBar) {
@@ -128,7 +128,7 @@ fun FoodScreen() {
         }
     }
 
-    // Dialogs
+    
     if (showAddFoodDialog) {
         AddFoodDialog(
             isLoading = uiState.isLoading,
@@ -137,7 +137,7 @@ fun FoodScreen() {
                 showAddFoodDialog = false
             },
             onSuccess = { formData: Map<String, Any> ->
-                // Convert form data to Food model
+                
                 val food = Food(
                     id = "",
                     name = formData["name"] as String,
@@ -169,7 +169,7 @@ fun FoodScreen() {
                 foodToEdit = null
             },
             onSuccess = { formData: Map<String, Any> ->
-                // Convert form data to updated Food model
+                
                 val updatedFood = foodToEdit!!.copy(
                     name = formData["name"] as String,
                     brand = formData["brand"] as String,

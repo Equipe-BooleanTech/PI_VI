@@ -27,10 +27,10 @@ class ToyApiServiceImpl(
             deserializer = { jsonString ->
                 val json = Json { ignoreUnknownKeys = true }
                 try {
-                    // Try to parse as direct array first
+                    
                     json.decodeFromString<List<ToyDto>>(jsonString)
                 } catch (e: Exception) {
-                    // Fallback to wrapped object
+                    
                     val wrapped = json.decodeFromString<ToyListResponse>(jsonString)
                     wrapped.toys ?: emptyList()
                 }

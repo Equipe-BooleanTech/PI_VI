@@ -47,7 +47,7 @@ class UpdateExamViewModel(
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null, isSuccess = false)
 
             try {
-                // Get original exam
+                
                 val originalExam = getExamByIdUseCase(examId).firstOrNull() ?: run {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
@@ -56,7 +56,7 @@ class UpdateExamViewModel(
                     return@launch
                 }
 
-                // Get current user profile to get veterinary ID
+                
                 val userProfileResult = getUserProfileUseCase.execute()
                 val veterinaryId = userProfileResult.getOrNull()?.id ?: ""
 
@@ -84,10 +84,10 @@ class UpdateExamViewModel(
 
                 val examDateTime = try {
                     if (examDateTimeStr.contains('T')) {
-                        // ISO format: 2023-11-23T15:30:00
+                        
                         kotlinx.datetime.LocalDateTime.parse(examDateTimeStr)
                     } else {
-                        // User friendly format: DD/MM/YYYY HH:mm
+                        
                         val parts = examDateTimeStr.split(" ")
                         if (parts.size == 2) {
                             val dateParts = parts[0].split("/")
@@ -135,7 +135,7 @@ class UpdateExamViewModel(
                     updatedAt = currentTime
                 )
 
-                // Call use case
+                
                 updateExamUseCase(updatedExam).fold(
                     onSuccess = {
                         _uiState.value = _uiState.value.copy(

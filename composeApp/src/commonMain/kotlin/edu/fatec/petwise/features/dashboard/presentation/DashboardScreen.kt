@@ -130,14 +130,13 @@ fun DashboardScreen(
         if (errorMsg != null) {
             println("DashboardScreen: Analisando mensagem de erro: '$errorMsg'")
             
-            // Be more specific about what constitutes a session expiry
-            // Only trigger logout for explicit session expiry messages, not generic 401 errors
+            
             val isSessionExpired = errorMsg.contains("sessão expirou", ignoreCase = true) ||
                     errorMsg.contains("Faça login novamente", ignoreCase = true) ||
                     errorMsg.contains("Token expirado - faça login novamente", ignoreCase = true) ||
                     errorMsg.contains("Sessão inválida", ignoreCase = true)
             
-            // For generic unauthorized errors, let's be more conservative
+            
             val isGenericAuthError = (errorMsg.contains("unauthorized", ignoreCase = true) ||
                     errorMsg.contains("401", ignoreCase = true)) &&
                     !errorMsg.contains("Erro temporário", ignoreCase = true)
@@ -150,8 +149,8 @@ fun DashboardScreen(
                 }
                 isGenericAuthError -> {
                     println("DashboardScreen: Erro de autenticação genérico detectado - aguardando antes de logout automático - $errorMsg")
-                    // Wait a bit before triggering logout to allow for retry mechanisms
-                    // Check if error still persists after delay
+                    
+                    
                     if (dashboardUiState.errorMessage == errorMsg) {
                         println("DashboardScreen: Erro de autenticação persistiu após delay, fazendo logout - $errorMsg")
                         authViewModel.handleSessionExpired("Problema de autenticação persistente. Faça login novamente.")

@@ -19,16 +19,16 @@ class RemoteExamDataSourceImpl(
                 println("API: ${result.data.size} exames obtidos com sucesso")
                 var exams = result.data.map { it.toExam() }
                 
-                // Filter exams based on user type
+                
                 try {
                     val userProfile = getUserProfileUseCase.execute().getOrNull()
                     if (userProfile != null && userProfile.userType == "OWNER") {
                         println("API: Usuário é OWNER, filtrando exames por pets do usuário")
-                        // For OWNER users, we need to get their pets first to filter exams
-                        // This is a simplified approach - in a real app, the API should handle this
+                        
+                        
                         exams = exams.filter { exam ->
-                            // This would need to be implemented properly by checking pet ownership
-                            // For now, we'll return all exams (this needs backend support)
+                            
+                            
                             true
                         }
                         println("API: Após filtro OWNER: ${exams.size} exames restantes")
@@ -37,7 +37,7 @@ class RemoteExamDataSourceImpl(
                     }
                 } catch (e: Exception) {
                     println("API: Erro ao obter perfil do usuário para filtro: ${e.message}")
-                    // Continue without filtering
+                    
                 }
                 
                 exams
@@ -46,7 +46,7 @@ class RemoteExamDataSourceImpl(
                 val exception = result.exception
                 println("API Error: ${exception.message}")
                 
-                // Check if this is a blacklisted token error that requires re-login
+                
                 if (exception is NetworkException.Unauthorized && exception.requiresRelogin) {
                     println("API: Token blacklisted/invalid - throwing exception to trigger re-login")
                     throw Exception("SESSION_EXPIRED:${exception.message?.substringAfter(":") ?: "Sessão expirada"}")
@@ -143,11 +143,11 @@ class RemoteExamDataSourceImpl(
 
 private fun parseDateToIso(date: String): String {
     val dateParts = if (date.contains("/")) {
-        // DD/MM/YYYY format
+        
         date.split("/")
     } else {
-        // YYYY-MM-DD format
-        date.split("-").reversed() // Reverse to DD/MM/YYYY
+        
+        date.split("-").reversed() 
     }
     val day = dateParts[0].toInt()
     val month = dateParts[1].toInt()

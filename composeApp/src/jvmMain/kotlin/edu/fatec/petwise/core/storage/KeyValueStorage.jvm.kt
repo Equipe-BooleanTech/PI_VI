@@ -18,7 +18,7 @@ actual object KeyValueStorage {
             try {
                 FileInputStream(file).use { properties.load(it) }
             } catch (e: Exception) {
-                // Ignore
+                
             }
         }
     }
@@ -28,7 +28,7 @@ actual object KeyValueStorage {
             file.parentFile?.mkdirs()
             FileOutputStream(file).use { properties.store(it, "PetWise Settings") }
         } catch (e: Exception) {
-            // Ignore
+            
         }
     }
 

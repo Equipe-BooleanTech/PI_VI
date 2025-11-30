@@ -143,19 +143,19 @@ object AuthDependencyContainer {
         resetPasswordUseCase = null
         logoutUseCase = null
         getUserProfileUseCase = null
-        // The ViewModel is also lazy and will be recreated
+        
     }
 }
 
 class AuthTokenStorageImpl(private val storage: KeyValueStorage) : AuthTokenStorage {
-    // Memory-only storage - tokens are NOT persisted to disk
-    // This standardizes behavior across all platforms (Android, JVM, Web)
+    
+    
     private var token: String? = null
     private var tokenExpirationTime: Long = 0
 
     init {
-        // DO NOT load from storage - keep tokens in memory only
-        // This ensures consistent behavior across platforms and requires login on app restart
+        
+        
         println("AuthTokenStorage: Inicializado - modo memory-only (sem persistência)")
     }
 
@@ -163,12 +163,12 @@ class AuthTokenStorageImpl(private val storage: KeyValueStorage) : AuthTokenStor
         println("AuthTokenStorage: Saving token (memory-only): ${token.take(10)}...")
         this.token = token
         this.tokenExpirationTime = currentTimeMs() + (60 * 60 * 1000)
-        // DO NOT persist to storage
+        
     }
 
     override fun getToken(): String? {
         val currentToken = token
-        // Treat empty strings as null
+        
         if (currentToken.isNullOrBlank()) {
             return null
         }
@@ -186,7 +186,7 @@ class AuthTokenStorageImpl(private val storage: KeyValueStorage) : AuthTokenStor
         println("AuthTokenStorage: Clearing all tokens (memory)")
         token = null
         tokenExpirationTime = 0
-        // Also clear any previously persisted tokens for clean state
+        
         storage.remove("access_token")
         storage.remove("token_expiration")
         storage.remove("token_set_time")
@@ -208,7 +208,7 @@ class AuthTokenStorageImpl(private val storage: KeyValueStorage) : AuthTokenStor
         println("AuthTokenStorage: Saving token with ${expiresInSeconds}s expiration (memory-only): ${token.take(10)}...")
         this.token = token
         this.tokenExpirationTime = currentTimeMs() + (expiresInSeconds * 1000)
-        // DO NOT persist to storage
+        
     }
 }
 

@@ -47,10 +47,10 @@ fun PrescriptionsScreen() {
 
     val filteredPrescriptions = uiState.filteredPrescriptions
 
-    // Search state
+    
     var searchQuery by remember { mutableStateOf("") }
 
-    // Dialog states
+    
     var showAddPrescriptionDialog by remember { mutableStateOf(false) }
     var showEditPrescriptionDialog by remember { mutableStateOf(false) }
     var prescriptionToEdit by remember { mutableStateOf<Prescription?>(null) }
@@ -76,7 +76,7 @@ fun PrescriptionsScreen() {
         }
     }
 
-    // Update search when query changes
+    
     LaunchedEffect(searchQuery) {
         viewModel.onEvent(PrescriptionsUiEvent.SearchPrescriptions(searchQuery))
     }
@@ -113,7 +113,7 @@ fun PrescriptionsScreen() {
                         prescriptions = filteredPrescriptions,
                         petNames = uiState.petNames,
                         veterinaryName = uiState.veterinaryName,
-                        onPrescriptionClick = { /* No action needed for now */ },
+                        onPrescriptionClick = {  },
                         onEditClick = { prescription ->
                             prescriptionToEdit = prescription
                             showEditPrescriptionDialog = true
@@ -144,7 +144,7 @@ fun PrescriptionsScreen() {
         }
     }
 
-    // Dialogs
+    
     if (showAddPrescriptionDialog) {
         AddPrescriptionDialog(
             isLoading = addUiState.isLoading,
@@ -176,7 +176,7 @@ fun PrescriptionsScreen() {
         }
     }
 
-    // Edit Dialog
+    
     prescriptionToEdit?.let { prescription ->
         if (showEditPrescriptionDialog) {
             EditPrescriptionDialog(
@@ -490,7 +490,7 @@ fun PrescriptionCard(
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
 
-    // Format date (prescriptionDate is a String like "2024-01-15T10:30:00")
+    
     val formattedDate = remember(prescription.prescriptionDate) {
         try {
             val dateStr = prescription.prescriptionDate.substringBefore("T")
@@ -505,7 +505,7 @@ fun PrescriptionCard(
         }
     }
 
-    // Format validUntil date
+    
     val formattedValidUntil = remember(prescription.validUntil) {
         prescription.validUntil?.let { validUntil ->
             try {
@@ -556,7 +556,7 @@ fun PrescriptionCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 
-                // Pet name
+                
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.Pets,
@@ -576,7 +576,7 @@ fun PrescriptionCard(
                 
                 Spacer(modifier = Modifier.height(4.dp))
                 
-                // Veterinary name
+                
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.Person,
@@ -595,7 +595,7 @@ fun PrescriptionCard(
                 
                 Spacer(modifier = Modifier.height(4.dp))
                 
-                // Prescription date
+                
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.CalendarMonth,
@@ -612,7 +612,7 @@ fun PrescriptionCard(
                     )
                 }
                 
-                // Valid until date
+                
                 formattedValidUntil?.let { validUntil ->
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -632,7 +632,7 @@ fun PrescriptionCard(
                     }
                 }
                 
-                // Instructions if available
+                
                 if (prescription.instructions.isNotBlank()) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -653,7 +653,7 @@ fun PrescriptionCard(
                     }
                 }
                 
-                // Diagnosis if available
+                
                 prescription.diagnosis?.let { diagnosis ->
                     if (diagnosis.isNotBlank()) {
                         Spacer(modifier = Modifier.height(4.dp))
@@ -766,7 +766,7 @@ fun PrescriptionErrorSnackbar(
     val theme = PetWiseTheme.Light
 
     LaunchedEffect(message) {
-        delay(5000) // Auto dismiss after 5 seconds
+        delay(5000) 
         onDismiss()
     }
 

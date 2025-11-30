@@ -24,51 +24,51 @@ data class PetTagUiState(
     val errorMessage: String? = null,
     val successMessage: String? = null,
     
-    // Pairing mode state
+    
     val isPairingMode: Boolean = false,
     val selectedPetForPairing: Pet? = null,
     
-    // Pet list for pairing selection
+    
     val pets: List<Pet> = emptyList(),
     val showPetSelectionDialog: Boolean = false,
     
-    // Scan results
+    
     val lastCheckInResult: TagCheckInResult? = null,
     val lastTagRead: TagReadResult? = null,
     
-    // Simulated tag input (for testing without NFC hardware)
+    
     val manualTagUid: String = "",
     val showManualInput: Boolean = false
 )
 
 sealed class PetTagUiEvent {
-    // Pet loading
+    
     object LoadPets : PetTagUiEvent()
     
-    // Pairing mode
+    
     object ShowPetSelectionDialog : PetTagUiEvent()
     object HidePetSelectionDialog : PetTagUiEvent()
     data class SelectPetForPairing(val pet: Pet) : PetTagUiEvent()
     object StartPairing : PetTagUiEvent()
     object CancelPairing : PetTagUiEvent()
     
-    // Tag scanning
+    
     data class SimulateTagScan(val tagUid: String) : PetTagUiEvent()
     object StartPollingLastRead : PetTagUiEvent()
     object StopPollingLastRead : PetTagUiEvent()
     
-    // Check-in
+    
     data class ProcessCheckIn(val tagUid: String) : PetTagUiEvent()
     
-    // Get pet by tag
+    
     data class GetPetByTag(val tagUid: String) : PetTagUiEvent()
     
-    // Manual input
+    
     object ToggleManualInput : PetTagUiEvent()
     data class UpdateManualTagUid(val uid: String) : PetTagUiEvent()
     object SubmitManualTag : PetTagUiEvent()
     
-    // UI actions
+    
     object ClearError : PetTagUiEvent()
     object ClearSuccess : PetTagUiEvent()
     object ResetState : PetTagUiEvent()
@@ -191,7 +191,7 @@ class PetTagViewModel(
                         successMessage = "Modo de pareamento ativado para ${pet.name}. Aproxime a tag NFC.",
                         scanStatus = TagScanStatus.PAIRING
                     )
-                    // Start polling for tag reads
+                    
                     startPollingLastRead()
                 },
                 onFailure = { error ->
@@ -218,16 +218,16 @@ class PetTagViewModel(
 
     private fun simulateTagScan(tagUid: String) {
         if (_uiState.value.isPairingMode) {
-            // In pairing mode, process as check-in (which will register the tag)
+            
             processCheckIn(tagUid)
         } else {
-            // Not in pairing mode, just look up the pet
+            
             getPetByTag(tagUid)
         }
     }
 
     private fun startPollingLastRead() {
-        stopPollingLastRead() // Cancel any existing polling
+        stopPollingLastRead() 
         
         pollingJob = viewModelScope.launch {
             while (isActive) {
@@ -240,7 +240,7 @@ class PetTagViewModel(
                                 scanStatus = TagScanStatus.TAG_FOUND
                             )
                             
-                            // If in pairing mode and tag was read, process it
+                            
                             if (_uiState.value.isPairingMode) {
                                 processCheckIn(result.tagUid)
                             }
@@ -250,7 +250,7 @@ class PetTagViewModel(
                         println("PetTagViewModel: Erro no polling - ${error.message}")
                     }
                 )
-                delay(2000) // Poll every 2 seconds
+                delay(2000) 
             }
         }
     }

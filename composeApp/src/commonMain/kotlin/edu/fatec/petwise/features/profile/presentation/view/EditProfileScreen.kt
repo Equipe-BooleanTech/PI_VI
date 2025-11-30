@@ -37,7 +37,9 @@ fun EditProfileScreen(
     
     var showDeleteDialog by remember { mutableStateOf(false) }
     
-    val formConfiguration = remember(uiState.userProfile?.userType) {
+    val userProfileKey = uiState.userProfile?.id
+    
+    val formConfiguration = remember(uiState.userProfile?.userType, userProfileKey) {
         uiState.userProfile?.let { profile ->
             val fieldsToInclude = when (profile.userType.uppercase()) {
                 "OWNER" -> listOf("fullName", "email", "phone", "cpf", "submitEditProfile")
@@ -54,17 +56,20 @@ fun EditProfileScreen(
         } ?: editProfileFormConfiguration
     }
     
-    val formViewModel = remember(formConfiguration) {
+    val formViewModel = remember(formConfiguration, userProfileKey) {
         DynamicFormViewModel(initialConfiguration = formConfiguration)
     }
 
-    LaunchedEffect(uiState.userProfile) {
+    LaunchedEffect(uiState.userProfile, userProfileKey) {
         uiState.userProfile?.let { profile ->
             println("EditProfileScreen: Loading user data into form - ${profile.fullName}")
             
             formViewModel.updateFieldValue("fullName", profile.fullName)
             formViewModel.updateFieldValue("email", profile.email)
             formViewModel.updateFieldValue("phone", profile.phone ?: "")
+        } ?: run {
+            println("EditProfileScreen: User profile is null, resetting form")
+            formViewModel.resetForm()
         }
     }
 
@@ -110,7 +115,7 @@ fun EditProfileScreen(
                 .background(Color(0xFFF7F7F7))
         ) {
             if (uiState.isLoading && uiState.userProfile == null) {
-                // Initial loading state
+                
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -125,7 +130,7 @@ fun EditProfileScreen(
                         .fillMaxSize()
                         .padding(16.dp)
                 ) {
-                    // Success message
+                    
                     uiState.successMessage?.let { message ->
                         Card(
                             modifier = Modifier
@@ -144,7 +149,7 @@ fun EditProfileScreen(
                         }
                     }
 
-                    // Error message
+                    
                     uiState.errorMessage?.let { message ->
                         Card(
                             modifier = Modifier
@@ -163,7 +168,7 @@ fun EditProfileScreen(
                         }
                     }
 
-                    // Dynamic Form
+                    
                     DynamicForm(
                         viewModel = formViewModel,
                         modifier = Modifier.fillMaxWidth(),
@@ -190,7 +195,7 @@ fun EditProfileScreen(
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // Delete Account Section
+                    
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(
@@ -233,7 +238,7 @@ fun EditProfileScreen(
                 }
             }
 
-            // Loading overlay during update
+            
             if (uiState.isLoading && uiState.userProfile != null) {
                 Box(
                     modifier = Modifier
@@ -265,7 +270,7 @@ fun EditProfileScreen(
         }
     }
 
-    // Delete Account Confirmation Dialog
+    
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },

@@ -46,7 +46,7 @@ fun PetTagScreen(
         viewModel.onEvent(PetTagUiEvent.LoadPets)
     }
 
-    // Handle messages
+    
     LaunchedEffect(uiState.successMessage) {
         uiState.successMessage?.let {
             kotlinx.coroutines.delay(3000)
@@ -59,7 +59,7 @@ fun PetTagScreen(
             .fillMaxSize()
             .background(Color.fromHex("#F7F7F7"))
     ) {
-        // Header
+        
         PetTagHeader(
             isPairingMode = uiState.isPairingMode,
             selectedPet = uiState.selectedPetForPairing,
@@ -69,7 +69,7 @@ fun PetTagScreen(
             onManualInputClick = { viewModel.onEvent(PetTagUiEvent.ToggleManualInput) }
         )
 
-        // Main content
+        
         Box(modifier = Modifier.fillMaxSize()) {
             when {
                 uiState.isLoading -> {
@@ -102,7 +102,7 @@ fun PetTagScreen(
                 }
             }
 
-            // Error Snackbar
+            
             androidx.compose.animation.AnimatedVisibility(
                 visible = uiState.errorMessage != null,
                 enter = fadeIn(),
@@ -147,7 +147,7 @@ fun PetTagScreen(
                 }
             }
 
-            // Success Snackbar
+            
             androidx.compose.animation.AnimatedVisibility(
                 visible = uiState.successMessage != null,
                 enter = fadeIn(),
@@ -194,7 +194,7 @@ fun PetTagScreen(
         }
     }
 
-    // Pet Selection Dialog
+    
     if (uiState.showPetSelectionDialog) {
         PetSelectionDialog(
             pets = uiState.pets,
@@ -262,7 +262,7 @@ private fun PetTagHeader(
             Spacer(modifier = Modifier.height(16.dp))
 
             if (!isPairingMode) {
-                // Select pet for pairing
+                
                 OutlinedButton(
                     onClick = onSelectPetClick,
                     modifier = Modifier.fillMaxWidth(),
@@ -297,7 +297,7 @@ private fun PetTagHeader(
                     }
                 }
             } else {
-                // Cancel pairing button
+                
                 OutlinedButton(
                     onClick = onCancelPairingClick,
                     modifier = Modifier.fillMaxWidth(),
@@ -324,7 +324,7 @@ private fun PairingModeContent(
     val theme = PetWiseTheme.Light
     val primaryColor = theme.palette.primary
     
-    // Pulse animation for the NFC icon
+    
     val infiniteTransition = rememberInfiniteTransition()
     val scale by infiniteTransition.animateFloat(
         initialValue = 1f,

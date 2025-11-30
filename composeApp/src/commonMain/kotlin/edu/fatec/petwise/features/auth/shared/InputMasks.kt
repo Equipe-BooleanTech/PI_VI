@@ -3,9 +3,7 @@ package edu.fatec.petwise.features.auth.shared
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 
-/**
- * Máscaras de entrada comuns para formulários em geral
- */
+
 object InputMasks {
 
     val MASK_MAP: Map<String, String> = mapOf(
@@ -16,13 +14,7 @@ object InputMasks {
         "crmv" to "####-##"
     )
 
-    /**
-     * Aplica máscara ao texto baseado no padrão fornecido
-     * @param currentValue Valor atual do campo
-     * @param newText Novo texto inserido
-     * @param mask Padrão da máscara (ex: "###.###.###-##")
-     * @return TextFieldValue com máscara aplicada
-     */
+    
     fun processTextWithMask(
         currentValue: TextFieldValue,
         newText: String,
@@ -52,9 +44,7 @@ object InputMasks {
         )
     }
 
-    /**
-     * Apply mask pattern to clean text
-     */
+    
     private fun applyMask(cleanText: String, mask: String): ProcessedMaskValue {
         val result = StringBuilder()
         var textIndex = 0
@@ -102,25 +92,19 @@ object InputMasks {
         return minOf(oldCursor, newText.length)
     }
 
-    /**
-     * Remove máscara do texto, deixando apenas caracteres alfanuméricos
-     */
+    
     fun removeMask(maskedValue: String): String {
         return maskedValue.replace(Regex("[^0-9a-zA-Z]"), "")
     }
 
-    /**
-     * Verifica se o texto está completo para a máscara
-     */
+    
     fun isTextComplete(text: String, mask: String): Boolean {
         val cleanText = removeMask(text)
         val maskDigits = mask.count { it == '#' }
         return cleanText.length == maskDigits
     }
 
-    /**
-     * Obtém máscara baseada no tipo de campo
-     */
+    
     fun getMaskForFieldType(fieldId: String, fieldType: String): String? {
         return when {
             fieldId.contains("cpf", ignoreCase = true) || fieldType == "cpf" -> MASK_MAP["cpf"]

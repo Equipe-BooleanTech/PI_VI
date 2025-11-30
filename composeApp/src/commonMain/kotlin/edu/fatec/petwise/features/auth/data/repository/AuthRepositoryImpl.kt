@@ -25,7 +25,7 @@ class AuthRepositoryImpl(
         return try {
             println("Repositório: Iniciando login para email '$email' via API")
             
-            // Clear existing tokens to ensure fresh authentication
+            
             println("Repositório: Limpando tokens existentes para garantir autenticação fresca")
             withContext(NonCancellable) {
                 tokenStorage?.clearTokens()
@@ -51,10 +51,10 @@ class AuthRepositoryImpl(
                             tokenStorage?.saveToken(result.data.token)
                         }
                         
-                        // Save both access and refresh tokens
+                        
                         NetworkModule.setAuthTokenWithExpiration(result.data.token, result.data.expiresIn)
-                        // Note: TokenManager doesn't expose setRefreshToken, would need to access it via internal mechanism
-                        // For now, just log that refresh token is available
+                        
+                        
                         println("Repositório: RefreshToken recebido: ${result.data.refreshToken.take(10)}...")
                     }
                     
@@ -164,19 +164,19 @@ class AuthRepositoryImpl(
                 is NetworkResult.Error -> {
                     when (val exception = result.exception) {
                         is edu.fatec.petwise.core.network.NetworkException.Unauthorized -> {
-                            // Check if this error requires re-login (blacklisted/invalid/expired token)
+                            
                             if (exception.requiresRelogin) {
                                 println("Repositório: Token inválido/blacklisted - limpando tokens e forçando re-login")
                                 withContext(NonCancellable) {
                                     tokenStorage?.clearTokens()
                                     NetworkModule.clearAuthToken()
                                 }
-                                // Extract user-friendly message (remove prefix like TOKEN_BLACKLISTED:)
+                                
                                 val userMessage = exception.message?.substringAfter(":") 
                                     ?: "Sua sessão expirou. Faça login novamente."
                                 Result.failure(Exception("SESSION_EXPIRED:$userMessage"))
                             } else {
-                                // Regular 401 - might be temporary, don't clear tokens
+                                
                                 println("Repositório: Erro 401 ao buscar perfil - NÃO limpando tokens (pode ser erro temporário)")
                                 val errorMessage = exception.message?.takeIf { it != "Autenticação necessária" } 
                                     ?: "Erro temporário de autenticação - tente novamente"

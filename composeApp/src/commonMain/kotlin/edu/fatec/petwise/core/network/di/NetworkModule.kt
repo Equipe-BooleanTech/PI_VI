@@ -166,22 +166,22 @@ interface TokenManager {
 }
 
 class TokenManagerImpl(private val storage: KeyValueStorage) : TokenManager {
-    // Memory-only storage - tokens are NOT persisted to disk
-    // This standardizes behavior across all platforms (Android, JVM, Web)
+    
+    
     private var accessToken: String? = null
     private var refreshToken: String? = null
     private var tokenExpirationTime: Long = 0
     private var tokenSetTime: Long = 0
 
     init {
-        // DO NOT load from storage - keep tokens in memory only
-        // This ensures consistent behavior across platforms and requires login on app restart
+        
+        
         println("TokenManager: Inicializado - modo memory-only (sem persistência)")
     }
 
     override fun getAccessToken(): String? {
         val token = accessToken
-        // Treat empty strings as null
+        
         if (token.isNullOrBlank()) {
             return null
         }
@@ -200,7 +200,7 @@ class TokenManagerImpl(private val storage: KeyValueStorage) : TokenManager {
         accessToken = token
         tokenSetTime = currentTimeMs()
         tokenExpirationTime = tokenSetTime + (60 * 60 * 1000)
-        // DO NOT persist to storage
+        
     }
 
     override fun getRefreshToken(): String? = refreshToken
@@ -208,7 +208,7 @@ class TokenManagerImpl(private val storage: KeyValueStorage) : TokenManager {
     override fun setRefreshToken(token: String) {
         println("TokenManager: Definindo token de refresh (memory-only): ${token.take(10)}...")
         refreshToken = token
-        // DO NOT persist to storage
+        
     }
 
     override fun clearTokens() {
@@ -217,7 +217,7 @@ class TokenManagerImpl(private val storage: KeyValueStorage) : TokenManager {
         refreshToken = null
         tokenExpirationTime = 0
         tokenSetTime = 0
-        // Also clear any previously persisted tokens for clean state
+        
         storage.remove("access_token")
         storage.remove("refresh_token")
         storage.remove("token_expiration")
@@ -245,7 +245,7 @@ class TokenManagerImpl(private val storage: KeyValueStorage) : TokenManager {
         accessToken = token
         tokenSetTime = currentTimeMs()
         tokenExpirationTime = tokenSetTime + (expiresInSeconds * 1000)
-        // DO NOT persist to storage
+        
     }
 }
 

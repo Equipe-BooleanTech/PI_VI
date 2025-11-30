@@ -587,8 +587,8 @@ private fun FilterBottomSheet(
     onFilterApply: (SuprimentoFilterOptions) -> Unit,
     onDismiss: () -> Unit
 ) {
-    // TODO: Implement filter bottom sheet with category, price range, date range filters
-    // For now, just dismiss
+    
+    
     onDismiss()
 }
 
@@ -900,7 +900,7 @@ private fun EditSuprimentoDialog(
 
                                 val updatedSuprimento = updateSuprimentoViewModel.updateSuprimentoData(
                                     current = suprimento,
-                                    petId = suprimento.petId, // Keep the same petId
+                                    petId = suprimento.petId, 
                                     description = values["description"]?.toString() ?: "",
                                     category = category.displayName,
                                     price = price,

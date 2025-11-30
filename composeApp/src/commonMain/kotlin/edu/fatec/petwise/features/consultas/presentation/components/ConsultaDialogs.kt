@@ -194,7 +194,7 @@ fun AddConsultaDialog(
                                     else -> ConsultaType.OTHER
                                 }
 
-                                // Extract LocalDateTime object from form (using global handler)
+                                
                                 val consultaDateTime = values["consultaDateTime"] as kotlinx.datetime.LocalDateTime
 
                                 addConsultaViewModel.onEvent(
@@ -246,7 +246,7 @@ fun EditConsultaDialog(
     val petsViewModel = remember { PetDependencyContainer.providePetsViewModel() }
     val petsState by petsViewModel.uiState.collectAsState()
     
-    // Trigger pets loading when dialog opens
+    
     LaunchedEffect(Unit) {
         petsViewModel.onEvent(edu.fatec.petwise.features.pets.presentation.viewmodel.PetsUiEvent.LoadPets)
     }
@@ -401,7 +401,7 @@ fun EditConsultaDialog(
                                     else -> ConsultaType.OTHER
                                 }
 
-                                // Extract LocalDateTime object from form (using global handler)
+                                
                                 val consultaDateTime = values["consultaDateTime"] as kotlinx.datetime.LocalDateTime
 
                                 updateConsultaViewModel.onEvent(

@@ -41,11 +41,11 @@ class UpdateLabViewModel(
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null, isSuccess = false)
 
             try {
-                // Extract form data
+                
                 val name = formData["name"]?.content ?: ""
                 val contactInfo = formData["contactInfo"]?.content?.takeIf { it.isNotBlank() }
 
-                // Validate required fields
+                
                 if (name.isBlank()) {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
@@ -54,17 +54,17 @@ class UpdateLabViewModel(
                     return@launch
                 }
 
-                // Create updated lab object
+                
                 val currentTime = Clock.System.now().toEpochMilliseconds().toString()
                 val updatedLab = Lab(
                     id = labId,
                     name = name,
                     contactInfo = contactInfo,
-                    createdAt = "", // This should be filled from original lab
+                    createdAt = "", 
                     updatedAt = currentTime
                 )
 
-                // Call use case
+                
                 updateLabUseCase(updatedLab).fold(
                     onSuccess = {
                         _uiState.value = _uiState.value.copy(

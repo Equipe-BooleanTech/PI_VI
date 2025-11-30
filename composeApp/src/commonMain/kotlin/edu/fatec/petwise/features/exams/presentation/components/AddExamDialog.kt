@@ -88,7 +88,7 @@ fun AddExamDialog(
                 modifier = Modifier
                     .fillMaxWidth()
             ) {
-                // Header
+                
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -112,7 +112,7 @@ fun AddExamDialog(
                     }
                 }
 
-                // Form
+                
                 DynamicForm(
                     viewModel = formViewModel,
                     modifier = Modifier
@@ -138,7 +138,7 @@ fun AddExamDialog(
                     }
                 )
 
-                // Footer with loading/error
+                
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -164,7 +164,7 @@ fun AddExamDialog(
         }
     }
 
-    // Handle success
+    
     val uiState by addExamViewModel.uiState.collectAsState()
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {

@@ -104,7 +104,7 @@ class DashboardViewModel(
                 val userTypeResult = getUserTypeUseCase()
                 val rawUserType = userTypeResult.getOrNull() ?: "OWNER"
                 
-                // Normalize user type the same way as HomeScreen
+                
                 val userType = when (rawUserType.uppercase()) {
                     "VETERINARY", "VETERINARIAN", "VET" -> "VETERINARY"
                     "PETSHOP" -> "PETSHOP"
@@ -120,7 +120,7 @@ class DashboardViewModel(
                 val vacinasCount = statistics.getOrElse(2) { 0 }
                 val medicamentosCount = statistics.getOrElse(3) { 0 }
 
-                // Get additional counts based on user type
+                
                 val prescriptionsCount = when (userType) {
                     "OWNER" -> getPrescriptionsCountUseCase(userType)
                     "VETERINARY" -> getPrescriptionsCountUseCase(userType)
@@ -206,7 +206,7 @@ class DashboardViewModel(
                 result.fold(
                     onSuccess = { consulta ->
                         println("Consulta cancelada com sucesso: ${consulta.id}")
-                        // Refresh dashboard to update the data
+                        
                         loadDashboard()
                     },
                     onFailure = { error ->

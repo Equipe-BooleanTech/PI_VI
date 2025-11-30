@@ -221,7 +221,7 @@ fun ConsultaCard(
                                     )
                                 }
                             }
-                            // Delete button only for VETERINARY users
+                            
                             if (userType == UserType.VETERINARY) {
                                 onDeleteClick?.let { deleteClick ->
                                     IconButton(

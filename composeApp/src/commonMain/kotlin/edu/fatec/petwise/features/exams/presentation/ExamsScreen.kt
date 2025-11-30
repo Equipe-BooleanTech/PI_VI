@@ -82,7 +82,7 @@ fun ExamsScreen(
         ExamsHeader(
             examCount = exams.size,
             onAddExamClick = { showAddDialog = true },
-            onSearchClick = { /* TODO: Implement search */ },
+            onSearchClick = {  },
             onFilterClick = { showFilterDialog = true }
         )
 
@@ -131,7 +131,7 @@ fun ExamsScreen(
         }
     }
 
-    // Add Dialog
+    
     if (showAddDialog) {
         AddExamDialog(
             addExamViewModel = addExamViewModel,
@@ -147,7 +147,7 @@ fun ExamsScreen(
         )
     }
 
-    // Delete Dialog
+    
     examToDelete?.let { exam ->
         if (showDeleteDialog) {
             DeleteExamConfirmationDialog(
@@ -166,7 +166,7 @@ fun ExamsScreen(
         }
     }
 
-    // Edit Dialog
+    
     examToEdit?.let { exam ->
         if (showEditDialog) {
             EditExamDialog(
@@ -466,7 +466,7 @@ private fun ExamsListContent(
                 exam = exam,
                 petName = petNames[exam.petId] ?: "Pet não encontrado",
                 veterinaryName = veterinaryName.ifEmpty { "Veterinário" },
-                onClick = { /* Could be used for details view */ },
+                onClick = {  },
                 onEditClick = onEditExam,
                 onDeleteClick = onDeleteExam
             )
@@ -530,7 +530,7 @@ fun ExamCard(
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
 
-    // Format date
+    
     val formattedDate = remember(exam.examDate) {
         val day = exam.examDate.dayOfMonth.toString().padStart(2, '0')
         val month = exam.examDate.monthNumber.toString().padStart(2, '0')
@@ -573,7 +573,7 @@ fun ExamCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 
-                // Pet name
+                
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.Pets,
@@ -593,7 +593,7 @@ fun ExamCard(
                 
                 Spacer(modifier = Modifier.height(4.dp))
                 
-                // Veterinary name
+                
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.Person,
@@ -612,7 +612,7 @@ fun ExamCard(
                 
                 Spacer(modifier = Modifier.height(4.dp))
                 
-                // Date and time
+                
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.CalendarMonth,
@@ -629,7 +629,7 @@ fun ExamCard(
                     )
                 }
                 
-                // Results if available
+                
                 exam.results?.let { results ->
                     if (results.isNotBlank()) {
                         Spacer(modifier = Modifier.height(4.dp))

@@ -19,7 +19,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
-        // Initialize storage with context
+        
         KeyValueStorage.init(this)
 
         setContent {
@@ -30,9 +30,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-/**
- * Configuração do tema
- */
+
 @Composable
 fun PetWiseThemeWrapper(
     theme: ThemeDefinition,

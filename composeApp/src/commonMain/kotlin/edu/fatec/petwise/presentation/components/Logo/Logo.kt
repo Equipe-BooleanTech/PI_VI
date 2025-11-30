@@ -10,9 +10,7 @@ import androidx.compose.ui.text.withStyle
 import edu.fatec.petwise.presentation.theme.AzulProfundo
 import edu.fatec.petwise.presentation.theme.VerdeMenta
 
-/**
- * Logo estilizada "PetWise".
- */
+
 @Composable
 public fun PetWiseLogo() {
     Text(

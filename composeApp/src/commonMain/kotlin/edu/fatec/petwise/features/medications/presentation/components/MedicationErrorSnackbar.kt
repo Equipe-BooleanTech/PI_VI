@@ -25,7 +25,7 @@ fun MedicationErrorSnackbar(
     val theme = PetWiseTheme.Light
 
     LaunchedEffect(errorMessage) {
-        delay(5000) // Auto dismiss after 5 seconds
+        delay(5000) 
         onDismiss()
     }
 
@@ -92,7 +92,7 @@ fun MedicationSuccessSnackbar(
     val theme = PetWiseTheme.Light
 
     LaunchedEffect(message) {
-        delay(3000) // Auto dismiss after 3 seconds
+        delay(3000) 
         onDismiss()
     }
 
@@ -103,7 +103,7 @@ fun MedicationSuccessSnackbar(
                 onClick = onDismiss
             ) {
                 Icon(
-                    imageVector = Icons.Default.Error, // You might want to use a check icon here
+                    imageVector = Icons.Default.Error, 
                     contentDescription = "Fechar",
                     tint = Color.White,
                     modifier = Modifier.size(20.dp)

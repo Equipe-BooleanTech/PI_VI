@@ -88,7 +88,7 @@ fun AddVaccinationDialog(
                 modifier = Modifier
                     .fillMaxWidth()
             ) {
-                // Header
+                
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -113,7 +113,7 @@ fun AddVaccinationDialog(
                     }
                 }
 
-                // Form Content
+                
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -151,7 +151,7 @@ fun AddVaccinationDialog(
                     )
                 }
 
-                // Error Message
+                
                 errorMessage?.let { error ->
                     Card(
                         modifier = Modifier
@@ -171,7 +171,7 @@ fun AddVaccinationDialog(
                     }
                 }
 
-                // Loading Indicator
+                
                 if (isLoading) {
                     Box(
                         modifier = Modifier
@@ -185,7 +185,7 @@ fun AddVaccinationDialog(
                     }
                 }
 
-                // Buttons
+                
                 if (!isLoading) {
                     Row(
                         modifier = Modifier

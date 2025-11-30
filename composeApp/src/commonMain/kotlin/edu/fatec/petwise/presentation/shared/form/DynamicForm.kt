@@ -915,7 +915,7 @@ private fun RenderDateField(
         fieldDefinition.label
     }
 
-    // Format the display value for DATE fields - show only the date part
+    
     val displayValue = remember(fieldState.value, fieldState.displayValue) {
         when {
             fieldState.value is LocalDateTime -> {
@@ -927,17 +927,17 @@ private fun RenderDateField(
                 "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year}"
             }
             fieldState.displayValue.isNotEmpty() -> {
-                // Try to parse existing display value and reformat it
+                
                 try {
                     when {
                         fieldState.displayValue.contains('T') -> {
-                            // Parse LocalDateTime string format
+                            
                             val dateTime = LocalDateTime.parse(fieldState.displayValue)
                             val date = dateTime.date
                             "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year}"
                         }
                         fieldState.displayValue.contains('-') && fieldState.displayValue.length == 10 -> {
-                            // Parse LocalDate string format (YYYY-MM-DD)
+                            
                             val date = LocalDate.parse(fieldState.displayValue)
                             "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year}"
                         }
@@ -953,7 +953,7 @@ private fun RenderDateField(
 
     OutlinedTextField(
         value = displayValue,
-        onValueChange = { /* Read-only field */ },
+        onValueChange = {  },
         readOnly = true,
         label = labelText?.let { { Text(it) } },
         placeholder = fieldDefinition.placeholder?.let { { Text(it) } },
@@ -993,8 +993,8 @@ private fun RenderDateField(
             fieldState = fieldState,
             onValueChange = { selectedDate ->
                 showDatePicker = false
-                // Convert LocalDate to LocalDateTime with default time (00:00:00)
-                // The date is stored as LocalDateTime but displayed as date only
+                
+                
                 val localDateTime = toLocalDateTime(fieldDefinition.type, selectedDate)
                 if (localDateTime != null) {
                     onValueChange(localDateTime)
@@ -1024,7 +1024,7 @@ private fun RenderTimeField(
         fieldDefinition.label
     }
     
-    // Format the display value for TIME fields
+    
     val displayValue = remember(fieldState.value, fieldState.displayValue) {
         when (val value = fieldState.value) {
             is LocalDateTime -> {
@@ -1040,7 +1040,7 @@ private fun RenderTimeField(
 
     OutlinedTextField(
         value = displayValue,
-        onValueChange = { /* Read-only when using picker */ },
+        onValueChange = {  },
         readOnly = true,
         label = labelText?.let { { Text(it) } },
         placeholder = fieldDefinition.placeholder?.let { { Text(it) } },
@@ -1080,7 +1080,7 @@ private fun RenderTimeField(
             fieldState = fieldState,
             onValueChange = { selectedTime ->
                 showTimePicker = false
-                // Parse the time string and convert to LocalDateTime
+                
                 try {
                     val parts = selectedTime.split(":")
                     if (parts.size >= 2) {
@@ -1093,7 +1093,7 @@ private fun RenderTimeField(
                         }
                     }
                 } catch (e: Exception) {
-                    // Keep existing value on parse error
+                    
                 }
                 onBlur()
             }
@@ -1222,12 +1222,12 @@ private fun RenderDateTimeField(
                             onValueChange(localDateTime)
                         }
                     } else {
-                        // If no time set, use midnight
+                        
                         val localDateTime = LocalDateTime(date, LocalTime(0, 0, 0))
                         onValueChange(localDateTime)
                     }
                 } catch (e: Exception) {
-                    // Handle parsing error if needed
+                    
                 }
             }
         )
@@ -1242,7 +1242,7 @@ private fun RenderDateTimeField(
                 timeValue = newTime
                 if (dateValue.isNotEmpty()) {
                     try {
-                        // Parse date from DD/MM/YYYY format
+                        
                         val dateParts = dateValue.split("/")
                         if (dateParts.size == 3) {
                             val day = dateParts[0].toIntOrNull() ?: 1
@@ -1260,7 +1260,7 @@ private fun RenderDateTimeField(
                             }
                         }
                     } catch (e: Exception) {
-                        // Handle parsing error if needed
+                        
                     }
                 }
                 onBlur()

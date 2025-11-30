@@ -117,12 +117,12 @@ fun PetDetailsScreen(
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        // Pet Information
+                        
                         item {
                             PetInfoCard(pet = pet)
                         }
 
-                        // Health Records Section
+                        
                         item {
                             Text(
                                 text = "Histórico de Saúde",
@@ -134,7 +134,7 @@ fun PetDetailsScreen(
                             )
                         }
 
-                        // Consultations
+                        
                         if (uiState.consultations.isNotEmpty()) {
                             item {
                                 SectionHeader(
@@ -155,7 +155,7 @@ fun PetDetailsScreen(
                             }
                         }
 
-                        // Vaccines
+                        
                         if (uiState.vaccinations.isNotEmpty()) {
                             item {
                                 SectionHeader(
@@ -166,7 +166,7 @@ fun PetDetailsScreen(
                             items(uiState.vaccinations.take(3)) { vaccination ->
                                 HealthRecordCard(
                                     title = vaccination.vaccineType.getDisplayName(),
-                                    description = if (vaccination.observations.isEmpty()) "Vacinação realizada" else vaccination.observations,
+                                    description = if (vaccination.observations.isEmpty()) "Sem observações adicionais" else vaccination.observations,
                                     date = "${vaccination.vaccinationDate.dayOfMonth.toString().padStart(2, '0')}/${vaccination.vaccinationDate.monthNumber.toString().padStart(2, '0')}/${vaccination.vaccinationDate.year}",
                                     status = vaccination.status.getDisplayName(),
                                     type = "vacina"
@@ -174,7 +174,7 @@ fun PetDetailsScreen(
                             }
                         }
 
-                        // Medications
+                        
                         if (uiState.medications.isNotEmpty()) {
                             item {
                                 SectionHeader(
@@ -193,7 +193,7 @@ fun PetDetailsScreen(
                             }
                         }
 
-                        // Exams
+                        
                         if (uiState.exams.isNotEmpty()) {
                             item {
                                 SectionHeader(
@@ -204,7 +204,7 @@ fun PetDetailsScreen(
                             items(uiState.exams.take(3)) { exam ->
                                 HealthRecordCard(
                                     title = exam.examType,
-                                    description = exam.results ?: "Exame realizado",
+                                    description = exam.results ?: "Sem resultados disponíveis",
                                     date = exam.examDate.toString().substringBefore('T'),
                                     status = exam.status,
                                     type = "exame"
@@ -212,7 +212,7 @@ fun PetDetailsScreen(
                             }
                         }
 
-                        // Prescriptions
+                        
                         if (uiState.prescriptions.isNotEmpty()) {
                             item {
                                 SectionHeader(

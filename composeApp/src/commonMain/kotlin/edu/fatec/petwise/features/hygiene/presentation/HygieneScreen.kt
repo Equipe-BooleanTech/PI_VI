@@ -36,7 +36,7 @@ fun HygieneScreen() {
     var selectionMode by remember { mutableStateOf(false) }
     var selectedProductIds by remember { mutableStateOf(setOf<String>()) }
 
-    // Dialog states
+    
     var showAddHygieneDialog by remember { mutableStateOf(false) }
     var showEditHygieneDialog by remember { mutableStateOf(false) }
     var productToEdit by remember { mutableStateOf<HygieneProduct?>(null) }
@@ -66,13 +66,13 @@ fun HygieneScreen() {
             selectionMode = selectionMode,
             selectedCount = selectedProductIds.size,
             onSearchClick = { showSearchBar = !showSearchBar },
-            onFilterClick = { /* TODO: Implement filter */ },
+            onFilterClick = {  },
             onAddProductClick = { showAddHygieneDialog = true },
             onSelectionModeToggle = {
                 selectionMode = !selectionMode
                 if (!selectionMode) selectedProductIds = setOf()
             },
-            onDeleteSelected = { /* TODO: Implement delete */ }
+            onDeleteSelected = {  }
         )
 
         if (showSearchBar) {
@@ -126,7 +126,7 @@ fun HygieneScreen() {
         }
     }
 
-    // Dialogs
+    
     if (showAddHygieneDialog) {
         AddHygieneDialog(
             isLoading = uiState.isLoading,
@@ -135,7 +135,7 @@ fun HygieneScreen() {
                 showAddHygieneDialog = false
             },
             onSuccess = { formData: Map<String, Any> ->
-                // Convert form data to HygieneProduct model
+                
                 val product = HygieneProduct(
                     id = "",
                     name = formData["name"] as String,
@@ -167,7 +167,7 @@ fun HygieneScreen() {
                 productToEdit = null
             },
             onSuccess = { formData: Map<String, Any> ->
-                // Convert form data to updated HygieneProduct model
+                
                 val updatedProduct = productToEdit!!.copy(
                     name = formData["name"] as String,
                     brand = formData["brand"] as String,
