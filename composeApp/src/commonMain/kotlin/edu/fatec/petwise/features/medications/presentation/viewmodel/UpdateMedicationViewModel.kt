@@ -179,7 +179,7 @@ class UpdateMedicationViewModel(
                 val endDateRaw = formData["endDate"]
                 val sideEffects = formData["sideEffects"] as? String ?: currentMedication.sideEffects
 
-                // Convert string to int
+                
                 val durationDays = durationDaysStr.toIntOrNull()
                 if (durationDays == null || durationDays <= 0) {
                     println("Erro de validação: Duração inválida - $durationDaysStr")
@@ -190,7 +190,7 @@ class UpdateMedicationViewModel(
                     return@launch
                 }
 
-                // Parse dates
+                
                 val startDate = when (startDateRaw) {
                     is String -> {
                         val fixed = startDateRaw.replace(Regex("T(\\d{2}:\\d{2})\\.(\\d{3})"), "T$1:00.$2")
@@ -206,7 +206,7 @@ class UpdateMedicationViewModel(
                     else -> currentMedication.endDate
                 }
 
-                // Generate current timestamp for updatedAt
+                
                 val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
 
                 val updatedMedication = currentMedication.copy(

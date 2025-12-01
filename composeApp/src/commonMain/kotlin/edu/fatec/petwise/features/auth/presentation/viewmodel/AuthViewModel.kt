@@ -21,7 +21,7 @@ class AuthViewModel(
     private val logoutUseCase: LogoutUseCase
 ) : ViewModel() {
 
-    // Use SupervisorJob to prevent cascading cancellations
+    
     private val supervisorScope = viewModelScope
 
     private val _uiState = MutableStateFlow(AuthUiState())
@@ -36,11 +36,11 @@ class AuthViewModel(
             println("AuthViewModel: Limpando dados do usuário anterior antes do login")
             DataRefreshManager.notifyAllDataUpdated()
             
-            // Reset auth dependencies to ensure fresh instances
+            
             println("AuthViewModel: Resetando dependências de autenticação para login fresco")
             AuthDependencyContainer.reset()
             
-            // Clear existing authentication state to ensure fresh login
+            
             println("AuthViewModel: Resetando estado de autenticação para login fresco")
             _uiState.value = AuthUiState()
             
@@ -65,9 +65,7 @@ class AuthViewModel(
                         successMessage = null
                     )
 
-                    // Update NetworkModule with new token
-                    // Note: Token is already set in AuthRepositoryImpl.login()
-
+                    
                     DataRefreshManager.notifyPetsUpdated()
                     DataRefreshManager.notifyConsultasUpdated()
                     DataRefreshManager.notifyVaccinationsUpdated()
@@ -89,7 +87,7 @@ class AuthViewModel(
     }
 
     fun register(registerRequest: edu.fatec.petwise.core.network.dto.RegisterRequest) {
-        // Launch in supervisorScope to isolate this operation
+        
         supervisorScope.launch {
             _uiState.value = _uiState.value.copy(
                 isLoading = true,
@@ -122,7 +120,7 @@ class AuthViewModel(
     }
 
     fun logout() {
-        // Launch in supervisorScope to isolate this operation
+        
         supervisorScope.launch {
             try {
                 val result = logoutUseCase.execute()
@@ -161,7 +159,7 @@ class AuthViewModel(
     fun handleSessionExpired(message: String = "Sessão expirada. Faça login novamente.") {
         println("AuthViewModel: Sessão expirada detectada - executando limpeza completa")
         
-        // Launch in supervisorScope to isolate this operation
+        
         supervisorScope.launch {
             try {
                 val result = logoutUseCase.execute()

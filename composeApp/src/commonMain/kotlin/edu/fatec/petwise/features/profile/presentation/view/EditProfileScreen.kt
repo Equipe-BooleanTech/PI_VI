@@ -36,8 +36,13 @@ fun EditProfileScreen(
     val theme = PetWiseTheme.Light
     
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showEditConfirmDialog by remember { mutableStateOf(false) }
+    var pendingUpdateRequest by remember { mutableStateOf<UpdateProfileRequest?>(null) }
+    var emailWillChange by remember { mutableStateOf(false) }
     
-    val formConfiguration = remember(uiState.userProfile?.userType) {
+    val userProfileKey = uiState.userProfile?.id
+    
+    val formConfiguration = remember(uiState.userProfile?.userType, userProfileKey) {
         uiState.userProfile?.let { profile ->
             val fieldsToInclude = when (profile.userType.uppercase()) {
                 "OWNER" -> listOf("fullName", "email", "phone", "cpf", "submitEditProfile")
@@ -54,17 +59,20 @@ fun EditProfileScreen(
         } ?: editProfileFormConfiguration
     }
     
-    val formViewModel = remember(formConfiguration) {
+    val formViewModel = remember(formConfiguration, userProfileKey) {
         DynamicFormViewModel(initialConfiguration = formConfiguration)
     }
 
-    LaunchedEffect(uiState.userProfile) {
+    LaunchedEffect(uiState.userProfile, userProfileKey) {
         uiState.userProfile?.let { profile ->
             println("EditProfileScreen: Loading user data into form - ${profile.fullName}")
             
             formViewModel.updateFieldValue("fullName", profile.fullName)
             formViewModel.updateFieldValue("email", profile.email)
             formViewModel.updateFieldValue("phone", profile.phone ?: "")
+        } ?: run {
+            println("EditProfileScreen: User profile is null, resetting form")
+            formViewModel.resetForm()
         }
     }
 
@@ -110,7 +118,7 @@ fun EditProfileScreen(
                 .background(Color(0xFFF7F7F7))
         ) {
             if (uiState.isLoading && uiState.userProfile == null) {
-                // Initial loading state
+                
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -125,7 +133,7 @@ fun EditProfileScreen(
                         .fillMaxSize()
                         .padding(16.dp)
                 ) {
-                    // Success message
+                    
                     uiState.successMessage?.let { message ->
                         Card(
                             modifier = Modifier
@@ -144,7 +152,7 @@ fun EditProfileScreen(
                         }
                     }
 
-                    // Error message
+                    
                     uiState.errorMessage?.let { message ->
                         Card(
                             modifier = Modifier
@@ -163,7 +171,7 @@ fun EditProfileScreen(
                         }
                     }
 
-                    // Dynamic Form
+                    
                     DynamicForm(
                         viewModel = formViewModel,
                         modifier = Modifier.fillMaxWidth(),
@@ -181,7 +189,12 @@ fun EditProfileScreen(
                                 companyName = values["companyName"]?.toString()?.takeIf { it.isNotBlank() }
                             )
                             
-                            viewModel.updateProfile(updateRequest)
+                            val currentEmail = uiState.userProfile?.email
+                            val newEmail = updateRequest.email
+                            emailWillChange = currentEmail != null && newEmail != null && currentEmail != newEmail
+                            
+                            pendingUpdateRequest = updateRequest
+                            showEditConfirmDialog = true
                         },
                         onSubmitError = { error ->
                             println("EditProfileScreen: Form submission error - ${error.message}")
@@ -190,7 +203,7 @@ fun EditProfileScreen(
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // Delete Account Section
+                    
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(
@@ -224,7 +237,7 @@ fun EditProfileScreen(
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Text(
-                                    text = "🗑️ Excluir Conta",
+                                    text = "Excluir Conta",
                                     style = theme.typography.labelLarge
                                 )
                             }
@@ -233,7 +246,7 @@ fun EditProfileScreen(
                 }
             }
 
-            // Loading overlay during update
+            
             if (uiState.isLoading && uiState.userProfile != null) {
                 Box(
                     modifier = Modifier
@@ -265,7 +278,7 @@ fun EditProfileScreen(
         }
     }
 
-    // Delete Account Confirmation Dialog
+    
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
@@ -302,6 +315,85 @@ fun EditProfileScreen(
             dismissButton = {
                 OutlinedButton(
                     onClick = { showDeleteDialog = false }
+                ) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
+    // Edit confirmation dialog
+    if (showEditConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { 
+                showEditConfirmDialog = false
+                pendingUpdateRequest = null
+            },
+            title = {
+                Text(
+                    text = "Confirmar Alterações",
+                    style = theme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+            },
+            text = {
+                Column {
+                    Text(
+                        text = "Tem certeza de que deseja salvar as alterações no seu perfil?",
+                        style = theme.typography.bodyMedium
+                    )
+                    if (emailWillChange) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Card(
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color.fromHex("#FF9500").copy(alpha = 0.1f)
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.Top
+                            ) {
+                                Text(
+                                    text = "⚠️",
+                                    style = theme.typography.bodyMedium,
+                                    modifier = Modifier.padding(end = 8.dp)
+                                )
+                                Text(
+                                    text = "Você está alterando seu e-mail. Após confirmar, você será desconectado e precisará fazer login novamente com o novo e-mail.",
+                                    style = theme.typography.bodySmall,
+                                    color = Color.fromHex("#FF9500")
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showEditConfirmDialog = false
+                        pendingUpdateRequest?.let { request ->
+                            viewModel.updateProfile(request)
+                        }
+                        pendingUpdateRequest = null
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.fromHex("#00b942")
+                    )
+                ) {
+                    Text(
+                        text = "Confirmar",
+                        color = Color.White
+                    )
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = { 
+                        showEditConfirmDialog = false
+                        pendingUpdateRequest = null
+                    }
                 ) {
                     Text("Cancelar")
                 }

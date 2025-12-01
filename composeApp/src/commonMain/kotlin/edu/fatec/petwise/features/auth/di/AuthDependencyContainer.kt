@@ -143,34 +143,32 @@ object AuthDependencyContainer {
         resetPasswordUseCase = null
         logoutUseCase = null
         getUserProfileUseCase = null
-        // The ViewModel is also lazy and will be recreated
+        
     }
 }
 
 class AuthTokenStorageImpl(private val storage: KeyValueStorage) : AuthTokenStorage {
+    
+    
     private var token: String? = null
     private var tokenExpirationTime: Long = 0
 
     init {
-        // Load from storage - treat empty strings as null
-        val storedToken = storage.getString("access_token")
-        token = if (storedToken.isNullOrBlank()) null else storedToken
-        tokenExpirationTime = storage.getLong("token_expiration") ?: 0
         
-        println("AuthTokenStorage: Inicializado - token carregado: ${token?.take(10) ?: "NENHUM"}")
+        
+        println("AuthTokenStorage: Inicializado - modo memory-only (sem persistência)")
     }
 
     override fun saveToken(token: String) {
-        println("AuthTokenStorage: Saving token: ${token.take(10)}...")
+        println("AuthTokenStorage: Saving token (memory-only): ${token.take(10)}...")
         this.token = token
         this.tokenExpirationTime = currentTimeMs() + (60 * 60 * 1000)
-        storage.putString("access_token", token)
-        storage.putLong("token_expiration", tokenExpirationTime)
+        
     }
 
     override fun getToken(): String? {
         val currentToken = token
-        // Treat empty strings as null
+        
         if (currentToken.isNullOrBlank()) {
             return null
         }
@@ -185,9 +183,10 @@ class AuthTokenStorageImpl(private val storage: KeyValueStorage) : AuthTokenStor
     }
 
     override fun clearTokens() {
-        println("AuthTokenStorage: Clearing all tokens and user data")
+        println("AuthTokenStorage: Clearing all tokens (memory)")
         token = null
         tokenExpirationTime = 0
+        
         storage.remove("access_token")
         storage.remove("token_expiration")
         storage.remove("token_set_time")
@@ -206,12 +205,10 @@ class AuthTokenStorageImpl(private val storage: KeyValueStorage) : AuthTokenStor
     }
     
     fun saveTokenWithExpiration(token: String, expiresInSeconds: Long) {
-        println("AuthTokenStorage: Saving token with ${expiresInSeconds}s expiration: ${token.take(10)}...")
+        println("AuthTokenStorage: Saving token with ${expiresInSeconds}s expiration (memory-only): ${token.take(10)}...")
         this.token = token
         this.tokenExpirationTime = currentTimeMs() + (expiresInSeconds * 1000)
-        storage.putString("access_token", token)
-        storage.putLong("token_expiration", tokenExpirationTime)
-        storage.putLong("token_set_time", currentTimeMs())
+        
     }
 }
 

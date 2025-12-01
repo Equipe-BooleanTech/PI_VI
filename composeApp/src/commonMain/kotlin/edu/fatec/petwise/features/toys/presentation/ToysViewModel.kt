@@ -60,7 +60,7 @@ class ToysViewModel : ViewModel() {
     }
 
     private fun loadToys() {
-        // Cancel any existing data loading job
+        
         currentDataJob?.cancel()
 
         currentDataJob = viewModelScope.launch {
@@ -86,7 +86,7 @@ class ToysViewModel : ViewModel() {
     }
 
     private fun searchToys(query: String) {
-        // Cancel any existing data loading job
+        
         currentDataJob?.cancel()
 
         currentDataJob = viewModelScope.launch {
@@ -120,7 +120,7 @@ class ToysViewModel : ViewModel() {
     }
 
     private fun filterByCategory(category: String?) {
-        // Cancel any existing data loading job
+        
         currentDataJob?.cancel()
 
         currentDataJob = viewModelScope.launch {
@@ -160,7 +160,7 @@ class ToysViewModel : ViewModel() {
             try {
                 addToyUseCase(toy).fold(
                     onSuccess = { newToy ->
-                        // Reload toys to get updated list
+                        
                         loadToys()
                     },
                     onFailure = { error ->
@@ -186,7 +186,7 @@ class ToysViewModel : ViewModel() {
             try {
                 updateToyUseCase(toy).fold(
                     onSuccess = { updatedToy ->
-                        // Reload toys to get updated list
+                        
                         loadToys()
                     },
                     onFailure = { error ->
@@ -212,7 +212,7 @@ class ToysViewModel : ViewModel() {
             try {
                 deleteToyUseCase(toyId).fold(
                     onSuccess = {
-                        // Reload toys to get updated list
+                        
                         loadToys()
                     },
                     onFailure = { error ->

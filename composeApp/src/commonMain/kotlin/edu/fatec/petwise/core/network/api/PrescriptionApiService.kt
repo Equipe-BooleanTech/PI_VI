@@ -28,10 +28,10 @@ class PrescriptionApiServiceImpl(
             deserializer = { jsonString ->
                 val json = Json { ignoreUnknownKeys = true }
                 try {
-                    // Try to parse as direct array first
+                    
                     json.decodeFromString<List<PrescriptionDto>>(jsonString)
                 } catch (e: Exception) {
-                    // Fallback to wrapped object
+                    
                     val wrapped = json.decodeFromString<PrescriptionListResponse>(jsonString)
                     wrapped.prescriptions ?: emptyList()
                 }
@@ -39,25 +39,25 @@ class PrescriptionApiServiceImpl(
         ) {
             parameter("page", page)
             parameter("pageSize", pageSize)
-            parameter("_t", Clock.System.now().toEpochMilliseconds()) // Cache buster
+            parameter("_t", Clock.System.now().toEpochMilliseconds()) 
         }
     }
 
     override suspend fun getPrescriptionById(id: String): NetworkResult<PrescriptionDto> {
         return networkHandler.get<PrescriptionDto>(ApiEndpoints.getPrescription(id)) {
-            parameter("_t", Clock.System.now().toEpochMilliseconds()) // Cache buster
+            parameter("_t", Clock.System.now().toEpochMilliseconds()) 
         }
     }
 
     override suspend fun getPrescriptionsByPetId(petId: String): NetworkResult<List<PrescriptionDto>> {
         return networkHandler.get<List<PrescriptionDto>>(ApiEndpoints.getPrescriptionsByPet(petId)) {
-            parameter("_t", Clock.System.now().toEpochMilliseconds()) // Cache buster
+            parameter("_t", Clock.System.now().toEpochMilliseconds()) 
         }
     }
 
     override suspend fun getPrescriptionsByVeterinaryId(veterinaryId: String): NetworkResult<List<PrescriptionDto>> {
         return networkHandler.get<List<PrescriptionDto>>(ApiEndpoints.getPrescriptionsByVeterinary(veterinaryId)) {
-            parameter("_t", Clock.System.now().toEpochMilliseconds()) // Cache buster
+            parameter("_t", Clock.System.now().toEpochMilliseconds()) 
         }
     }
 

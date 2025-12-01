@@ -44,10 +44,16 @@ class EditProfileViewModel(
             DataRefreshManager.refreshEvents.collect { event ->
                 when (event) {
                     is DataRefreshEvent.UserLoggedIn -> loadUserProfile()
+                    is DataRefreshEvent.UserLoggedOut -> resetState()
                     else -> {}
                 }
             }
         }
+    }
+
+    private fun resetState() {
+        println("EditProfileViewModel: User logged out — resetting state")
+        _uiState.value = EditProfileUiState()
     }
 
     fun loadUserProfile() {

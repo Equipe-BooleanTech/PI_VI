@@ -110,7 +110,7 @@ actual class PlatformFileHandling {
     actual suspend fun uploadFile(file: PlatformFile, endpoint: String): Result<String> = Result.failure(Exception("Not implemented"))
 }
 
-// Helper function to get days in a month
+
 private fun getDaysInMonth(year: Int, month: Int): Int {
     return when (month) {
         1, 3, 5, 7, 8, 10, 12 -> 31
@@ -120,16 +120,16 @@ private fun getDaysInMonth(year: Int, month: Int): Int {
     }
 }
 
-// Helper function to get day of week for first day of month (0 = Sunday, 6 = Saturday)
+
 private fun getFirstDayOfWeek(year: Int, month: Int): Int {
-    // Zeller's formula simplified
+    
     val adjustedMonth = if (month < 3) month + 12 else month
     val adjustedYear = if (month < 3) year - 1 else year
-    val q = 1 // first day of month
+    val q = 1 
     val k = adjustedYear % 100
     val j = adjustedYear / 100
     val h = (q + (13 * (adjustedMonth + 1)) / 5 + k + k / 4 + j / 4 - 2 * j) % 7
-    return ((h + 6) % 7) // Convert to 0 = Sunday
+    return ((h + 6) % 7) 
 }
 
 private val monthNames = listOf(
@@ -182,7 +182,7 @@ actual fun PlatformDatePicker(
                         .fillMaxWidth()
                         .padding(20.dp)
                 ) {
-                    // Title
+                    
                     Text(
                         text = fieldDefinition.label ?: "Selecione a Data",
                         style = MaterialTheme.typography.titleLarge,
@@ -191,7 +191,7 @@ actual fun PlatformDatePicker(
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
                     
-                    // Selected date display
+                    
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
@@ -211,7 +211,7 @@ actual fun PlatformDatePicker(
                     
                     Spacer(modifier = Modifier.height(16.dp))
                     
-                    // Month/Year navigation
+                    
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -238,7 +238,7 @@ actual fun PlatformDatePicker(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center
                         ) {
-                            // Month selector
+                            
                             Box {
                                 Row(
                                     modifier = Modifier
@@ -277,7 +277,7 @@ actual fun PlatformDatePicker(
                             
                             Spacer(modifier = Modifier.width(8.dp))
                             
-                            // Year selector
+                            
                             Box {
                                 Row(
                                     modifier = Modifier
@@ -335,7 +335,7 @@ actual fun PlatformDatePicker(
                     
                     Spacer(modifier = Modifier.height(12.dp))
                     
-                    // Week day headers
+                    
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly
@@ -354,7 +354,7 @@ actual fun PlatformDatePicker(
                     
                     Spacer(modifier = Modifier.height(8.dp))
                     
-                    // Calendar grid
+                    
                     val daysInMonth = getDaysInMonth(displayYear, displayMonth)
                     val firstDayOfWeek = getFirstDayOfWeek(displayYear, displayMonth)
                     val totalCells = ((firstDayOfWeek + daysInMonth + 6) / 7) * 7
@@ -419,7 +419,7 @@ actual fun PlatformDatePicker(
                     
                     Spacer(modifier = Modifier.height(16.dp))
                     
-                    // Action buttons
+                    
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
@@ -491,7 +491,7 @@ actual fun PlatformTimePicker(
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Title
+                    
                     Text(
                         text = fieldDefinition.label ?: "Selecione o Horário",
                         style = MaterialTheme.typography.titleLarge,
@@ -500,7 +500,7 @@ actual fun PlatformTimePicker(
                         modifier = Modifier.padding(bottom = 24.dp)
                     )
                     
-                    // Time display
+                    
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
@@ -520,13 +520,13 @@ actual fun PlatformTimePicker(
                     
                     Spacer(modifier = Modifier.height(24.dp))
                     
-                    // Time picker wheels
+                    
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Hour picker
+                        
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
@@ -537,7 +537,7 @@ actual fun PlatformTimePicker(
                                 modifier = Modifier.padding(bottom = 8.dp)
                             )
                             
-                            // Up button
+                            
                             IconButton(
                                 onClick = { hour = (hour + 1) % 24 },
                                 modifier = Modifier
@@ -552,7 +552,7 @@ actual fun PlatformTimePicker(
                                 )
                             }
                             
-                            // Hour value
+                            
                             Surface(
                                 modifier = Modifier
                                     .padding(vertical = 8.dp)
@@ -573,7 +573,7 @@ actual fun PlatformTimePicker(
                                 }
                             }
                             
-                            // Down button
+                            
                             IconButton(
                                 onClick = { hour = if (hour == 0) 23 else hour - 1 },
                                 modifier = Modifier
@@ -589,7 +589,7 @@ actual fun PlatformTimePicker(
                             }
                         }
                         
-                        // Separator
+                        
                         Text(
                             text = ":",
                             style = MaterialTheme.typography.displayMedium,
@@ -598,7 +598,7 @@ actual fun PlatformTimePicker(
                             modifier = Modifier.padding(horizontal = 16.dp)
                         )
                         
-                        // Minute picker
+                        
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
@@ -609,7 +609,7 @@ actual fun PlatformTimePicker(
                                 modifier = Modifier.padding(bottom = 8.dp)
                             )
                             
-                            // Up button
+                            
                             IconButton(
                                 onClick = { minute = (minute + 1) % 60 },
                                 modifier = Modifier
@@ -624,7 +624,7 @@ actual fun PlatformTimePicker(
                                 )
                             }
                             
-                            // Minute value
+                            
                             Surface(
                                 modifier = Modifier
                                     .padding(vertical = 8.dp)
@@ -645,7 +645,7 @@ actual fun PlatformTimePicker(
                                 }
                             }
                             
-                            // Down button
+                            
                             IconButton(
                                 onClick = { minute = if (minute == 0) 59 else minute - 1 },
                                 modifier = Modifier
@@ -664,7 +664,7 @@ actual fun PlatformTimePicker(
                     
                     Spacer(modifier = Modifier.height(8.dp))
                     
-                    // Quick minute selection
+                    
                     Text(
                         text = "Minutos rápidos",
                         style = MaterialTheme.typography.labelSmall,
@@ -701,7 +701,7 @@ actual fun PlatformTimePicker(
                     
                     Spacer(modifier = Modifier.height(24.dp))
                     
-                    // Action buttons
+                    
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End

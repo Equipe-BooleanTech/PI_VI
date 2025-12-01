@@ -22,6 +22,10 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import kotlinx.serialization.json.jsonPrimitive
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
@@ -32,7 +36,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
@@ -166,6 +172,8 @@ actual fun PlatformDatePicker(
     onValueChange: (kotlinx.datetime.LocalDate) -> Unit,
     modifier: Modifier
 ) {
+    var showDialog by remember { mutableStateOf(true) }
+    
     val maxDate = fieldDefinition.validators.find { it.type == ValidationType.MAX_DATE }
         ?.value?.jsonPrimitive?.content?.toLongOrNull()
         ?: Long.MAX_VALUE
@@ -184,66 +192,134 @@ actual fun PlatformDatePicker(
         maxDate
     }
     
+    
+    val currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)
+    val minYear = if (minDate == Long.MIN_VALUE) {
+        1900
+    } else {
+        java.util.Calendar.getInstance().apply { timeInMillis = minDate }.get(java.util.Calendar.YEAR)
+    }
+    val maxYear = if (effectiveMaxDate == Long.MAX_VALUE) {
+        currentYear + 100
+    } else {
+        java.util.Calendar.getInstance().apply { timeInMillis = effectiveMaxDate }.get(java.util.Calendar.YEAR)
+    }
+    
+    
+    val initialSelectedDateMillis: Long? = try {
+        when (val value = fieldState.value) {
+            is kotlinx.datetime.LocalDateTime -> {
+                val calendar = java.util.Calendar.getInstance(java.util.TimeZone.getTimeZone("UTC"))
+                calendar.set(value.year, value.monthNumber - 1, value.dayOfMonth, 0, 0, 0)
+                calendar.set(java.util.Calendar.MILLISECOND, 0)
+                calendar.timeInMillis
+            }
+            is kotlinx.datetime.LocalDate -> {
+                val calendar = java.util.Calendar.getInstance(java.util.TimeZone.getTimeZone("UTC"))
+                calendar.set(value.year, value.monthNumber - 1, value.dayOfMonth, 0, 0, 0)
+                calendar.set(java.util.Calendar.MILLISECOND, 0)
+                calendar.timeInMillis
+            }
+            else -> null
+        }
+    } catch (e: Exception) {
+        null
+    }
+    
     val datePickerState = androidx.compose.material3.rememberDatePickerState(
-        yearRange = IntRange(
-            start = java.util.Calendar.getInstance().apply { timeInMillis = minDate }.get(java.util.Calendar.YEAR),
-            endInclusive = java.util.Calendar.getInstance().apply { timeInMillis = effectiveMaxDate }.get(java.util.Calendar.YEAR)
-        ),
+        initialSelectedDateMillis = initialSelectedDateMillis,
+        yearRange = IntRange(start = minYear, endInclusive = maxYear),
         selectableDates = object : androidx.compose.material3.SelectableDates {
             override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                return utcTimeMillis in minDate..effectiveMaxDate
+                val effectiveMin = if (minDate == Long.MIN_VALUE) 0L else minDate
+                val effectiveMax = if (effectiveMaxDate == Long.MAX_VALUE) Long.MAX_VALUE else effectiveMaxDate
+                return utcTimeMillis in effectiveMin..effectiveMax
             }
             
             override fun isSelectableYear(year: Int): Boolean {
-                val calendar = java.util.Calendar.getInstance()
-                calendar.set(year, 0, 1)
-                val yearStart = calendar.timeInMillis
-                calendar.set(year, 11, 31)
-                val yearEnd = calendar.timeInMillis
-                
-                return yearStart <= effectiveMaxDate && yearEnd >= minDate
+                return year in minYear..maxYear
             }
         }
     )
     
-    androidx.compose.material3.DatePickerDialog(
-        onDismissRequest = { 
-            // Dismiss without changing value
-        },
-        confirmButton = {
-            androidx.compose.material3.TextButton(
-                onClick = {
-                    datePickerState.selectedDateMillis?.let { millis ->
-                        if (millis in minDate..effectiveMaxDate) {
-                            val instant = kotlinx.datetime.Instant.fromEpochMilliseconds(millis)
-                            val localDate = instant.toLocalDateTime(kotlinx.datetime.TimeZone.UTC).date
-                            onValueChange(localDate)
+    if (showDialog) {
+        androidx.compose.material3.DatePickerDialog(
+            onDismissRequest = { 
+                showDialog = false
+                
+                try {
+                    when (val value = fieldState.value) {
+                        is kotlinx.datetime.LocalDateTime -> onValueChange(value.date)
+                        is kotlinx.datetime.LocalDate -> onValueChange(value)
+                        else -> {
+                            
+                            val now = kotlinx.datetime.Clock.System.now()
+                            onValueChange(now.toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault()).date)
                         }
                     }
+                } catch (e: Exception) {
+                    val now = kotlinx.datetime.Clock.System.now()
+                    onValueChange(now.toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault()).date)
                 }
-            ) {
-                androidx.compose.material3.Text("OK")
-            }
-        },
-        dismissButton = {
-            androidx.compose.material3.TextButton(
-                onClick = { 
-                    // Dismiss without changing value
+            },
+            confirmButton = {
+                androidx.compose.material3.TextButton(
+                    onClick = {
+                        showDialog = false
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            try {
+                                val instant = kotlinx.datetime.Instant.fromEpochMilliseconds(millis)
+                                val localDate = instant.toLocalDateTime(kotlinx.datetime.TimeZone.UTC).date
+                                onValueChange(localDate)
+                            } catch (e: Exception) {
+                                
+                                val now = kotlinx.datetime.Clock.System.now()
+                                onValueChange(now.toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault()).date)
+                            }
+                        } ?: run {
+                            
+                            val now = kotlinx.datetime.Clock.System.now()
+                            onValueChange(now.toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault()).date)
+                        }
+                    }
+                ) {
+                    androidx.compose.material3.Text("OK")
                 }
-            ) {
-                androidx.compose.material3.Text("Cancelar")
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(
+                    onClick = { 
+                        showDialog = false
+                        
+                        try {
+                            when (val value = fieldState.value) {
+                                is kotlinx.datetime.LocalDateTime -> onValueChange(value.date)
+                                is kotlinx.datetime.LocalDate -> onValueChange(value)
+                                else -> {
+                                    val now = kotlinx.datetime.Clock.System.now()
+                                    onValueChange(now.toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault()).date)
+                                }
+                            }
+                        } catch (e: Exception) {
+                            val now = kotlinx.datetime.Clock.System.now()
+                            onValueChange(now.toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault()).date)
+                        }
+                    }
+                ) {
+                    androidx.compose.material3.Text("Cancelar")
+                }
             }
+        ) {
+            androidx.compose.material3.DatePicker(
+                state = datePickerState,
+                title = {
+                    androidx.compose.material3.Text(
+                        text = fieldDefinition.label ?: "Selecione a Data",
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            )
         }
-    ) {
-        androidx.compose.material3.DatePicker(
-            state = datePickerState,
-            title = {
-                androidx.compose.material3.Text(
-                    text = fieldDefinition.label ?: "Selecione a Data",
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
-        )
     }
 }
 
@@ -255,63 +331,96 @@ actual fun PlatformTimePicker(
     onValueChange: (String) -> Unit,
     modifier: Modifier
 ) {
+    var showDialog by remember { mutableStateOf(true) }
+    
+    
+    val (initialHour, initialMinute) = try {
+        when (val value = fieldState.value) {
+            is kotlinx.datetime.LocalDateTime -> Pair(value.hour, value.minute)
+            is kotlinx.datetime.LocalTime -> Pair(value.hour, value.minute)
+            is String -> {
+                if (value.contains(":")) {
+                    val parts = value.split(":")
+                    Pair(parts[0].toIntOrNull() ?: 12, parts[1].toIntOrNull() ?: 0)
+                } else {
+                    Pair(12, 0)
+                }
+            }
+            else -> Pair(12, 0)
+        }
+    } catch (e: Exception) {
+        Pair(12, 0)
+    }
+    
     val timePickerState = androidx.compose.material3.rememberTimePickerState(
-        initialHour = 12,
-        initialMinute = 0,
+        initialHour = initialHour,
+        initialMinute = initialMinute,
         is24Hour = true
     )
     
-    androidx.compose.ui.window.Dialog(
-        onDismissRequest = { 
-            onValueChange(fieldState.displayValue)
-        }
-    ) {
-        androidx.compose.material3.Surface(
-            shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
-            tonalElevation = 6.dp
+    if (showDialog) {
+        androidx.compose.ui.window.Dialog(
+            onDismissRequest = { 
+                showDialog = false
+                
+                val currentValue = fieldState.displayValue.ifEmpty { 
+                    "${initialHour.toString().padStart(2, '0')}:${initialMinute.toString().padStart(2, '0')}"
+                }
+                onValueChange(currentValue)
+            }
         ) {
-            androidx.compose.foundation.layout.Column(
-                modifier = Modifier
-                    .padding(24.dp),
-                horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+            androidx.compose.material3.Surface(
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                tonalElevation = 6.dp
             ) {
-                androidx.compose.material3.Text(
-                    text = fieldDefinition.label ?: "Selecione o Horário",
-                    style = androidx.compose.material3.MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-                
-                androidx.compose.material3.TimePicker(
-                    state = timePickerState
-                )
-                
-                androidx.compose.foundation.layout.Row(
+                androidx.compose.foundation.layout.Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 24.dp),
-                    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.End,
-                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                        .padding(24.dp),
+                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
                 ) {
-                    androidx.compose.material3.TextButton(
-                        onClick = { 
-                            onValueChange(fieldState.displayValue)
-                        }
-                    ) {
-                        androidx.compose.material3.Text("Cancelar")
-                    }
-                    
-                    androidx.compose.foundation.layout.Spacer(
-                        modifier = Modifier.width(8.dp)
+                    androidx.compose.material3.Text(
+                        text = fieldDefinition.label ?: "Selecione o Horário",
+                        style = androidx.compose.material3.MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.padding(bottom = 16.dp)
                     )
                     
-                    androidx.compose.material3.TextButton(
-                        onClick = {
-                            val hour = timePickerState.hour.toString().padStart(2, '0')
-                            val minute = timePickerState.minute.toString().padStart(2, '0')
-                            onValueChange("$hour:$minute")
-                        }
+                    androidx.compose.material3.TimePicker(
+                        state = timePickerState
+                    )
+                    
+                    androidx.compose.foundation.layout.Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 24.dp),
+                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.End,
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                     ) {
-                        androidx.compose.material3.Text("OK")
+                        androidx.compose.material3.TextButton(
+                            onClick = { 
+                                showDialog = false
+                                val currentValue = fieldState.displayValue.ifEmpty { 
+                                    "${initialHour.toString().padStart(2, '0')}:${initialMinute.toString().padStart(2, '0')}"
+                                }
+                                onValueChange(currentValue)
+                            }
+                        ) {
+                            androidx.compose.material3.Text("Cancelar")
+                        }
+                        
+                        androidx.compose.foundation.layout.Spacer(
+                            modifier = Modifier.width(8.dp)
+                        )
+                        
+                        androidx.compose.material3.TextButton(
+                            onClick = {
+                                showDialog = false
+                                val hour = timePickerState.hour.toString().padStart(2, '0')
+                                val minute = timePickerState.minute.toString().padStart(2, '0')
+                                onValueChange("$hour:$minute")
+                            }
+                        ) {
+                            androidx.compose.material3.Text("OK")
+                        }
                     }
                 }
             }

@@ -37,7 +37,7 @@ fun PetInfoCard(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // Header with pet icon and name
+            
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -64,14 +64,14 @@ fun PetInfoCard(
                         )
                     )
                 }
-                // Health status indicator
+                
                 val healthColor = when (pet.healthStatus) {
                     HealthStatus.EXCELLENT -> "#00b942"
                     HealthStatus.GOOD -> "#4CAF50"
                     HealthStatus.REGULAR -> "#FFC107"
                     HealthStatus.ATTENTION -> "#FF9800"
                     HealthStatus.CRITICAL -> "#F44336"
-                    else -> "#607D8B" // Default fallback
+                    else -> "#607D8B" 
                 }
                 Card(
                     colors = CardDefaults.cardColors(
@@ -92,12 +92,12 @@ fun PetInfoCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Pet details grid
+            
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Left column
+                
                 Column(modifier = Modifier.weight(1f)) {
                     DetailItem(
                         icon = Icons.Default.Cake,
@@ -116,7 +116,7 @@ fun PetInfoCard(
                     )
                 }
 
-                // Right column
+                
                 Column(modifier = Modifier.weight(1f)) {
                     DetailItem(
                         icon = Icons.Default.Person,
@@ -136,7 +136,7 @@ fun PetInfoCard(
                 }
             }
 
-            // Additional info if available
+            
             if (pet.healthHistory.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(

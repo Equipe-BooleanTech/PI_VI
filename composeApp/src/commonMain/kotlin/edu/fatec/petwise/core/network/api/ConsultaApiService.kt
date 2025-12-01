@@ -28,10 +28,10 @@ class ConsultaApiServiceImpl(
         return networkHandler.getWithCustomDeserializer(ApiEndpoints.CONSULTAS, deserializer = { jsonString ->
             val json = Json { ignoreUnknownKeys = true }
             try {
-                // Try to parse as direct array first
+                
                 json.decodeFromString<List<ConsultaDto>>(jsonString)
             } catch (e: Exception) {
-                // Fallback to wrapped object
+                
                 val wrapped = json.decodeFromString<ConsultaListResponse>(jsonString)
                 wrapped.consultas ?: emptyList()
             }
@@ -87,10 +87,10 @@ class ConsultaApiServiceImpl(
         return networkHandler.getWithCustomDeserializer(ApiEndpoints.CONSULTAS_SEARCH, deserializer = { jsonString ->
             val json = Json { ignoreUnknownKeys = true }
             try {
-                // Try to parse as direct array first
+                
                 json.decodeFromString<List<ConsultaDto>>(jsonString)
             } catch (e: Exception) {
-                // Fallback to wrapped object
+                
                 val wrapped = json.decodeFromString<ConsultaListResponse>(jsonString)
                 wrapped.consultas ?: emptyList()
             }
@@ -105,10 +105,10 @@ class ConsultaApiServiceImpl(
         return networkHandler.getWithCustomDeserializer(ApiEndpoints.CONSULTAS, deserializer = { jsonString ->
             val json = Json { ignoreUnknownKeys = true }
             try {
-                // Try to parse as direct array first
+                
                 json.decodeFromString<List<ConsultaDto>>(jsonString)
             } catch (e: Exception) {
-                // Fallback to wrapped object
+                
                 val wrapped = json.decodeFromString<ConsultaListResponse>(jsonString)
                 wrapped.consultas ?: emptyList()
             }
@@ -123,10 +123,10 @@ class ConsultaApiServiceImpl(
         return networkHandler.getWithCustomDeserializer(ApiEndpoints.getConsultasByPet(petId), deserializer = { jsonString ->
             val json = Json { ignoreUnknownKeys = true }
             try {
-                // Try to parse as direct array first
+                
                 json.decodeFromString<List<ConsultaDto>>(jsonString)
             } catch (e: Exception) {
-                // Fallback to wrapped object
+                
                 val wrapped = json.decodeFromString<ConsultaListResponse>(jsonString)
                 wrapped.consultas ?: emptyList()
             }

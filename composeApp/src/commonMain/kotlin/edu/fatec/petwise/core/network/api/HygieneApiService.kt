@@ -27,10 +27,10 @@ class HygieneApiServiceImpl(
             deserializer = { jsonString ->
                 val json = Json { ignoreUnknownKeys = true }
                 try {
-                    // Try to parse as direct array first
+                    
                     json.decodeFromString<List<HygieneDto>>(jsonString)
                 } catch (e: Exception) {
-                    // Fallback to wrapped object
+                    
                     val wrapped = json.decodeFromString<HygieneListResponse>(jsonString)
                     wrapped.hygieneProducts ?: emptyList()
                 }

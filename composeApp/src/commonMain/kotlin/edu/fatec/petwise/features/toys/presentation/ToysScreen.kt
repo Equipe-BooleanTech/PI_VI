@@ -38,7 +38,7 @@ fun ToysScreen() {
     var selectionMode by remember { mutableStateOf(false) }
     var selectedToyIds by remember { mutableStateOf(setOf<String>()) }
 
-    // Dialog states
+    
     var showAddToyDialog by remember { mutableStateOf(false) }
     var showEditToyDialog by remember { mutableStateOf(false) }
     var toyToEdit by remember { mutableStateOf<edu.fatec.petwise.features.toys.domain.models.Toy?>(null) }
@@ -68,13 +68,13 @@ fun ToysScreen() {
             selectionMode = selectionMode,
             selectedCount = selectedToyIds.size,
             onSearchClick = { showSearchBar = !showSearchBar },
-            onFilterClick = { /* TODO: Implement filter */ },
+            onFilterClick = {  },
             onAddToyClick = { showAddToyDialog = true },
             onSelectionModeToggle = {
                 selectionMode = !selectionMode
                 if (!selectionMode) selectedToyIds = setOf()
             },
-            onDeleteSelected = { /* TODO: Implement delete */ }
+            onDeleteSelected = {  }
         )
 
         if (showSearchBar) {
@@ -128,7 +128,7 @@ fun ToysScreen() {
         }
     }
 
-    // Dialogs
+    
     if (showAddToyDialog) {
         AddToyDialog(
             isLoading = uiState.isLoading,
@@ -137,7 +137,7 @@ fun ToysScreen() {
                 showAddToyDialog = false
             },
             onSuccess = { formData: Map<String, Any> ->
-                // Convert form data to Toy model
+                
                 val toy = edu.fatec.petwise.features.toys.domain.models.Toy(
                     id = "",
                     name = formData["name"] as String,
@@ -170,7 +170,7 @@ fun ToysScreen() {
                 toyToEdit = null
             },
             onSuccess = { formData: Map<String, Any> ->
-                // Convert form data to updated Toy model
+                
                 val updatedToy = toyToEdit!!.copy(
                     name = formData["name"] as String,
                     brand = formData["brand"] as String,

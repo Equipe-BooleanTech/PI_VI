@@ -14,12 +14,12 @@ class RemotePetDataSourceImpl(
 
     override suspend fun getAllPets(): List<Pet> { 
         println("API: Buscando todos os pets")
-        return when (val result = petApiService.getAllPets(1, 1000)) {  // Large pageSize to get all
+        return when (val result = petApiService.getAllPets(1, 1000)) {  
             is NetworkResult.Success -> {
                 println("API: ${result.data.size} pets obtidos com sucesso")
                 var pets = result.data.map { it.toDomain() }
                 
-                // Filter pets based on user type
+                
                 try {
                     val userProfile = getUserProfileUseCase.execute().getOrNull()
                     if (userProfile != null && userProfile.userType == "OWNER") {
@@ -31,7 +31,7 @@ class RemotePetDataSourceImpl(
                     }
                 } catch (e: Exception) {
                     println("API: Erro ao obter perfil do usuário para filtro: ${e.message}")
-                    // Continue without filtering
+                    
                 }
                 
                 pets

@@ -31,10 +31,10 @@ class MedicationApiServiceImpl(
             deserializer = { jsonString ->
                 val json = Json { ignoreUnknownKeys = true }
                 try {
-                    // Try to parse as direct array first
+                    
                     json.decodeFromString<List<MedicationDto>>(jsonString)
                 } catch (e: Exception) {
-                    // Fallback to wrapped object
+                    
                     val wrapped = json.decodeFromString<MedicationListResponse>(jsonString)
                     wrapped.medications ?: emptyList()
                 }
@@ -59,10 +59,10 @@ class MedicationApiServiceImpl(
             deserializer = { jsonString ->
                 val json = Json { ignoreUnknownKeys = true }
                 try {
-                    // Try to parse as direct array first
+                    
                     json.decodeFromString<List<MedicationDto>>(jsonString)
                 } catch (e: Exception) {
-                    // Fallback to wrapped object
+                    
                     val wrapped = json.decodeFromString<MedicationListResponse>(jsonString)
                     wrapped.medications ?: emptyList()
                 }

@@ -40,11 +40,11 @@ class AddExamViewModel(
     val uiState: StateFlow<AddExamUiState> = _uiState.asStateFlow()
 
     init {
-        // No logout observation needed
+        
     }
 
     private fun observeLogout() {
-        // Not used
+        
     }
 
     fun onEvent(event: AddExamUiEvent) {
@@ -59,7 +59,7 @@ class AddExamViewModel(
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
 
             try {
-                // Get current user profile to get veterinary ID
+                
                 val userProfileResult = getUserProfileUseCase.execute()
                 val veterinaryId = userProfileResult.getOrNull()?.id ?: ""
 

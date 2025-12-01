@@ -11,8 +11,8 @@ actual fun createHttpClient(config: PetWiseHttpClientConfig): HttpClient {
                 setTimeoutInterval(config.requestTimeout / 1000.0)
             }
             
-            handleChallenge { _, _, completionHandler ->
-                completionHandler(null, null)
+            handleChallenge { session, task, challenge, completionHandler ->
+                completionHandler(0, null)
             }
         }
     }
@@ -23,5 +23,7 @@ actual fun getUserAgent(): String {
 }
 
 actual fun getPlatformName(): String = "iOS"
+
+actual fun getPlatformApiUrl(): String = "http://localhost:8081"
 
 actual fun generateRequestId(): String = NSUUID().UUIDString()

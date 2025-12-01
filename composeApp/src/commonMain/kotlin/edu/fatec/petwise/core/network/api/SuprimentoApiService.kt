@@ -33,10 +33,10 @@ class SuprimentoApiServiceImpl(
             deserializer = { jsonString ->
                 val json = Json { ignoreUnknownKeys = true }
                 try {
-                    // Try to parse as direct array first
+                    
                     json.decodeFromString<List<SuprimentoDto>>(jsonString)
                 } catch (e: Exception) {
-                    // Fallback to wrapped object
+                    
                     val wrapped = json.decodeFromString<SuprimentoListResponse>(jsonString)
                     wrapped.suprimentos ?: emptyList()
                 }
@@ -64,10 +64,10 @@ class SuprimentoApiServiceImpl(
             deserializer = { jsonString ->
                 val json = Json { ignoreUnknownKeys = true }
                 try {
-                    // Try to parse as direct array first
+                    
                     json.decodeFromString<List<SuprimentoDto>>(jsonString)
                 } catch (e: Exception) {
-                    // Fallback to wrapped object
+                    
                     val wrapped = json.decodeFromString<SuprimentoListResponse>(jsonString)
                     wrapped.suprimentos ?: emptyList()
                 }
@@ -83,10 +83,10 @@ class SuprimentoApiServiceImpl(
             deserializer = { jsonString ->
                 val json = Json { ignoreUnknownKeys = true }
                 try {
-                    // Try to parse as direct array first
+                    
                     json.decodeFromString<List<SuprimentoDto>>(jsonString)
                 } catch (e: Exception) {
-                    // Fallback to wrapped object
+                    
                     val wrapped = json.decodeFromString<SuprimentoListResponse>(jsonString)
                     wrapped.suprimentos ?: emptyList()
                 }

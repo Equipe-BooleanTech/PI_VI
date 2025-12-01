@@ -178,7 +178,7 @@ actual fun PlatformDatePicker(
     
     DatePickerDialog(
         onDismissRequest = { 
-            // Dismiss without changing value
+            
         },
         confirmButton = {
             TextButton(
@@ -198,7 +198,7 @@ actual fun PlatformDatePicker(
         dismissButton = {
             TextButton(
                 onClick = { 
-                    // Dismiss without changing value
+                    
                 }
             ) {
                 Text("Cancelar")

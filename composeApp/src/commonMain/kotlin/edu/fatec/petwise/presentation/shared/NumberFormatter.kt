@@ -11,7 +11,7 @@ object NumberFormatter {
         val factor = 10.0.pow(decimalPlaces.toDouble())
         val rounded = kotlin.math.round(value * factor) / factor
         
-        // Simple decimal formatting without String.format
+        
         val integerPart = rounded.toLong()
         val decimalPart = ((rounded - integerPart) * factor).toLong()
         

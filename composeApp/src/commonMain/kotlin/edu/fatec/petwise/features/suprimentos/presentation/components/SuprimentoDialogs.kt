@@ -17,9 +17,7 @@ import edu.fatec.petwise.features.suprimentos.domain.models.Suprimento
 import edu.fatec.petwise.features.suprimentos.domain.models.SuprimentCategory
 import edu.fatec.petwise.presentation.shared.NumberFormatter
 
-/**
- * Dialog to show suprimento details
- */
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SuprimentoDetailsDialog(
@@ -45,7 +43,7 @@ fun SuprimentoDetailsDialog(
                     .padding(24.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Header
+                
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
@@ -78,7 +76,7 @@ fun SuprimentoDetailsDialog(
 
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
-                // Details
+                
                 Column(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
@@ -104,7 +102,7 @@ fun SuprimentoDetailsDialog(
 
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
-                // Actions
+                
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -146,9 +144,7 @@ fun SuprimentoDetailsDialog(
     }
 }
 
-/**
- * Confirmation dialog for deleting a suprimento
- */
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeleteSuprimentoConfirmationDialog(

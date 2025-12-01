@@ -550,9 +550,9 @@ class DefaultDashboardDataProvider : DashboardDataProvider {
                     "Cuidando de $petCount pets com carinho"
                 }
             }
-            UserType.VETERINARY -> "5 consultas agendadas hoje"
-            UserType.PETSHOP -> "Gerenciando 3 lojas ativas"
-            UserType.PHARMACY -> "20 pedidos para processar"
+            UserType.VETERINARY -> "Verifique suas consultas de hoje"
+            UserType.PETSHOP -> "Gerencie seu petshop de forma eficiente"
+            UserType.PHARMACY -> "Gerencie seus pedidos e estoque"
         }
     }
 }

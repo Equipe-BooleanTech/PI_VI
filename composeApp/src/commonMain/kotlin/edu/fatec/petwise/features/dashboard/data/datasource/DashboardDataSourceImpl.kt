@@ -8,8 +8,8 @@ import edu.fatec.petwise.core.network.dto.ConsultaDto
 class DashboardDataSourceImpl (
     private val petApiService: PetApiService,
     private val consultaApiService: ConsultaApiService,
-    // Adicionar vacina
-    // Adicionar medicação
+    
+    
 ): RemoteDashboardDataSource {
     override suspend fun getStatistics(): List<Number> {
         var totalPets = 0

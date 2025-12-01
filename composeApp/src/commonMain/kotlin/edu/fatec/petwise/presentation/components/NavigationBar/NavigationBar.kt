@@ -18,9 +18,7 @@ import edu.fatec.petwise.presentation.theme.AzulProfundo
 import edu.fatec.petwise.presentation.theme.Branco
 import edu.fatec.petwise.presentation.theme.VerdeMenta
 
-/**
- * Barra de navegação responsiva com identidade visual PetWise.
- */
+
 @Composable
 fun ResponsiveNavigationBar() {
     val navItems = listOf(
@@ -40,9 +38,7 @@ fun ResponsiveNavigationBar() {
     }
 }
 
-/**
- * Layout para telas pequenas (< 900dp) com BottomNavigation fixada.
- */
+
 @Composable
 private fun SmallScreenScaffold(navItems: List<NavItem>) {
     var selectedIndex by remember { mutableStateOf(0) }
@@ -87,9 +83,7 @@ private fun SmallScreenScaffold(navItems: List<NavItem>) {
     }
 }
 
-/**
- * Layout para telas grandes (>= 900dp).
- */
+
 @Composable
 private fun LargeScreenTopNavigation(navItems: List<NavItem>) {
     Surface(color = AzulProfundo, shadowElevation = 4.dp) {
@@ -131,9 +125,7 @@ private fun LargeScreenTopNavigation(navItems: List<NavItem>) {
     }
 }
 
-/**
- * Logo estilizada "PetWise".
- */
+
 @Composable
 private fun PetWiseLogo() {
     Text(
@@ -148,9 +140,7 @@ private fun PetWiseLogo() {
     )
 }
 
-/**
- * Modelo para itens de navegação.
- */
+
 private data class NavItem(
     val label: String,
     val icon: ImageVector

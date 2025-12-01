@@ -38,7 +38,7 @@ object LabDependencyContainer {
         DeleteLabUseCase(repository)
     }
 
-    // ViewModels
+    
     val labsViewModel: LabsViewModel by lazy {
         LabsViewModel(getLabsUseCase, deleteLabUseCase)
     }

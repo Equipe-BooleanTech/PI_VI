@@ -2,10 +2,7 @@ package edu.fatec.petwise.presentation.shared.form.masking
 
 import edu.fatec.petwise.features.auth.shared.InputMasks
 
-/**
- * Bridge para integração de máscaras de entrada em formulários
- * TODO: Implementar a aplicação real da máscara no campo de texto
- */
+
 object InputMaskBridge {
 
     fun shouldUseMask(fieldId: String, formatting: Any?): Boolean {

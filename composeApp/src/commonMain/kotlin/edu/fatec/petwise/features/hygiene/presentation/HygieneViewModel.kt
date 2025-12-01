@@ -60,7 +60,7 @@ class HygieneViewModel : ViewModel() {
     }
 
     private fun loadProducts() {
-        // Cancel any existing data loading job
+        
         currentDataJob?.cancel()
 
         currentDataJob = viewModelScope.launch {
@@ -86,7 +86,7 @@ class HygieneViewModel : ViewModel() {
     }
 
     private fun searchProducts(query: String) {
-        // Cancel any existing data loading job
+        
         currentDataJob?.cancel()
 
         currentDataJob = viewModelScope.launch {
@@ -120,7 +120,7 @@ class HygieneViewModel : ViewModel() {
     }
 
     private fun filterByCategory(category: String?) {
-        // Cancel any existing data loading job
+        
         currentDataJob?.cancel()
 
         currentDataJob = viewModelScope.launch {
@@ -160,7 +160,7 @@ class HygieneViewModel : ViewModel() {
             try {
                 addHygieneProductUseCase(product).fold(
                     onSuccess = { newProduct ->
-                        // Reload products to get updated list
+                        
                         loadProducts()
                     },
                     onFailure = { error ->
@@ -186,7 +186,7 @@ class HygieneViewModel : ViewModel() {
             try {
                 updateHygieneProductUseCase(product).fold(
                     onSuccess = { updatedProduct ->
-                        // Reload products to get updated list
+                        
                         loadProducts()
                     },
                     onFailure = { error ->
@@ -212,7 +212,7 @@ class HygieneViewModel : ViewModel() {
             try {
                 deleteHygieneProductUseCase(productId).fold(
                     onSuccess = {
-                        // Reload products to get updated list
+                        
                         loadProducts()
                     },
                     onFailure = { error ->

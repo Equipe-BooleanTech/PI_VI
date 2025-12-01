@@ -43,17 +43,17 @@ class UpdateVaccinationViewModel(
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null, isSuccess = false)
             
             try {
-                // Extract form data - note: LocalDateTime objects should come from the global handler
+                
                 val vaccineTypeStr = formData["vaccineType"]?.content ?: ""
                 
-                // Handle LocalDateTime objects that come from the global handler
+                
                 val vaccinationDate = try {
-                    // Try to parse as LocalDateTime first (from global handler)
+                    
                     val dateStr = formData["vaccinationDate"]?.content ?: ""
                     if (dateStr.contains("T")) {
                         kotlinx.datetime.LocalDateTime.parse(dateStr)
                     } else {
-                        // Fallback for string format
+                        
                         kotlinx.datetime.LocalDateTime.parse("${dateStr}T00:00:00")
                     }
                 } catch (e: Exception) {
@@ -82,7 +82,7 @@ class UpdateVaccinationViewModel(
                 val statusStr = formData["status"]?.content ?: ""
                 val observations = formData["observations"]?.content ?: ""
 
-                // Validate required fields
+                
                 if (vaccineTypeStr.isBlank()) {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
@@ -120,8 +120,8 @@ class UpdateVaccinationViewModel(
                 val currentTime = Clock.System.now().toEpochMilliseconds().toString()
                 val updatedVaccination = Vaccination(
                     id = vaccinationId,
-                    petId = "", // This should be filled from original vaccination
-                    veterinarianId = "", // This should be filled from original vaccination
+                    petId = "", 
+                    veterinarianId = "", 
                     vaccineType = vaccineTypeStr.let { VaccineType.valueOf(it) },
                     vaccinationDate = vaccinationDate,
                     nextDoseDate = nextDoseDate,
@@ -129,11 +129,11 @@ class UpdateVaccinationViewModel(
                     manufacturer = manufacturer,
                     observations = observations,
                     status = status,
-                    createdAt = "", // This should be filled from original vaccination
+                    createdAt = "", 
                     updatedAt = currentTime
                 )
 
-                // Call use case
+                
                 updateVaccinationUseCase(updatedVaccination).fold(
                     onSuccess = { 
                         _uiState.value = _uiState.value.copy(

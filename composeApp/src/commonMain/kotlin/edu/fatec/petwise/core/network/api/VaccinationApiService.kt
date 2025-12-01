@@ -28,10 +28,10 @@ class VaccinationApiServiceImpl(
         return networkHandler.getWithCustomDeserializer(ApiEndpoints.VACCINATIONS, deserializer = { jsonString ->
             val json = Json { ignoreUnknownKeys = true }
             try {
-                // Try to parse as direct array first
+                
                 json.decodeFromString<List<VaccinationDto>>(jsonString)
             } catch (e: Exception) {
-                // Fallback to wrapped object
+                
                 val wrapped = json.decodeFromString<VaccinationListResponse>(jsonString)
                 wrapped.vaccinations ?: emptyList()
             }
@@ -49,10 +49,10 @@ class VaccinationApiServiceImpl(
         return networkHandler.getWithCustomDeserializer(ApiEndpoints.getVaccinationsByPet(petId), deserializer = { jsonString ->
             val json = Json { ignoreUnknownKeys = true }
             try {
-                // Try to parse as direct array first
+                
                 json.decodeFromString<List<VaccinationDto>>(jsonString)
             } catch (e: Exception) {
-                // Fallback to wrapped object
+                
                 val wrapped = json.decodeFromString<VaccinationListResponse>(jsonString)
                 wrapped.vaccinations ?: emptyList()
             }
@@ -100,10 +100,10 @@ class VaccinationApiServiceImpl(
         return networkHandler.getWithCustomDeserializer(ApiEndpoints.VACCINATIONS, deserializer = { jsonString ->
             val json = Json { ignoreUnknownKeys = true }
             try {
-                // Try to parse as direct array first
+                
                 json.decodeFromString<List<VaccinationDto>>(jsonString)
             } catch (e: Exception) {
-                // Fallback to wrapped object
+                
                 val wrapped = json.decodeFromString<VaccinationListResponse>(jsonString)
                 wrapped.vaccinations ?: emptyList()
             }
@@ -116,10 +116,10 @@ class VaccinationApiServiceImpl(
         return networkHandler.getWithCustomDeserializer(ApiEndpoints.VACCINATIONS, deserializer = { jsonString ->
             val json = Json { ignoreUnknownKeys = true }
             try {
-                // Try to parse as direct array first
+                
                 json.decodeFromString<List<VaccinationDto>>(jsonString)
             } catch (e: Exception) {
-                // Fallback to wrapped object
+                
                 val wrapped = json.decodeFromString<VaccinationListResponse>(jsonString)
                 wrapped.vaccinations ?: emptyList()
             }

@@ -20,16 +20,16 @@ class RemotePrescriptionDataSourceImpl(
                 println("API: ${result.data.size} prescrições obtidas com sucesso")
                 var prescriptions = result.data.map { it.toPrescription() }
                 
-                // Filter prescriptions based on user type
+                
                 try {
                     val userProfile = getUserProfileUseCase.execute().getOrNull()
                     if (userProfile != null && userProfile.userType == "OWNER") {
                         println("API: Usuário é OWNER, filtrando prescrições por pets do usuário")
-                        // For OWNER users, we need to get their pets first to filter prescriptions
-                        // This is a simplified approach - in a real app, the API should handle this
+                        
+                        
                         prescriptions = prescriptions.filter { prescription ->
-                            // This would need to be implemented properly by checking pet ownership
-                            // For now, we'll return all prescriptions (this needs backend support)
+                            
+                            
                             true
                         }
                         println("API: Após filtro OWNER: ${prescriptions.size} prescrições restantes")
@@ -38,7 +38,7 @@ class RemotePrescriptionDataSourceImpl(
                     }
                 } catch (e: Exception) {
                     println("API: Erro ao obter perfil do usuário para filtro: ${e.message}")
-                    // Continue without filtering
+                    
                 }
                 
                 prescriptions
@@ -47,7 +47,7 @@ class RemotePrescriptionDataSourceImpl(
                 val exception = result.exception
                 println("API Error: ${exception.message}")
                 
-                // Check if this is a blacklisted token error that requires re-login
+                
                 if (exception is NetworkException.Unauthorized && exception.requiresRelogin) {
                     println("API: Token blacklisted/invalid - throwing exception to trigger re-login")
                     throw Exception("SESSION_EXPIRED:${exception.message?.substringAfter(":") ?: "Sessão expirada"}")
@@ -146,16 +146,16 @@ class RemotePrescriptionDataSourceImpl(
 }
 
 private fun parseDateToIso(date: String): String {
-    // If already ISO format with T, return as is
+    
     if (date.contains("T")) {
         return date
     }
     val dateParts = if (date.contains("/")) {
-        // DD/MM/YYYY format
+        
         date.split("/")
     } else {
-        // YYYY-MM-DD format
-        date.split("-").reversed() // Reverse to DD/MM/YYYY
+        
+        date.split("-").reversed() 
     }
     val day = dateParts[0].toInt()
     val month = dateParts[1].toInt()

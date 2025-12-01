@@ -68,7 +68,7 @@ class AddVaccinationViewModel(
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
 
             try {
-                // Get user profile to obtain veterinarianId
+                
                 val userProfileResult = getUserProfileUseCase.execute()
                 val veterinarianId = userProfileResult.fold(
                     onSuccess = { profile -> profile.id },

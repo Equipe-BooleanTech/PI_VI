@@ -12,9 +12,7 @@ import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.toInstant
 
-/**
- * Engine de validação para formulários, suportando várias regras de validação
- */
+
 interface ValidationEngine {
     suspend fun validateField(
         field: FormFieldDefinition,
@@ -28,9 +26,7 @@ interface ValidationEngine {
     ): ValidationResult
 }
 
-/**
- * Implementação padrão da ValidationEngine
- */
+
 class DefaultValidationEngine(
     private val errorMessageProvider: ErrorMessageProvider = DefaultErrorMessageProvider()
 ) : ValidationEngine {
@@ -42,22 +38,22 @@ class DefaultValidationEngine(
     ): ValidationResult {
         val errors = mutableListOf<FormError.ValidationError>()
         
-        // Handle LocalDateTime values for date/time fields
+        
         val stringValue = when {
             value is LocalDateTime -> {
                 when (field.type) {
                     FormFieldType.DATE -> {
-                        // For DATE fields, format as user-friendly date only
+                        
                         val date = value.date
                         "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year}"
                     }
                     FormFieldType.TIME -> {
-                        // For TIME fields, format as time only
+                        
                         val time = value.time
                         "${time.hour.toString().padStart(2, '0')}:${time.minute.toString().padStart(2, '0')}"
                     }
                     FormFieldType.DATETIME -> {
-                        // For DATETIME fields, format as date and time
+                        
                         val date = value.date
                         val time = value.time
                         "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year} ${time.hour.toString().padStart(2, '0')}:${time.minute.toString().padStart(2, '0')}"
@@ -366,7 +362,7 @@ class DefaultValidationEngine(
 
     private fun parseDateToEpochMillis(dateString: String): Long? {
         return try {
-            // Clean the input string first
+            
             val cleanedString = dateString.trim()
             
             when {
@@ -382,7 +378,7 @@ class DefaultValidationEngine(
                     val month = parts[1].toIntOrNull() ?: return null
                     val year = parts[2].toIntOrNull() ?: return null
                     
-                    // Validate ranges
+                    
                     if (day < 1 || day > 31 || month < 1 || month > 12 || year < 1900 || year > 2100) {
                         return null
                     }
@@ -392,7 +388,7 @@ class DefaultValidationEngine(
                     instant.toEpochMilliseconds()
                 }
                 cleanedString.contains('T') -> {
-                    // Handle LocalDateTime strings
+                    
                     val dateTime = LocalDateTime.parse(cleanedString)
                     dateTime.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds()
                 }

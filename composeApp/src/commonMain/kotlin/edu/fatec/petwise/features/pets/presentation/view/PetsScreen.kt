@@ -76,7 +76,7 @@ fun PetsScreen(
         }
     }
 
-    // Show pet details screen if a pet is selected
+    
     petsState.selectedPet?.let { selectedPet ->
         PetDetailsScreen(
             pet = selectedPet,
@@ -216,7 +216,7 @@ fun PetsScreen(
                 selectedPetIds = setOf()
                 selectionMode = false
                 showDeleteConfirmation = false
-                // Reload pets after bulk operations
+                
                 petsViewModel.onEvent(PetsUiEvent.LoadPets)
             },
             onDismiss = { showDeleteConfirmation = false }

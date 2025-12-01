@@ -1,9 +1,20 @@
 package edu.fatec.petwise.presentation.shared.form
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
@@ -13,7 +24,9 @@ import androidx.compose.ui.unit.sp
 import platform.Foundation.*
 import platform.UIKit.*
 import kotlinx.datetime.LocalDate
+import kotlinx.cinterop.ExperimentalForeignApi
 
+@OptIn(ExperimentalForeignApi::class)
 actual class PlatformFormBehavior {
     actual fun shouldShowKeyboardSpacer(): Boolean = true
 
@@ -26,15 +39,7 @@ actual class PlatformFormBehavior {
     }
 
     actual fun getSafeAreaInsets(): PaddingValues {
-
-        val window = UIApplication.sharedApplication.keyWindow
-        val safeAreaInsets = window?.safeAreaInsets
-        return PaddingValues(
-            top = (safeAreaInsets?.top ?: 0.0).dp,
-            bottom = (safeAreaInsets?.bottom ?: 0.0).dp,
-            start = (safeAreaInsets?.left ?: 0.0).dp,
-            end = (safeAreaInsets?.right ?: 0.0).dp
-        )
+        return PaddingValues(0.dp)
     }
 
     actual fun getOptimalFieldHeight(): androidx.compose.ui.unit.Dp = 44.dp
@@ -89,6 +94,7 @@ actual object PlatformFormStyling {
     }
 }
 
+@OptIn(ExperimentalForeignApi::class)
 actual class PlatformInputHandling {
     actual fun formatPhoneNumber(input: String, country: String): String {
         val digits = input.replace(Regex("[^0-9]"), "")
@@ -114,7 +120,8 @@ actual class PlatformInputHandling {
             else -> formatter.currencyCode = currency
         }
 
-        return formatter.stringFromNumber(NSNumber.numberWithDouble(amount)) ?: "$amount"
+        val result = formatter.stringFromNumber(NSNumber.numberWithDouble(amount)) as? String
+        return result ?: "$amount"
     }
 
     actual fun formatDate(timestamp: Long, format: String): String {
@@ -135,9 +142,9 @@ actual class PlatformInputHandling {
                 }
 
                 val range = NSMakeRange(0u, value.length.toULong())
-                val matches = detector.matchesInString(value, NSMatchingOptions.MIN_VALUE, range)
+                val matches = detector?.matchesInString(value, NSMatchingOptions.MIN_VALUE, range)
 
-                return matches.size > 0
+                return (matches?.size ?: 0) > 0
             }
             FormFieldType.EMAIL -> {
                 val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
@@ -178,46 +185,46 @@ var showDialog by remember { mutableStateOf(true) }
     var day by remember { mutableStateOf(parts.getOrNull(2)?.toIntOrNull() ?: 1) }
 
     if (showDialog) {
-        androidx.compose.material3.AlertDialog(
+        AlertDialog(
             onDismissRequest = {
                 showDialog = false
-                // Dismiss without changing value
+                
             },
             confirmButton = {
-                androidx.compose.material3.TextButton(onClick = {
+                TextButton(onClick = {
                     val y = year
                     val m = month.coerceIn(1, 12)
                     val d = day.coerceIn(1, 31)
                     val localDate = kotlinx.datetime.LocalDate(y, m, d)
                     showDialog = false
                     onValueChange(localDate)
-                }) { androidx.compose.material3.Text("OK") }
+                }) { Text("OK") }
             },
             dismissButton = {
-                androidx.compose.material3.TextButton(onClick = {
+                TextButton(onClick = {
                     showDialog = false
-                    // Dismiss without changing value
-                }) { androidx.compose.material3.Text("Cancelar") }
+                    
+                }) { Text("Cancelar") }
             },
-            title = { androidx.compose.material3.Text(text = fieldDefinition.label ?: "Selecione a Data") },
+            title = { Text(text = fieldDefinition.label ?: "Selecione a Data") },
             text = {
-                androidx.compose.foundation.layout.Column {
-                    androidx.compose.material3.OutlinedTextField(
+                Column {
+                    OutlinedTextField(
                         value = year.toString(),
                         onValueChange = { year = it.toIntOrNull() ?: year },
-                        label = { androidx.compose.material3.Text("Ano") },
+                        label = { Text("Ano") },
                         modifier = Modifier.fillMaxWidth()
                     )
-                    androidx.compose.material3.OutlinedTextField(
+                    OutlinedTextField(
                         value = month.toString(),
                         onValueChange = { month = it.toIntOrNull() ?: month },
-                        label = { androidx.compose.material3.Text("Mês") },
+                        label = { Text("Mês") },
                         modifier = Modifier.fillMaxWidth()
                     )
-                    androidx.compose.material3.OutlinedTextField(
+                    OutlinedTextField(
                         value = day.toString(),
                         onValueChange = { day = it.toIntOrNull() ?: day },
-                        label = { androidx.compose.material3.Text("Dia") },
+                        label = { Text("Dia") },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -240,39 +247,39 @@ var showDialog by remember { mutableStateOf(true) }
     var minute by remember { mutableStateOf(parts.getOrNull(1)?.toIntOrNull() ?: 0) }
 
     if (showDialog) {
-        androidx.compose.material3.AlertDialog(
+        AlertDialog(
             onDismissRequest = {
                 showDialog = false
                 onValueChange(fieldState.displayValue)
             },
             confirmButton = {
-                androidx.compose.material3.TextButton(onClick = {
+                TextButton(onClick = {
                     val h = hour.coerceIn(0,23)
                     val m = minute.coerceIn(0,59)
-                    val formatted = "%02d:%02d".format(h,m)
+                    val formatted = "${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}"
                     showDialog = false
                     onValueChange(formatted)
-                }) { androidx.compose.material3.Text("OK") }
+                }) { Text("OK") }
             },
             dismissButton = {
-                androidx.compose.material3.TextButton(onClick = {
+                TextButton(onClick = {
                     showDialog = false
                     onValueChange(fieldState.displayValue)
-                }) { androidx.compose.material3.Text("Cancelar") }
+                }) { Text("Cancelar") }
             },
-            title = { androidx.compose.material3.Text(text = fieldDefinition.label ?: "Selecione o Horário") },
+            title = { Text(text = fieldDefinition.label ?: "Selecione o Horário") },
             text = {
-                androidx.compose.foundation.layout.Column {
-                    androidx.compose.material3.OutlinedTextField(
+                Column {
+                    OutlinedTextField(
                         value = hour.toString(),
                         onValueChange = { hour = it.toIntOrNull() ?: hour },
-                        label = { androidx.compose.material3.Text("Hora") },
+                        label = { Text("Hora") },
                         modifier = Modifier.fillMaxWidth()
                     )
-                    androidx.compose.material3.OutlinedTextField(
+                    OutlinedTextField(
                         value = minute.toString(),
                         onValueChange = { minute = it.toIntOrNull() ?: minute },
-                        label = { androidx.compose.material3.Text("Minuto") },
+                        label = { Text("Minuto") },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -289,11 +296,11 @@ actual fun PlatformFilePicker(
     modifier: Modifier
 ) {
 
-    androidx.compose.material3.Button(
+    Button(
         onClick = {  },
         modifier = modifier
     ) {
-        androidx.compose.material3.Text("Choose File")
+        Text("Choose File")
     }
 }
 
@@ -305,14 +312,15 @@ actual fun PlatformCameraCapturer(
     modifier: Modifier
 ) {
 
-    androidx.compose.material3.Button(
+    Button(
         onClick = {  },
         modifier = modifier
     ) {
-        androidx.compose.material3.Text("Take Photo")
+        Text("Take Photo")
     }
 }
 
+@OptIn(ExperimentalForeignApi::class)
 actual object PlatformAccessibility {
     actual fun announceForAccessibility(message: String) {
 
@@ -328,7 +336,9 @@ actual object PlatformAccessibility {
     }
 
     actual fun shouldUseLargeText(): Boolean {
-        return UIApplication.sharedApplication.preferredContentSizeCategory >= UIContentSizeCategoryAccessibilityMedium
+        val currentCategory = UIApplication.sharedApplication.preferredContentSizeCategory
+        val accessibilityMedium = UIContentSizeCategoryAccessibilityMedium
+        return currentCategory != null && accessibilityMedium != null && currentCategory >= accessibilityMedium
     }
 
     actual fun shouldReduceMotion(): Boolean {
@@ -336,19 +346,20 @@ actual object PlatformAccessibility {
     }
 }
 
+@OptIn(ExperimentalForeignApi::class)
 actual object PlatformHaptics {
     actual fun performLightImpact() {
-        val generator = UIImpactFeedbackGenerator(UIImpactFeedbackStyleLight)
+        val generator = UIImpactFeedbackGenerator(UIImpactFeedbackStyle.UIImpactFeedbackStyleLight)
         generator.impactOccurred()
     }
 
     actual fun performMediumImpact() {
-        val generator = UIImpactFeedbackGenerator(UIImpactFeedbackStyleMedium)
+        val generator = UIImpactFeedbackGenerator(UIImpactFeedbackStyle.UIImpactFeedbackStyleMedium)
         generator.impactOccurred()
     }
 
     actual fun performHeavyImpact() {
-        val generator = UIImpactFeedbackGenerator(UIImpactFeedbackStyleHeavy)
+        val generator = UIImpactFeedbackGenerator(UIImpactFeedbackStyle.UIImpactFeedbackStyleHeavy)
         generator.impactOccurred()
     }
 
@@ -359,20 +370,21 @@ actual object PlatformHaptics {
 
     actual fun performNotificationSuccess() {
         val generator = UINotificationFeedbackGenerator()
-        generator.notificationOccurred(UINotificationFeedbackTypeSuccess)
+        generator.notificationOccurred(UINotificationFeedbackType.UINotificationFeedbackTypeSuccess)
     }
 
     actual fun performNotificationWarning() {
         val generator = UINotificationFeedbackGenerator()
-        generator.notificationOccurred(UINotificationFeedbackTypeWarning)
+        generator.notificationOccurred(UINotificationFeedbackType.UINotificationFeedbackTypeWarning)
     }
 
     actual fun performNotificationError() {
         val generator = UINotificationFeedbackGenerator()
-        generator.notificationOccurred(UINotificationFeedbackTypeError)
+        generator.notificationOccurred(UINotificationFeedbackType.UINotificationFeedbackTypeError)
     }
 }
 
+@OptIn(ExperimentalForeignApi::class)
 actual object PlatformValidation {
     actual fun validateBankAccount(accountNumber: String, bankCode: String): Boolean {
 
@@ -388,24 +400,23 @@ actual object PlatformValidation {
 
         val cepRegex = "^\\d{5}-?\\d{3}$"
         return NSPredicate.predicateWithFormat("SELF MATCHES %@", cepRegex)
-            .evaluateWithObject(code)
+            ?.evaluateWithObject(code) ?: false
     }
 
     actual fun validateCreditCard(number: String): Boolean {
+        val cleanNumber = number.replace(Regex("[^0-9]"), "")
 
-        let cleanNumber = number.replacingOccurrences(of: "[^0-9]", with: "", options: .regularExpression)
-
-        guard cleanNumber.count >= 13 && cleanNumber.count <= 19 else { return false }
+        if (cleanNumber.length !in 13..19) return false
 
         var sum = 0
-        let reversedDigits = Array(cleanNumber.reversed())
+        val reversedDigits = cleanNumber.reversed()
 
-        for (index, digitChar) in reversedDigits.enumerated() {
-            guard let digit = Int(String(digitChar)) else { return false }
+        for ((index, digitChar) in reversedDigits.withIndex()) {
+            val digit = digitChar.toString().toIntOrNull() ?: return false
 
-            if index % 2 == 1 {
-                let doubled = digit * 2
-                sum += doubled > 9 ? doubled - 9 : doubled
+            if (index % 2 == 1) {
+                val doubled = digit * 2
+                sum += if (doubled > 9) doubled - 9 else doubled
             } else {
                 sum += digit
             }

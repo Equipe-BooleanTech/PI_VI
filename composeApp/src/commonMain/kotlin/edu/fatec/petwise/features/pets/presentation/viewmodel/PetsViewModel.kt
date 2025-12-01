@@ -98,7 +98,7 @@ class PetsViewModel(
                         pets = pets,
                         filteredPets = pets,
                         isLoading = false
-                        // Don't clear errorMessage here - let it be cleared by user action
+                        
                     )
                 }
             } catch (e: Exception) {
@@ -224,7 +224,7 @@ class PetsViewModel(
                 deletePetUseCase(petId).fold(
                     onSuccess = {
                         println("Pet excluído com sucesso: $petId")
-                        // Don't call loadPets here - let the caller handle it
+                        
                     },
                     onFailure = { error ->
                         println("Erro ao excluir pet: ${error.message}")

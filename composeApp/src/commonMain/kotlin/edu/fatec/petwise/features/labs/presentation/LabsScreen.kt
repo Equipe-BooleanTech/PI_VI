@@ -43,7 +43,7 @@ fun LabsScreen(
     val updateUiState by updateLabViewModel.uiState.collectAsState()
     val labs = uiState.labs
     val pendingLabs = remember(labs) {
-        emptyList<Lab>() // No pending concept for labs
+        emptyList<Lab>() 
     }
 
     var showAddDialog by remember { mutableStateOf(false) }
@@ -119,7 +119,7 @@ fun LabsScreen(
                     LabResultErrorSnackbar(
                         message = errorMessage,
                         isError = true,
-                        onDismiss = { /* Clear error event */ },
+                        onDismiss = {  },
                         actionLabel = "Tentar Novamente",
                         onAction = { viewModel.onEvent(LabsUiEvent.LoadLabs) }
                     )
@@ -128,7 +128,7 @@ fun LabsScreen(
         }
     }
 
-    // Add Dialog
+    
     if (showAddDialog) {
         AddLabDialog(
             addLabViewModel = addLabViewModel,
@@ -144,7 +144,7 @@ fun LabsScreen(
         )
     }
 
-    // Delete Dialog
+    
     labToDelete?.let { lab ->
         if (showDeleteDialog) {
             DeleteLabConfirmationDialog(
@@ -163,7 +163,7 @@ fun LabsScreen(
         }
     }
 
-    // Edit Dialog
+    
     labToEdit?.let { lab ->
         if (showEditDialog) {
             EditLabDialog(

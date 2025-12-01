@@ -65,7 +65,7 @@ fun EditVaccinationDialog(
                     .fillMaxWidth()
                     .padding(24.dp)
             ) {
-                // Header
+                
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -102,7 +102,7 @@ fun EditVaccinationDialog(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Error message
+                
                 errorMessage?.let { error ->
                     Card(
                         modifier = Modifier
@@ -123,7 +123,7 @@ fun EditVaccinationDialog(
                     }
                 }
 
-                // Form
+                
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -132,7 +132,7 @@ fun EditVaccinationDialog(
                     DynamicForm(
                         viewModel = formViewModel,
                         onSubmitSuccess = { formData ->
-                            // Convert Map<String, Any> to Map<String, JsonPrimitive>
+                            
                             val jsonFormData = formData.mapValues { (_, value) ->
                                 when (value) {
                                     is String -> JsonPrimitive(value)
@@ -150,12 +150,12 @@ fun EditVaccinationDialog(
                             )
                         },
                         onFieldChanged = { fieldId, oldValue, newValue ->
-                            // Handle field changes if needed
+                            
                         }
                     )
                 }
 
-                // Loading indicator
+                
                 if (isLoading) {
                     Box(
                         modifier = Modifier

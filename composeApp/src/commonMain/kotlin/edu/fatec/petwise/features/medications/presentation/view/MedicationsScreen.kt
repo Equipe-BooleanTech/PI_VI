@@ -147,7 +147,7 @@ fun MedicationsScreen(
                                     selectedMedicationIds + medication.id
                                 }
                             } else {
-                                // Handle medication details view if needed
+                                
                             }
                         },
                         onEditClick = { medication ->
@@ -156,7 +156,7 @@ fun MedicationsScreen(
                             showEditMedicationDialog = true
                         },
                         onDeleteClick = { medication ->
-                            // Handle single medication delete
+                            
                             selectedMedicationIds = setOf(medication.id)
                             showDeleteConfirmation = true
                         },
@@ -164,14 +164,14 @@ fun MedicationsScreen(
                             medicationsViewModel.onEvent(MedicationsUiEvent.MarkAsCompleted(medicationId))
                         },
                         onPauseResumeClick = { medicationId ->
-                            // Toggle between pause and resume
+                            
                             medicationsViewModel.onEvent(MedicationsUiEvent.PauseMedication(medicationId))
                         }
                     )
                 }
             }
 
-            // Error message
+            
             medicationsState.errorMessage?.let { message ->
                 MedicationErrorSnackbar(
                     errorMessage = message,
@@ -182,7 +182,7 @@ fun MedicationsScreen(
         }
     }
 
-    // Dialogs
+    
     if (medicationsState.showAddMedicationDialog) {
         AddMedicationDialog(
             addMedicationViewModel = addMedicationViewModel,
@@ -224,7 +224,7 @@ fun MedicationsScreen(
         }.joinToString(", ")
         
         DeleteMedicationConfirmationDialog(
-            medicationId = selectedMedicationIds.first(), // For bulk delete, use first ID (though this should be updated for proper bulk handling)
+            medicationId = selectedMedicationIds.first(), 
             medicationName = if (selectedMedicationIds.size == 1) medicationNames else "${selectedMedicationIds.size} medicamentos",
             onSuccess = {
                 selectedMedicationIds.forEach { medicationId ->

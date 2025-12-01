@@ -155,7 +155,7 @@ class MedicationsViewModel(
                 medicationUseCases.deleteMedication(medicationId).fold(
                     onSuccess = {
                         println("Medicamento excluído com sucesso")
-                        loadMedications() // Reload the list
+                        loadMedications() 
                     },
                     onFailure = { error ->
                         println("Erro ao excluir medicamento: ${error.message}")
@@ -183,7 +183,7 @@ class MedicationsViewModel(
                 medicationUseCases.markAsCompleted(medicationId).fold(
                     onSuccess = { updatedMedication ->
                         println("Medicamento marcado como concluído com sucesso")
-                        loadMedications() // Reload the list
+                        loadMedications() 
                     },
                     onFailure = { error ->
                         println("Erro ao marcar medicamento como concluído: ${error.message}")
@@ -209,7 +209,7 @@ class MedicationsViewModel(
                 medicationUseCases.pauseMedication(medicationId).fold(
                     onSuccess = { updatedMedication ->
                         println("Medicamento pausado com sucesso")
-                        loadMedications() // Reload the list
+                        loadMedications() 
                     },
                     onFailure = { error ->
                         println("Erro ao pausar medicamento: ${error.message}")
@@ -235,7 +235,7 @@ class MedicationsViewModel(
                 medicationUseCases.resumeMedication(medicationId).fold(
                     onSuccess = { updatedMedication ->
                         println("Medicamento retomado com sucesso")
-                        loadMedications() // Reload the list
+                        loadMedications() 
                     },
                     onFailure = { error ->
                         println("Erro ao retomar medicamento: ${error.message}")

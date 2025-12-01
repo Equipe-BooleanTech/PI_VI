@@ -156,7 +156,7 @@ fun ConsultasScreen(
                             consultasViewModel.onEvent(ConsultasUiEvent.UpdateConsultaStatus(consulta.id, ConsultaStatus.CANCELLED))
                         },
                         onDeleteClick = { consulta ->
-                            // For now, delete also cancels. In the future, this could be actual deletion
+                            
                             consultasViewModel.onEvent(ConsultasUiEvent.DeleteConsulta(consulta.id))
                         },
                         onStatusChange = { consultaId ->
@@ -332,8 +332,8 @@ private fun ConsultasHeader(
                                 tint = Color.White
                             )
                         }
-                        // Only show selection mode for VETERINARY users (can cancel/delete)
-                        // OWNER users can cancel from individual cards but not bulk delete
+                        
+                        
                         if (userType == UserType.VETERINARY) {
                             IconButton(onClick = onSelectionModeToggle) {
                                 Icon(

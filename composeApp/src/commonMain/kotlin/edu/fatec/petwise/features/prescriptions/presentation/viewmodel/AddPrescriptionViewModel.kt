@@ -59,7 +59,7 @@ class AddPrescriptionViewModel(
                 val prescription = Prescription(
                     id = null,
                     petId = event.formData["petId"] as? String ?: "",
-                    userId = "", // Will be set by server
+                    userId = "", 
                     veterinaryId = event.formData["veterinarian"] as? String ?: "",
                     medicalRecordId = event.formData["medicalRecordId"] as? String,
                     prescriptionDate = event.formData["prescriptionDate"] as? String ?: "",

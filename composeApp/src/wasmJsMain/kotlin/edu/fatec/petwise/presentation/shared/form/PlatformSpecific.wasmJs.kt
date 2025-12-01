@@ -88,7 +88,7 @@ actual fun PlatformDatePicker(
         androidx.compose.material3.AlertDialog(
             onDismissRequest = {
                 showDialog = false
-                // Dismiss without changing value
+                
             },
             confirmButton = {
                 androidx.compose.material3.TextButton(onClick = {
@@ -103,7 +103,7 @@ actual fun PlatformDatePicker(
             dismissButton = {
                 androidx.compose.material3.TextButton(onClick = {
                     showDialog = false
-                    // Dismiss without changing value
+                    
                 }) { androidx.compose.material3.Text("Cancelar") }
             },
             title = { androidx.compose.material3.Text(text = fieldDefinition.label ?: "Selecione a Data") },

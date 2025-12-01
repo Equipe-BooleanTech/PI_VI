@@ -22,11 +22,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Help
 import androidx.compose.material.icons.filled.LocalPharmacy
 import androidx.compose.material.icons.filled.MedicalInformation
+import androidx.compose.material.icons.filled.Nfc
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -53,6 +52,7 @@ import edu.fatec.petwise.navigation.NavigationManager
 import edu.fatec.petwise.presentation.theme.fromHex
 import edu.fatec.petwise.features.auth.presentation.viewmodel.AuthViewModel
 import edu.fatec.petwise.features.auth.domain.usecases.GetUserProfileUseCase
+import edu.fatec.petwise.core.network.getPlatformName
 
 data class MoreMenuItem(
     val title: String,
@@ -207,7 +207,7 @@ fun MoreMenu(
                             title = "Laboratório",
                             icon = Icons.Default.MedicalInformation,
                             tabScreen = NavigationManager.TabScreen.Labs
-                        )
+                        ),
                     )
                     "PHARMACY" -> listOf(
                         MoreMenuItem(
@@ -239,7 +239,19 @@ fun MoreMenu(
                             icon = Icons.Default.Person,
                             tabScreen = NavigationManager.TabScreen.Pets
                         )
-                    )
+                    ).let { items ->
+                        
+                        val platform = getPlatformName()
+                        if (platform == "Android" || platform == "iOS") {
+                            items + MoreMenuItem(
+                                title = "Tag NFC",
+                                icon = Icons.Default.Nfc,
+                                tabScreen = NavigationManager.TabScreen.PetTags
+                            )
+                        } else {
+                            items
+                        }
+                    }
                 }
 
                 Column(

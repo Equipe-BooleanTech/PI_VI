@@ -17,6 +17,8 @@ actual fun getUserAgent(): String {
 
 actual fun getPlatformName(): String = "WasmJS"
 
+actual fun getPlatformApiUrl(): String = "http://localhost:8081"
+
 actual fun generateRequestId(): String {
     val timestamp = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
     val random = Random.nextInt(10000, 99999)
